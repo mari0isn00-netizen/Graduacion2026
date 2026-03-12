@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>El Impostor — Tu Mando</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, update, get, set, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ═══════════════════════════════════════════
+  // 🔥 MISMA CONFIG QUE tv.html
+  // ═══════════════════════════════════════════
+  const firebaseConfig = {
+    apiKey: "AIzaSyAib6PDnV_u8GuDp-PnJvop91qv9JHfffc",
+    authDomain: "impostor-322cc.firebaseapp.com",
+    databaseURL: "https://impostor-322cc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "impostor-322cc",
+    storageBucket: "impostor-322cc.firebasestorage.app",
+    messagingSenderId: "808449155212",
+    appId: "1:808449155212:web:c32ca0565b083056f31ba9"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // ═══════════════════════════════════════════
+  // OBTENER SALA DE LA URL
+  // ═══════════════════════════════════════════
+  const params = new URLSearchParams(location.search);
+  const SALA = params.get('sala') || 'fiesta1';
+
+  let miId = localStorage.getItem(`impostor_id_${SALA}`);
+  let miNombre = localStorage.getItem(`impostor_nombre_${SALA}`);
+  let miRol = null;
+  let estadoActual = null;
+  let jugadores = {};
+  let yaActue = false;
+  let yaVote = false;
+
+  // ═══════════════════════════════════════════
+  // INIT
+  // ═══════════════════════════════════════════
+  window.addEventListener('DOMContentLoaded', () => {
+    if (miId && miNombre) {
+      verificarJugadorExistente();
+    } else {
+      mostrarPantalla('pantalla-entrada');
+    }
+
+    document.getElementById('btn-entrar').addEventListener('click', entrarAlJuego);
+    document.getElementById('nombre-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') entrarAlJuego();
+    });
+  });
+
+  async function verificarJugadorExistente() {
+    const snap = await get(ref(db, `salas/${SALA}/jugadores/${miId}`));
+    if (snap.exists()) {
+      miNombre = snap.val().nombre;
+      iniciarEscucha();
+      mostrarPantalla('pantalla-espera');
+    } else {
+      mostrarPantalla('pantalla-entrada');
+    }
+  }
+
+  async function entrarAlJuego() {
+    const nombre = document.getElementById('nombre-input').value.trim();
+    if (!nombre || nombre.length < 2) {
+      shake('nombre-input');
+      return;
+    }
+
+    // Comprobar que la sala existe y está en lobby
+    const estadoSnap = await get(ref(db, `salas/${SALA}/estado`));
+    const estadoSala = estadoSnap.val();
+    if (estadoSala && estadoSala.fase && estadoSala.fase !== 'lobby') {
+      mostrarError('La partida ya ha comenzado');
+      return;
+    }
+
+    // Registrar jugador
+    const jugRef = push(ref(db, `salas/${SALA}/jugadores`));
+    miId = jugRef.key;
+    miNombre = nombre;
+    localStorage.setItem(`impostor_id_${SALA}`, miId);
+    localStorage.setItem(`impostor_nombre_${SALA}`, miNombre);
+
+    await set(jugRef, {
+      nombre,
+      vivo: true,
+      rol: null,
+      unido: Date.now()
+    });
+
+    iniciarEscucha();
+    mostrarPantalla('pantalla-espera');
+  }
+
+  // ═══════════════════════════════════════════
+  // ESCUCHA FIREBASE
+  // ═══════════════════════════════════════════
+  function iniciarEscucha() {
+    // Escuchar mi jugador
+    onValue(ref(db, `salas/${SALA}/jugadores/${miId}`), snap => {
+      const yo = snap.val();
+      if (!yo) return;
+      if (yo.rol && yo.rol !== miRol) {
+        miRol = yo.rol;
+        mostrarRol(yo);
+      }
+    });
+
+    // Escuchar todos los jugadores
+    onValue(ref(db, `salas/${SALA}/jugadores`), snap => {
+      jugadores = snap.val() || {};
+    });
+
+    // Escuchar estado del juego
+    onValue(ref(db, `salas/${SALA}/estado`), snap => {
+      estadoActual = snap.val();
+      if (!estadoActual) return;
+      manejarFase(estadoActual);
+    });
+  }
+
+  // ═══════════════════════════════════════════
+  // MANEJO DE FASES
+  // ═══════════════════════════════════════════
+  function manejarFase(estado) {
+    const estaVivo = jugadores[miId]?.vivo !== false;
+
+    switch(estado.fase) {
+      case 'lobby':
+        mostrarPantalla('pantalla-espera');
+        break;
+
+      case 'repartiendo_roles':
+        mostrarPantalla('pantalla-rol');
+        break;
+
+      case 'accion':
+        yaActue = false;
+        if (!estaVivo) {
+          mostrarPantalla('pantalla-muerto');
+        } else if (miRol === 'impostor') {
+          mostrarAccionImpostor(estado);
+        } else if (miRol === 'medico') {
+          mostrarAccionMedico(estado);
+        } else {
+          mostrarPantalla('pantalla-inocente-espera');
+        }
+        break;
+
+      case 'debate':
+        mostrarPantalla('pantalla-debate');
+        break;
+
+      case 'votacion':
+        yaVote = false;
+        if (!estaVivo) {
+          mostrarPantalla('pantalla-muerto');
+        } else {
+          mostrarVotacion();
+        }
+        break;
+
+      case 'resultado_voto':
+        mostrarResultadoVoto(estado.resultadoVoto);
+        break;
+
+      case 'revelacion':
+        mostrarRevelacion(estado);
+        break;
+
+      case 'fin':
+        mostrarFin(estado.ganador);
+        break;
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // MOSTRAR ROL
+  // ═══════════════════════════════════════════
+  function mostrarRol(yo) {
+    mostrarPantalla('pantalla-rol');
+    const rolData = {
+      impostor: { emoji: '🔪', nombre: 'IMPOSTOR', desc: 'Elimina a los inocentes. El médico te conoce por nombre — búscalo antes de que te delate.', color: '#c0392b', bg: 'rgba(192,57,43,0.12)' },
+      medico: { emoji: '🩺', nombre: 'MÉDICO', desc: 'Protege a los inocentes cada noche. El impostor sabe quién eres — cuídate.', color: '#5cb85c', bg: 'rgba(92,184,92,0.08)' },
+      inocente: { emoji: '😇', nombre: 'INOCENTE', desc: 'Descubre al impostor y vótalo. Confía en el médico... si es que sigue vivo.', color: '#c8a96e', bg: 'rgba(200,169,110,0.08)' },
+    };
+
+    const r = rolData[yo.rol] || rolData.inocente;
+    document.getElementById('rol-emoji').textContent = r.emoji;
+    document.getElementById('rol-nombre').textContent = r.nombre;
+    document.getElementById('rol-desc').textContent = r.desc;
+    document.getElementById('rol-card').style.borderColor = r.color;
+    document.getElementById('rol-card').style.background = r.bg;
+    document.getElementById('rol-nombre').style.color = r.color;
+
+    // Info extra para impostor
+    if (yo.rol === 'impostor' && yo.sabemedico) {
+      const medico = jugadores[yo.sabemedico];
+      const companeros = yo.companeros?.length > 0 ? yo.companeros.join(', ') : null;
+      document.getElementById('rol-extra').innerHTML = 
+        `<div class="alerta-impostor">
+          🎯 El médico es: <strong>${medico?.nombre || '???'}</strong>
+          ${companeros ? `<br>🤝 Cómplice: <strong>${companeros}</strong>` : ''}
+        </div>`;
+    } else {
+      document.getElementById('rol-extra').innerHTML = '';
+    }
+
+    // Vibrar
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+  }
+
+  // ═══════════════════════════════════════════
+  // ACCIÓN IMPOSTOR
+  // ═══════════════════════════════════════════
+  function mostrarAccionImpostor(estado) {
+    mostrarPantalla('pantalla-accion-impostor');
+    const lista = document.getElementById('lista-victimas');
+    const vivosOtros = Object.entries(jugadores).filter(([id, j]) => id !== miId && j.vivo !== false);
+
+    lista.innerHTML = vivosOtros.map(([id, j]) => `
+      <button class="btn-jugador" onclick="elegirVictima('${id}', '${j.nombre}')">
+        <span class="jugador-nombre">${j.nombre}</span>
+        ${j.rol === 'medico' ? '<span class="tag-medico">⚠️ objetivo</span>' : ''}
+      </button>
+    `).join('');
+
+    document.getElementById('impostor-evento').textContent = estado.evento || '';
+  }
+
+  window.elegirVictima = async function(id, nombre) {
+    if (yaActue) return;
+    yaActue = true;
+    await update(ref(db, `salas/${SALA}/estado`), { accionImpostor: id });
+    document.getElementById('confirmacion-impostor').textContent = `☠️ Has elegido a ${nombre}`;
+    document.querySelectorAll('.btn-jugador').forEach(b => b.disabled = true);
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  };
+
+  // ═══════════════════════════════════════════
+  // ACCIÓN MÉDICO
+  // ═══════════════════════════════════════════
+  function mostrarAccionMedico(estado) {
+    mostrarPantalla('pantalla-accion-medico');
+    const lista = document.getElementById('lista-proteger');
+    const vivos = Object.entries(jugadores).filter(([id, j]) => j.vivo !== false);
+
+    lista.innerHTML = vivos.map(([id, j]) => `
+      <button class="btn-jugador btn-medico" onclick="elegirProtegido('${id}', '${j.nombre}')">
+        <span class="jugador-nombre">${id === miId ? j.nombre + ' (tú)' : j.nombre}</span>
+      </button>
+    `).join('');
+
+    document.getElementById('medico-evento').textContent = estado.evento || '';
+  }
+
+  window.elegirProtegido = async function(id, nombre) {
+    if (yaActue) return;
+    yaActue = true;
+    await update(ref(db, `salas/${SALA}/estado`), { accionMedico: id });
+    document.getElementById('confirmacion-medico').textContent = `💉 Has protegido a ${nombre}`;
+    document.querySelectorAll('.btn-jugador').forEach(b => b.disabled = true);
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 300]);
+  };
+
+  // ═══════════════════════════════════════════
+  // VOTACIÓN
+  // ═══════════════════════════════════════════
+  function mostrarVotacion() {
+    mostrarPantalla('pantalla-votacion');
+    const lista = document.getElementById('lista-votos');
+    const vivosOtros = Object.entries(jugadores).filter(([id, j]) => id !== miId && j.vivo !== false);
+
+    lista.innerHTML = vivosOtros.map(([id, j]) => `
+      <button class="btn-jugador btn-voto" onclick="votar('${id}', '${j.nombre}')">
+        <span class="jugador-nombre">${j.nombre}</span>
+      </button>
+    `).join('');
+  }
+
+  window.votar = async function(id, nombre) {
+    if (yaVote) return;
+    yaVote = true;
+    await update(ref(db, `salas/${SALA}/estado/votos`), { [miId]: id });
+    document.getElementById('confirmacion-voto').textContent = `🗳️ Votaste a ${nombre}`;
+    document.querySelectorAll('.btn-voto').forEach(b => b.disabled = true);
+    if (navigator.vibrate) navigator.vibrate(150);
+  };
+
+  // ═══════════════════════════════════════════
+  // REVELACIÓN
+  // ═══════════════════════════════════════════
+  function mostrarRevelacion(estado) {
+    const soyCadaver = estado.ultimaVictima && jugadores[miId]?.vivo === false 
+      && Object.values(jugadores).find(j => j.nombre === estado.ultimaVictima)?.id === miId;
+    
+    if (jugadores[miId]?.vivo === false) {
+      mostrarPantalla('pantalla-muerto');
+    } else {
+      mostrarPantalla('pantalla-revelacion-movil');
+      document.getElementById('rv-movil').textContent = estado.ultimaVictima 
+        ? `☠️ ${estado.ultimaVictima} fue eliminado` 
+        : estado.ultimoSalvado ? '✨ El médico salvó a alguien' : '🌙 Noche tranquila';
+    }
+  }
+
+  function mostrarResultadoVoto(resultado) {
+    mostrarPantalla('pantalla-resultado-movil');
+    if (!resultado) return;
+    document.getElementById('rv2-movil').textContent = resultado.empate 
+      ? '🤝 Empate — nadie expulsado' 
+      : resultado.masVotadoNombre 
+        ? `${resultado.masVotadoNombre} — ${resultado.masVotadoRol === 'impostor' ? '🔪 ERA EL IMPOSTOR' : resultado.masVotadoRol === 'medico' ? '🩺 ERA EL MÉDICO' : '😇 ERA INOCENTE'}`
+        : '';
+  }
+
+  function mostrarFin(ganador) {
+    mostrarPantalla('pantalla-fin-movil');
+    const esImpostor = ganador === 'impostor';
+    const yoGane = (miRol === 'impostor' && esImpostor) || (miRol !== 'impostor' && !esImpostor);
+    document.getElementById('fin-movil-titulo').textContent = yoGane ? '🏆 ¡GANASTE!' : '💀 PERDISTE';
+    document.getElementById('fin-movil-sub').textContent = esImpostor ? 'Los impostores ganan' : 'Los inocentes ganan';
+    document.getElementById('fin-movil-titulo').style.color = yoGane ? '#c8a96e' : '#c0392b';
+    if (navigator.vibrate) navigator.vibrate(yoGane ? [200,100,200,100,400] : [500]);
+  }
+
+  // ═══════════════════════════════════════════
+  // HELPERS
+  // ═══════════════════════════════════════════
+  function mostrarPantalla(id) {
+    document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+    document.getElementById(id)?.classList.add('activa');
+  }
+
+  function mostrarError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.style.opacity = '1';
+    setTimeout(() => el.style.opacity = '0', 3000);
+  }
+
+  function shake(id) {
+    const el = document.getElementById(id);
+    el.classList.add('shake');
+    setTimeout(() => el.classList.remove('shake'), 500);
+  }
+</script>
+<style>
+  :root {
+    --negro: #0a0a0f;
+    --rojo: #c0392b;
+    --oro: #c8a96e;
+    --crema: #f0e6d0;
+    --gris: #1a1a22;
+    --sangre: #8b0000;
+    --verde: #5cb85c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--negro);
+    color: var(--crema);
+    font-family: 'Crimson Pro', serif;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    user-select: none;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(139,0,0,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .pantalla {
+    display: none;
+    position: fixed;
+    inset: 0;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 24px 32px;
+    overflow-y: auto;
+  }
+  .pantalla.activa { display: flex; }
+
+  /* ── LOGO PEQUEÑO ── */
+  .logo-mini {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    letter-spacing: 6px;
+    color: rgba(200,169,110,0.4);
+    margin-bottom: 8px;
+    align-self: flex-start;
+  }
+
+  .linea-oro {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--oro), transparent);
+    margin: 12px 0;
+  }
+
+  /* ── PANTALLA ENTRADA ── */
+  #pantalla-entrada {
+    justify-content: center;
+    gap: 24px;
+  }
+
+  .titulo-entrada {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 8px;
+    color: var(--oro);
+    text-align: center;
+    line-height: 0.9;
+  }
+
+  .subtitulo-entrada {
+    font-size: 16px;
+    color: rgba(240,230,208,0.5);
+    text-align: center;
+    font-style: italic;
+  }
+
+  .input-nombre {
+    width: 100%;
+    max-width: 300px;
+    background: rgba(200,169,110,0.05);
+    border: 1px solid rgba(200,169,110,0.3);
+    border-bottom: 2px solid var(--oro);
+    color: var(--crema);
+    font-family: 'Crimson Pro', serif;
+    font-size: 22px;
+    padding: 14px 16px;
+    text-align: center;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .input-nombre:focus {
+    border-color: var(--oro);
+    background: rgba(200,169,110,0.08);
+  }
+
+  .input-nombre::placeholder {
+    color: rgba(240,230,208,0.25);
+  }
+
+  .input-nombre.shake {
+    animation: shakeAnim 0.4s ease;
+    border-color: var(--rojo);
+  }
+
+  @keyframes shakeAnim {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  .btn-entrar {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 5px;
+    font-size: 20px;
+    padding: 16px 48px;
+    background: var(--rojo);
+    color: var(--crema);
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    max-width: 300px;
+    transition: all 0.2s;
+    active: scale(0.97);
+  }
+
+  .btn-entrar:active {
+    transform: scale(0.97);
+    background: var(--sangre);
+  }
+
+  #error-msg {
+    color: var(--rojo);
+    font-size: 14px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  /* ── PANTALLA ESPERA ── */
+  #pantalla-espera {
+    justify-content: center;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .espera-emoji {
+    font-size: 64px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .espera-titulo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 6px;
+    color: var(--oro);
+  }
+
+  .espera-nombre {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--crema);
+  }
+
+  .espera-sub {
+    font-size: 15px;
+    color: rgba(240,230,208,0.4);
+    font-style: italic;
+  }
+
+  .dots::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+  }
+  @keyframes dots {
+    0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; }
+  }
+
+  /* ── PANTALLA ROL ── */
+  #pantalla-rol {
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .rol-instruccion {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    color: rgba(240,230,208,0.3);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  #rol-card {
+    width: 100%;
+    max-width: 320px;
+    border: 1px solid var(--oro);
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    animation: revelarCard 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes revelarCard {
+    from { opacity: 0; transform: scale(0.7) rotateY(90deg); }
+    to { opacity: 1; transform: scale(1) rotateY(0); }
+  }
+
+  #rol-emoji { font-size: 56px; }
+
+  #rol-nombre {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 8px;
+  }
+
+  #rol-desc {
+    font-size: 15px;
+    color: rgba(240,230,208,0.7);
+    text-align: center;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .alerta-impostor {
+    margin-top: 8px;
+    padding: 10px 16px;
+    background: rgba(192,57,43,0.15);
+    border: 1px solid var(--rojo);
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  /* ── ACCIONES ── */
+  .accion-titulo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 6px;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .accion-evento-mini {
+    font-size: 13px;
+    color: var(--oro);
+    text-align: center;
+    font-style: italic;
+    margin-bottom: 16px;
+    padding: 8px 16px;
+    border-left: 2px solid var(--rojo);
+    background: rgba(192,57,43,0.05);
+    max-width: 320px;
+  }
+
+  .accion-instruccion {
+    font-size: 14px;
+    color: rgba(240,230,208,0.5);
+    text-align: center;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+
+  .lista-jugadores-scroll {
+    width: 100%;
+    max-width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    max-height: 50vh;
+    padding-bottom: 20px;
+  }
+
+  .btn-jugador {
+    width: 100%;
+    background: rgba(200,169,110,0.05);
+    border: 1px solid rgba(200,169,110,0.2);
+    color: var(--crema);
+    font-family: 'Crimson Pro', serif;
+    font-size: 20px;
+    padding: 14px 20px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .btn-jugador:active:not(:disabled) {
+    transform: scale(0.97);
+    background: rgba(200,169,110,0.15);
+    border-color: var(--oro);
+  }
+
+  .btn-jugador:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .btn-jugador.btn-medico {
+    border-color: rgba(92,184,92,0.3);
+  }
+  .btn-jugador.btn-medico:active:not(:disabled) {
+    border-color: var(--verde);
+    background: rgba(92,184,92,0.1);
+  }
+
+  .btn-jugador.btn-voto {
+    border-color: rgba(192,57,43,0.3);
+  }
+  .btn-jugador.btn-voto:active:not(:disabled) {
+    border-color: var(--rojo);
+    background: rgba(192,57,43,0.1);
+  }
+
+  .tag-medico {
+    font-size: 12px;
+    color: var(--rojo);
+    letter-spacing: 1px;
+  }
+
+  .confirmacion {
+    font-size: 18px;
+    color: var(--oro);
+    text-align: center;
+    min-height: 28px;
+    font-style: italic;
+    margin-top: 12px;
+  }
+
+  /* ── PANTALLA INOCENTE ESPERA ── */
+  #pantalla-inocente-espera {
+    justify-content: center;
+    text-align: center;
+    gap: 16px;
+  }
+
+  /* ── PANTALLA DEBATE ── */
+  #pantalla-debate {
+    justify-content: center;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .debate-big {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    letter-spacing: 8px;
+    color: var(--oro);
+  }
+
+  .debate-consejo {
+    font-size: 16px;
+    color: rgba(240,230,208,0.6);
+    font-style: italic;
+    max-width: 280px;
+    line-height: 1.7;
+  }
+
+  /* ── PANTALLA MUERTO ── */
+  #pantalla-muerto {
+    justify-content: center;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .muerto-emoji { font-size: 80px; }
+  .muerto-titulo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 8px;
+    color: var(--rojo);
+  }
+
+  /* ── PANTALLAS REVELACIÓN / RESULTADO ── */
+  .mensaje-central {
+    font-size: 20px;
+    text-align: center;
+    line-height: 1.6;
+    max-width: 300px;
+    color: rgba(240,230,208,0.85);
+  }
+
+  /* ── FIN ── */
+  #fin-movil-titulo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    letter-spacing: 8px;
+    text-align: center;
+    animation: pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  #fin-movil-sub {
+    font-size: 18px;
+    color: rgba(240,230,208,0.5);
+    font-style: italic;
+    text-align: center;
+  }
+
+  .mi-rol-fin {
+    font-size: 16px;
+    color: rgba(240,230,208,0.4);
+    letter-spacing: 2px;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PANTALLA: ENTRADA NOMBRE -->
+<!-- ══════════════════════════════════════ -->
+<div class="pantalla activa" id="pantalla-entrada">
+  <div class="titulo-entrada">EL<br>IMPOSTOR</div>
+  <div class="subtitulo-entrada">¿Quién eres esta noche?</div>
+  <div class="linea-oro" style="max-width:300px"></div>
+  <input class="input-nombre" id="nombre-input" type="text" placeholder="Tu nombre" maxlength="16" autocomplete="off" autocapitalize="words" />
+  <button class="btn-entrar" id="btn-entrar">ENTRAR</button>
+  <div id="error-msg"></div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PANTALLA: ESPERA -->
+<!-- ══════════════════════════════════════ -->
+<div class="pantalla" id="pantalla-espera">
+  <div class="espera-emoji">🎭</div>
+  <div class="espera-titulo">ESPERANDO</div>
+  <div class="espera-nombre" id="espera-nombre-display"></div>
+  <div class="espera-sub">El anfitrión iniciará la partida<span class="dots"></span></div>
+  <script>
+    setTimeout(() => {
+      const n = localStorage.getItem('impostor_nombre_' + new URLSearchParams(location.search).get('sala') || 'fiesta1');
+      if (n) document.getElementById('espera-nombre-display').textContent = n;
+    }, 100);
+  </script>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PANTALLA: ROL -->
+<!-- ══════════════════════════════════════ -->
+<div class="pantalla" id="pantalla-rol">
+  <div class="logo-mini">EL IMPOSTOR</div>
+  <div class="rol-instruccion">TU ROL SECRETO — NO LO MUESTRES</div>
+  <div class="linea-oro"></div>
+  <div id="rol-card">
+    <div id="rol-emoji">🎭</div>
+    <div id="rol-nombre">???</div>
+    <div id="rol-desc"></div>
+    <div id="rol-extra"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PANTALLA: ACCIÓN IMPOSTOR -->
+<!-- ══════════════════════════════════════ -->
+<div class="pantalla" id="pantalla-accion-impostor">
+  <div class="logo-mini">NOCHE OSCURA</div>
+  <div class="accion-titulo" style="color:var(--rojo)">🔪 ELIGE TU VÍCTIMA</div>
+  <div class="accion-evento-mini" id="impostor-evento"></div>
+  <div class="accion-instruccion">Nadie sabrá que fuiste tú</div>
+  <div class="lista-jugadores-scroll" id="lista-victimas"></div>
+  <div class="confirmacion" id="confirmacion-impostor"></div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PANTALLA: ACCIÓN MÉDICO -->
+<!-- ══════════════════════════════════════ -->
+<div class="pantalla" id="pantalla-accion-medico">
+  <div class="logo-mini">NOCHE OSCURA</div>
+  <div class="accion-titulo" style="color:var(--verde)">🩺 ¿A QUIÉN PROTEGES?</div>
+  <div class="accion-evento-mini" id="medico-evento"></div>
+  <div class="accion-instruccion">Una sola persona esta noche</div>
+  <div class="lista-jugadores-scroll" id="lista-proteger"></div>
+  <div class="confirmacion" id="confirmacion-medico"></div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PANTALLA: INOCENTE ESPERA NOCHE -->
+<!-- ══════════════════════════════════════ -->
+<div class="pantalla" id="pantalla-inocente-espera">
+  <div style="font-size:64px; animation: float 3s ease-in-out infinite">😇</div>
+  <div class="accion-titulo" style="color:var(--oro)">NOCHE</div>
+  <div class="debate-consejo">Permanece en silencio.<br>Algo pasa en la oscuridad<span class="dots"></span></div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PANTALLA: DEBATE -->
+<!-- ══════════════════════════════════════ -->
+<div class="pantalla" id="pantalla-debate">
+  <div class="debate-big">💬</div>
+  <div class="accion-titulo" style="color:var(--oro)">DEBATE</div>
+  <div class="debate-consejo">Habla, observa, desconfía.<br>
+    <span style="color:var(--rojo)">El impostor ya ha actuado.</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PANTALLA: VOTACIÓN -->
+<!-- ══════════════════════════════════════ -->
+<div class="pantalla" id="pantalla-votacion">
+  <div class="logo-mini">VOTACIÓN</div>
+  <div class="accion-titulo" style="color:var(--rojo)">🗳️ ¿QUIÉN ES EL IMPOSTOR?</div>
+  <div class="accion-instruccion">Tu voto es anónimo</div>
+  <div class="lista-jugadores-scroll" id="lista-votos"></div>
+  <div class="confirmacion" id="confirmacion-voto"></div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PANTALLA: REVELACIÓN MÓVIL -->
+<!-- ══════════════════════════════════════ -->
+<div class="pantalla" id="pantalla-revelacion-movil">
+  <div style="font-size:64px; margin-bottom:16px">🌙</div>
+  <div class="mensaje-central" id="rv-movil"></div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PANTALLA: RESULTADO VOTO MÓVIL -->
+<!-- ══════════════════════════════════════ -->
+<div class="pantalla" id="pantalla-resultado-movil">
+  <div style="font-size:48px; margin-bottom:16px">⚖️</div>
+  <div class="mensaje-central" id="rv2-movil" style="font-size:22px; font-weight:600;"></div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PANTALLA: MUERTO -->
+<!-- ══════════════════════════════════════ -->
+<div class="pantalla" id="pantalla-muerto">
+  <div class="muerto-emoji">💀</div>
+  <div class="muerto-titulo">ELIMINADO</div>
+  <div class="debate-consejo" style="margin-top:12px">Ya no puedes actuar.<br>Pero puedes disfrutar del espectáculo.</div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PANTALLA: FIN -->
+<!-- ══════════════════════════════════════ -->
+<div class="pantalla" id="pantalla-fin-movil">
+  <div id="fin-movil-titulo">FIN</div>
+  <div id="fin-movil-sub"></div>
+  <div class="linea-oro" style="max-width:200px; margin-top:24px;"></div>
+  <div class="mi-rol-fin" id="mi-rol-fin"></div>
+</div>
+
+<style>
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+</style>
+</body>
+</html>

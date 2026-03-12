@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EL IMPOSTOR</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAib6PDnV_u8GuDp-PnJvop91qv9JHfffc",
+    authDomain: "impostor-322cc.firebaseapp.com",
+    databaseURL: "https://impostor-322cc-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "impostor-322cc",
+    storageBucket: "impostor-322cc.firebasestorage.app",
+    messagingSenderId: "808449155212",
+    appId: "1:808449155212:web:c32ca0565b083056f31ba9"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  const SALA       = "fiesta1";
+  const MOBILE_URL = "https://mari0isn00-netizen.github.io/el-impostor/movil.html?sala=fiesta1";
+  const salaRef      = ref(db, `salas/${SALA}`);
+  const jugadoresRef = ref(db, `salas/${SALA}/jugadores`);
+  const estadoRef    = ref(db, `salas/${SALA}/estado`);
+
+  let estadoActual  = null;
+  let jugadores     = {};
+  let timerInterval = null;
+
+  window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('url-movil').textContent = MOBILE_URL;
+    new QRCode(document.getElementById('qrcode'), {
+      text: MOBILE_URL, width: 160, height: 160,
+      colorDark: '#c8a96e', colorLight: '#07070d',
+    });
+    escucharJugadores();
+    escucharEstado();
+    document.getElementById('btn-iniciar').addEventListener('click', iniciarJuego);
+    document.getElementById('btn-reset').addEventListener('click', resetJuego);
+    document.getElementById('btn-siguiente').addEventListener('click', siguienteRonda);
+    document.getElementById('btn-skip-accion').addEventListener('click',   () => { clearInterval(timerInterval); procesarAcciones(); });
+    document.getElementById('btn-skip-debate').addEventListener('click',   () => { clearInterval(timerInterval); iniciarVotacion(); });
+    document.getElementById('btn-skip-votacion').addEventListener('click', () => { clearInterval(timerInterval); procesarVotos(); });
+  });
+
+  function escucharJugadores() {
+    onValue(jugadoresRef, snap => {
+      jugadores = snap.val() || {};
+      renderLobby();
+    });
+  }
+  function escucharEstado() {
+    onValue(estadoRef, snap => { estadoActual = snap.val(); });
+  }
+
+  // ── LOBBY ─────────────────────────────────
+  function renderLobby() {
+    const arr = Object.values(jugadores);
+    document.getElementById('player-count').textContent = arr.length;
+    document.getElementById('lista-jugadores').innerHTML = arr.map((j, i) => `
+      <div class="player-chip" style="animation-delay:${i * 0.07}s">
+        <span class="chip-dot ${j.vivo === false ? 'muerto' : ''}"></span>${j.nombre}
+      </div>`).join('');
+    const ok = arr.length >= 4;
+    document.getElementById('btn-iniciar').disabled = !ok || (estadoActual && estadoActual.fase !== 'lobby');
+    document.getElementById('min-players-msg').style.opacity = arr.length < 4 ? '1' : '0';
+  }
+
+  // ── INICIAR ────────────────────────────────
+  async function iniciarJuego() {
+    const arr = Object.entries(jugadores);
+    if (arr.length < 4) return;
+    const idx  = shuffleArray([...Array(arr.length).keys()]);
+    const nImp = arr.length >= 10 ? 2 : 1;
+    const roles = {};
+    idx.forEach((orig, pos) => {
+      const [id] = arr[orig];
+      roles[id] = pos < nImp ? 'impostor' : pos === nImp ? 'medico' : 'inocente';
+    });
+    const updates = {};
+    arr.forEach(([id]) => {
+      updates[`salas/${SALA}/jugadores/${id}/rol`]  = roles[id];
+      updates[`salas/${SALA}/jugadores/${id}/vivo`] = true;
+    });
+    const impostores = arr.filter(([id]) => roles[id] === 'impostor').map(([,j]) => j.nombre);
+    const medicoPar  = arr.find(([id]) => roles[id] === 'medico');
+    arr.forEach(([id]) => {
+      if (roles[id] === 'impostor') {
+        updates[`salas/${SALA}/jugadores/${id}/sabemedico`] = medicoPar?.[0] ?? null;
+        updates[`salas/${SALA}/jugadores/${id}/companeros`] = impostores.filter(n => n !== jugadores[id]?.nombre);
+      }
+    });
+    await update(ref(db), updates);
+    await set(estadoRef, { fase:'repartiendo_roles', ronda:1, maxRondas:5, accionImpostor:null, accionMedico:null, evento:null, ultimaVictima:null, ultimoSalvado:null, votos:{}, resultadoVoto:null });
+    mostrarPantalla('pantalla-roles');
+    setTimeout(iniciarFaseAccion, 6000);
+  }
+
+  // ── FASES ──────────────────────────────────
+  async function iniciarFaseAccion() {
+    const evento = eventoAleatorio();
+    await update(estadoRef, { fase:'accion', accionImpostor:null, accionMedico:null, evento, votos:{} });
+    mostrarPantalla('pantalla-accion');
+    document.getElementById('accion-evento').textContent = evento;
+    iniciarTimer(45, procesarAcciones);
+  }
+
+  async function procesarAcciones() {
+    const e    = (await get(estadoRef)).val();
+    const jugs = (await get(jugadoresRef)).val() || {};
+    const vic  = e.accionImpostor, sal = e.accionMedico;
+    let ultimaVictima = null, ultimoSalvado = null;
+    if (vic) {
+      if (vic === sal) { ultimoSalvado = jugs[vic]?.nombre || '???'; }
+      else             { ultimaVictima = jugs[vic]?.nombre || '???'; await update(ref(db,`salas/${SALA}/jugadores/${vic}`), {vivo:false}); }
+    }
+    const medicoMurio = vic && vic !== sal && jugs[vic]?.rol === 'medico';
+    await update(estadoRef, { fase:'revelacion', ultimaVictima, ultimoSalvado, medicoMurio: !!medicoMurio });
+    mostrarPantalla('pantalla-revelacion');
+    document.getElementById('rv-mensaje').textContent =
+      ultimaVictima ? '☠️ Esta noche alguien ha caído...' :
+      ultimoSalvado ? '💉 El médico salvó a alguien esta noche...' :
+                      '🌙 La noche ha sido tranquila... por ahora.';
+    document.getElementById('rv-victima').textContent = ultimaVictima ? `💀 ${ultimaVictima} ha sido eliminado` : '';
+    document.getElementById('rv-salvado').textContent = ultimoSalvado ? '✨ Alguien fue salvado esta noche' : '';
+    document.getElementById('rv-extra').textContent   = medicoMurio ? '⚠️ El médico ha caído... los inocentes pierden su protección' : '';
+    const jugs2 = (await get(jugadoresRef)).val() || {};
+    const fin   = verificarFin(jugs2);
+    if (fin) { setTimeout(() => mostrarFin(fin, jugs2), 4000); return; }
+    setTimeout(iniciarDebate, 5000);
+  }
+
+  async function iniciarDebate() {
+    const ronda = (await get(estadoRef)).val()?.ronda || 1;
+    await update(estadoRef, { fase:'debate' });
+    mostrarPantalla('pantalla-debate');
+    document.getElementById('debate-ronda').textContent = `Ronda ${ronda}`;
+    iniciarTimer(90, iniciarVotacion);
+  }
+
+  async function iniciarVotacion() {
+    await update(estadoRef, { fase:'votacion', votos:{} });
+    mostrarPantalla('pantalla-votacion');
+    iniciarTimer(30, procesarVotos);
+  }
+
+  async function procesarVotos() {
+    const votos = (await get(estadoRef)).val()?.votos || {};
+    const jugs  = (await get(jugadoresRef)).val() || {};
+    const cnt   = {};
+    Object.values(votos).forEach(id => { cnt[id] = (cnt[id]||0)+1; });
+    let max = 0, masVotado = null, empate = false;
+    Object.entries(cnt).forEach(([id,v]) => {
+      if (v > max)      { max = v; masVotado = id; empate = false; }
+      else if (v === max) empate = true;
+    });
+    const nombre = masVotado ? jugs[masVotado]?.nombre : null;
+    const rol    = masVotado ? jugs[masVotado]?.rol    : null;
+    await update(estadoRef, { fase:'resultado_voto', resultadoVoto:{ masVotado, masVotadoNombre:nombre, masVotadoRol:rol, maxVotos:max, empate } });
+    if (!empate && masVotado && rol === 'impostor') await update(ref(db,`salas/${SALA}/jugadores/${masVotado}`), {vivo:false});
+    mostrarPantalla('pantalla-resultado-voto');
+    if (empate || !masVotado) {
+      document.getElementById('rv2-titulo').textContent    = '🤝 EMPATE';
+      document.getElementById('rv2-subtitulo').textContent = 'Nadie es expulsado esta ronda';
+      document.getElementById('rv2-rol').textContent       = '';
+    } else {
+      document.getElementById('rv2-titulo').textContent    = nombre;
+      document.getElementById('rv2-subtitulo').textContent = `recibió ${max} voto${max!==1?'s':''}`;
+      document.getElementById('rv2-rol').textContent       = `Era... ${emoji(rol)} ${rolNombre(rol).toUpperCase()}`;
+    }
+    const jugs2 = (await get(jugadoresRef)).val() || {};
+    const fin   = verificarFin(jugs2);
+    if (fin) { setTimeout(() => mostrarFin(fin, jugs2), 5000); return; }
+    document.getElementById('btn-siguiente').style.display = 'block';
+  }
+
+  async function siguienteRonda() {
+    document.getElementById('btn-siguiente').style.display = 'none';
+    const ronda = ((await get(estadoRef)).val()?.ronda || 1) + 1;
+    await update(estadoRef, { ronda });
+    iniciarFaseAccion();
+  }
+
+  // ── FIN ────────────────────────────────────
+  function verificarFin(jugs) {
+    const vivos  = Object.values(jugs).filter(j => j.vivo !== false);
+    const impost = vivos.filter(j => j.rol === 'impostor');
+    const inoce  = vivos.filter(j => j.rol !== 'impostor');
+    if (impost.length === 0)            return 'inocentes';
+    if (impost.length >= inoce.length)  return 'impostor';
+    return null;
+  }
+
+  async function mostrarFin(ganador, jugs) {
+    clearInterval(timerInterval);
+    await update(estadoRef, { fase:'fin', ganador });
+    mostrarPantalla('pantalla-fin');
+    document.getElementById('fin-titulo').textContent    = ganador === 'impostor' ? '🔪 LOS IMPOSTORES GANAN' : '✨ LOS INOCENTES GANAN';
+    document.getElementById('fin-subtitulo').textContent = ganador === 'impostor' ? 'La oscuridad se ha apoderado de la fiesta' : 'La verdad ha triunfado esta noche';
+    document.getElementById('roles-finales').innerHTML   = Object.values(jugs).map((j,i) => `
+      <div class="rol-final ${j.rol}" style="animation-delay:${i*0.08}s">
+        <span>${emoji(j.rol)}</span><strong>${j.nombre}</strong><small>${rolNombre(j.rol)}</small>
+      </div>`).join('');
+  }
+
+  async function resetJuego() {
+    clearInterval(timerInterval);
+    await set(salaRef, { jugadores:{}, estado:{ fase:'lobby' } });
+    mostrarPantalla('pantalla-lobby');
+    document.getElementById('btn-siguiente').style.display = 'none';
+  }
+
+  // ── HELPERS ────────────────────────────────
+  function mostrarPantalla(id) {
+    document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+    document.getElementById(id)?.classList.add('activa');
+  }
+  function iniciarTimer(seg, cb) {
+    clearInterval(timerInterval);
+    let t = seg;
+    const el = document.getElementById('timer'), cr = document.getElementById('timer-circle'), C = 283;
+    const tick = () => {
+      if (el) el.textContent = t;
+      if (cr) { cr.style.strokeDashoffset = C*(1-t/seg); cr.style.stroke = t<=10?'#ff4444':t<=20?'#ffaa00':'#c8a96e'; }
+    };
+    tick();
+    timerInterval = setInterval(() => { t--; tick(); if(t<=0){ clearInterval(timerInterval); cb(); }}, 1000);
+  }
+  function emoji(r) { return {impostor:'🔪',medico:'🩺',inocente:'😇'}[r]||'❓'; }
+  function rolNombre(r) { return {impostor:'Impostor',medico:'Médico',inocente:'Inocente'}[r]||'???'; }
+  function eventoAleatorio() {
+    const e = [
+      '⚡ Apagón repentino — el médico no puede actuar esta ronda',
+      '👁️ Alguien vio una sombra moverse entre los invitados',
+      '🍷 La copa de alguien fue envenenada... ¿de quién?',
+      '🕯️ Solo una vela ilumina la sala esta noche',
+      '🔊 Un grito rompe el silencio... nadie sabe de dónde vino',
+      '🌩️ Tormenta — nadie puede salir ni entrar',
+      '🎭 Noche de máscaras — todos mienten un poco esta noche',
+      '🔮 El impostor siente que alguien le sospecha esta noche',
+      '🩸 Un rastro de sangre encontrado cerca de la puerta',
+      '📵 Los móviles fallan... las acciones se hacen a ciegas',
+    ];
+    return e[Math.floor(Math.random()*e.length)];
+  }
+  function shuffleArray(a) {
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+    return a;
+  }
+</script>
+
+<style>
+  :root {
+    --negro: #07070d;
+    --rojo:  #b83232;
+    --oro:   #c8a96e;
+    --crema: #ede5d0;
+    --sangre:#7a0000;
+    --verde: #4a9e5c;
+  }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--negro);
+    color: var(--crema);
+    font-family: 'Crimson Pro', serif;
+    height: 100vh; overflow: hidden; position: relative;
+  }
+
+  /* Fondo atmosférico */
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse 60% 80% at 12% 50%, rgba(160,40,10,0.08) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 80% at 88% 50%, rgba(160,40,10,0.08) 0%, transparent 65%),
+      radial-gradient(ellipse 100% 40% at 50% 105%, rgba(90,10,0,0.18) 0%, transparent 55%);
+  }
+
+  /* Partículas */
+  .particula {
+    position:fixed; border-radius:50%;
+    background:rgba(200,169,110,0.35);
+    animation: flotar linear infinite;
+    pointer-events:none;
+  }
+  @keyframes flotar {
+    0%  { transform:translateY(105vh) translateX(0); opacity:0; }
+    8%  { opacity:1; }
+    92% { opacity:0.5; }
+    100%{ transform:translateY(-8vh) translateX(20px); opacity:0; }
+  }
+
+  /* Gotas */
+  .gota {
+    position:fixed; top:0; width:2px;
+    background:linear-gradient(180deg, var(--sangre) 0%, rgba(120,0,0,0.25) 60%, transparent 100%);
+    animation:gotear ease-in infinite; opacity:0; border-radius:0 0 2px 2px;
+  }
+  @keyframes gotear {
+    0%  { height:0;     opacity:0; }
+    12% { opacity:0.8; }
+    100%{ height:150px; opacity:0; }
+  }
+
+  .pantalla {
+    display:none; position:fixed; inset:0; z-index:1;
+    flex-direction:column; align-items:center; justify-content:center; padding:60px;
+  }
+  .pantalla.activa { display:flex; }
+
+  /* Logo */
+  .logo-tv {
+    position:fixed; top:26px; left:50%; transform:translateX(-50%);
+    font-family:'Bebas Neue', sans-serif;
+    font-size:clamp(20px,2.8vw,36px); letter-spacing:12px;
+    color:var(--oro);
+    text-shadow:0 0 60px rgba(200,169,110,0.2), 0 0 120px rgba(200,169,110,0.08);
+    z-index:100; white-space:nowrap;
+  }
+
+  .sep {
+    width:100%; max-width:700px; height:1px;
+    background:linear-gradient(90deg,transparent,var(--oro),transparent);
+    opacity:0.3; margin:14px 0;
+  }
+
+  /* Timer */
+  .timer-wrap { position:fixed; top:20px; right:36px; z-index:200; display:none; }
+  .timer-svg  { transform:rotate(-90deg); }
+  .timer-bg   { fill:none; stroke:rgba(200,169,110,0.07); stroke-width:5; }
+  #timer-circle { fill:none; stroke:var(--oro); stroke-width:5; stroke-dasharray:283; stroke-dashoffset:0; stroke-linecap:round; transition:stroke-dashoffset 1s linear,stroke 0.3s; }
+  #timer { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--oro); }
+
+  /* ── LOBBY ─────────────────────────────── */
+  #pantalla-lobby { justify-content:center; gap:0; padding-top:70px; }
+
+  .lobby-titulo {
+    font-family:'Bebas Neue', sans-serif;
+    font-size:clamp(72px,13vw,170px); letter-spacing:18px; line-height:0.85; text-align:center;
+    text-shadow:0 0 100px rgba(184,50,50,0.35), 0 0 220px rgba(184,50,50,0.12);
+    animation:respira 9s ease-in-out infinite;
+  }
+  @keyframes respira {
+    0%,100% { text-shadow:0 0 100px rgba(184,50,50,0.35),0 0 220px rgba(184,50,50,0.12); }
+    50%     { text-shadow:0 0 140px rgba(184,50,50,0.55),0 0 280px rgba(184,50,50,0.2); }
+  }
+
+  .lobby-subtitulo {
+    font-style:italic; font-size:clamp(13px,1.6vw,20px); letter-spacing:5px;
+    color:rgba(237,229,208,0.3); text-align:center; margin-top:10px; margin-bottom:28px;
+  }
+
+  .lobby-bottom {
+    display:flex; gap:80px; align-items:flex-start;
+    justify-content:center; width:100%; max-width:1100px; margin-top:10px;
+  }
+
+  .lobby-url-box { display:flex; flex-direction:column; gap:10px; }
+  .url-label { font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:5px; color:rgba(200,169,110,0.4); }
+  #url-movil {
+    font-family:monospace; font-size:clamp(9px,0.9vw,13px);
+    color:var(--oro); background:rgba(200,169,110,0.05);
+    border:1px solid rgba(200,169,110,0.18); padding:8px 14px;
+    word-break:break-all; max-width:340px; line-height:1.6;
+  }
+
+  .lobby-acciones { display:flex; flex-direction:column; gap:10px; margin-top:18px; }
+
+  .lobby-jugadores { flex:1; max-width:580px; }
+
+  .jugadores-header { display:flex; align-items:baseline; gap:14px; margin-bottom:14px; }
+  .jugadores-label  { font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:5px; color:rgba(200,169,110,0.4); }
+  #player-count     { font-family:'Bebas Neue',sans-serif; font-size:44px; color:var(--rojo); line-height:1; }
+
+  #lista-jugadores { display:flex; flex-wrap:wrap; gap:8px; min-height:44px; }
+
+  .player-chip {
+    display:flex; align-items:center; gap:8px;
+    background:rgba(200,169,110,0.05); border:1px solid rgba(200,169,110,0.15);
+    padding:7px 16px; font-size:clamp(13px,1.3vw,17px);
+    animation:chipIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes chipIn { from{opacity:0;transform:scale(0.7) translateY(-8px);} to{opacity:1;transform:scale(1) translateY(0);} }
+
+  .chip-dot { width:7px; height:7px; border-radius:50%; background:var(--oro); flex-shrink:0; animation:pulsar 2s ease-in-out infinite; }
+  .chip-dot.muerto { background:var(--sangre); animation:none; }
+  @keyframes pulsar { 0%,100%{opacity:1;} 50%{opacity:0.25;} }
+
+  #min-players-msg { font-size:13px; font-style:italic; color:rgba(237,229,208,0.28); transition:opacity 0.3s; }
+
+  /* Botones */
+  .btn { font-family:'Bebas Neue',sans-serif; letter-spacing:5px; border:none; cursor:pointer; transition:all 0.18s; }
+  .btn-primario { font-size:19px; padding:13px 42px; background:var(--rojo); color:var(--crema); }
+  .btn-primario:hover:not(:disabled) { background:#d43e3e; transform:translateY(-2px); box-shadow:0 6px 26px rgba(184,50,50,0.4); }
+  .btn-primario:disabled { opacity:0.22; cursor:not-allowed; }
+  .btn-skip  { font-size:12px; padding:7px 20px; background:transparent; color:rgba(237,229,208,0.3); border:1px solid rgba(237,229,208,0.12); letter-spacing:4px; }
+  .btn-skip:hover { color:var(--crema); border-color:rgba(237,229,208,0.38); }
+  .btn-reset { font-size:11px; padding:6px 18px; background:transparent; color:rgba(200,169,110,0.35); border:1px solid rgba(200,169,110,0.18); letter-spacing:4px; }
+  .btn-reset:hover { color:var(--oro); }
+
+  .controles-bottom { position:fixed; bottom:26px; right:34px; display:flex; flex-direction:column; gap:8px; z-index:300; }
+  #btn-siguiente { display:none; }
+
+  /* Fases */
+  .fase-titulo {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(54px,10vw,128px); letter-spacing:14px;
+    text-align:center; line-height:0.88;
+    animation:entrar 0.7s cubic-bezier(0.34,1.2,0.64,1);
+  }
+  .fase-subtitulo {
+    font-style:italic; font-size:clamp(15px,2vw,25px);
+    color:rgba(237,229,208,0.48); text-align:center; margin-top:18px;
+    animation:entrar 0.6s ease 0.15s both;
+  }
+  @keyframes entrar { from{opacity:0;transform:translateY(26px);} to{opacity:1;transform:translateY(0);} }
+
+  /* Acción */
+  #pantalla-accion { gap:0; }
+  #accion-evento {
+    max-width:660px; font-size:clamp(15px,1.9vw,23px); font-style:italic;
+    color:var(--oro); text-align:center; padding:18px 30px;
+    border-left:3px solid var(--rojo); background:rgba(184,50,50,0.04);
+    margin-top:26px; line-height:1.55; animation:entrar 0.6s ease 0.3s both;
+  }
+  .instruccion-movil {
+    margin-top:34px; font-size:clamp(11px,1.1vw,15px); letter-spacing:4px;
+    color:rgba(237,229,208,0.2); animation:pulsar 2.5s ease-in-out infinite;
+  }
+  @keyframes pulsar { 0%,100%{opacity:0.2;} 50%{opacity:0.7;} }
+
+  /* Debate */
+  .debate-instrucciones {
+    font-size:clamp(15px,1.9vw,23px); color:rgba(237,229,208,0.58);
+    text-align:center; line-height:2; margin-top:18px;
+    animation:entrar 0.6s ease 0.3s both;
+  }
+
+  /* Revelación */
+  #rv-mensaje  { font-family:'Bebas Neue',sans-serif; font-size:clamp(34px,6vw,70px); letter-spacing:8px; text-align:center; animation:entrar 0.6s ease; }
+  #rv-victima  { font-size:clamp(20px,3.5vw,42px); color:var(--rojo); margin-top:18px; animation:entrar 0.5s ease 0.3s both; }
+  #rv-salvado  { font-size:clamp(15px,2vw,25px); color:var(--verde); margin-top:10px; animation:entrar 0.5s ease 0.5s both; }
+  #rv-extra    { font-size:17px; color:var(--oro); font-style:italic; margin-top:13px; animation:entrar 0.5s ease 0.7s both; }
+
+  /* Votación */
+  .votacion-desc { font-size:clamp(15px,1.9vw,22px); color:var(--oro); font-style:italic; text-align:center; margin-top:18px; animation:entrar 0.5s ease 0.3s both; }
+
+  /* Resultado voto */
+  .rv2-supra { font-family:'Bebas Neue',sans-serif; letter-spacing:8px; font-size:14px; color:rgba(237,229,208,0.22); margin-bottom:12px; }
+  #rv2-titulo { font-family:'Bebas Neue',sans-serif; font-size:clamp(50px,10vw,126px); letter-spacing:8px; text-align:center; animation:revelar 0.9s cubic-bezier(0.34,1.56,0.64,1); }
+  #rv2-subtitulo { font-size:clamp(15px,2vw,23px); color:rgba(237,229,208,0.48); text-align:center; animation:entrar 0.5s ease 0.35s both; }
+  #rv2-rol { font-family:'Bebas Neue',sans-serif; font-size:clamp(22px,4vw,50px); letter-spacing:8px; text-align:center; margin-top:18px; animation:revelar 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.5s both; }
+  @keyframes revelar { from{opacity:0;transform:scale(0.6) translateY(14px);} to{opacity:1;transform:scale(1) translateY(0);} }
+
+  /* Roles repartidos */
+  #pantalla-roles .fase-titulo { color:var(--oro); }
+  .roles-aviso { margin-top:34px; font-size:12px; letter-spacing:6px; color:rgba(237,229,208,0.18); text-align:center; }
+
+  /* Fin */
+  #fin-titulo { font-family:'Bebas Neue',sans-serif; font-size:clamp(38px,7vw,88px); letter-spacing:10px; text-align:center; animation:revelar 1s ease; }
+  #fin-subtitulo { font-size:clamp(15px,1.9vw,21px); color:rgba(237,229,208,0.48); font-style:italic; text-align:center; margin-top:8px; }
+  #roles-finales { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:26px; max-width:1000px; }
+  .rol-final { display:flex; flex-direction:column; align-items:center; padding:12px 20px; border:1px solid rgba(200,169,110,0.14); gap:4px; font-size:15px; animation:entrar 0.4s ease both; }
+  .rol-final.impostor { border-color:var(--rojo); background:rgba(184,50,50,0.07); }
+  .rol-final.medico   { border-color:var(--verde); background:rgba(74,158,92,0.06); }
+  .rol-final span  { font-size:22px; }
+  .rol-final small { color:rgba(237,229,208,0.38); font-size:11px; letter-spacing:2px; }
+
+  .dots::after { content:''; animation:dots 1.5s steps(4,end) infinite; }
+  @keyframes dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
+</style>
+</head>
+<body>
+
+<!-- Partículas (JS las genera) -->
+<div id="particulas" style="position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;"></div>
+
+<!-- Gotas de sangre -->
+<div class="gota" style="left:8%;  animation-delay:0s;   animation-duration:4.3s"></div>
+<div class="gota" style="left:22%; animation-delay:2.1s; animation-duration:5.2s"></div>
+<div class="gota" style="left:46%; animation-delay:0.7s; animation-duration:3.8s"></div>
+<div class="gota" style="left:70%; animation-delay:1.5s; animation-duration:4.7s"></div>
+<div class="gota" style="left:88%; animation-delay:3.0s; animation-duration:4.0s"></div>
+
+<div class="logo-tv">EL IMPOSTOR</div>
+
+<!-- Timer -->
+<div class="timer-wrap" id="timer-wrap">
+  <svg class="timer-svg" width="94" height="94" viewBox="0 0 100 100">
+    <circle class="timer-bg" cx="50" cy="50" r="45"/>
+    <circle id="timer-circle" cx="50" cy="50" r="45" style="stroke-dasharray:283;stroke-dashoffset:0"/>
+  </svg>
+  <div id="timer">45</div>
+</div>
+
+<!-- ═══════════ LOBBY ═══════════ -->
+<div class="pantalla activa" id="pantalla-lobby">
+  <div class="lobby-titulo">EL IMPOSTOR</div>
+  <div class="lobby-subtitulo">una noche de secretos, traición y muerte</div>
+  <div class="sep"></div>
+  <div class="lobby-bottom">
+    <div class="lobby-url-box">
+      <div class="url-label">Escanea para unirte</div>
+      <div id="qrcode" style="background:#07070d; padding:10px; border:1px solid rgba(200,169,110,0.3); display:inline-block;"></div>
+      <div class="url-label" style="margin-top:8px;">O entra en</div>
+      <div id="url-movil"></div>
+      <div class="lobby-acciones">
+        <button class="btn btn-primario" id="btn-iniciar">COMENZAR PARTIDA</button>
+        <div id="min-players-msg">mínimo 4 jugadores para empezar</div>
+      </div>
+    </div>
+    <div class="lobby-jugadores">
+      <div class="jugadores-header">
+        <div class="jugadores-label">Jugadores</div>
+        <div id="player-count">0</div>
+      </div>
+      <div id="lista-jugadores"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ROLES REPARTIDOS ═══════════ -->
+<div class="pantalla" id="pantalla-roles">
+  <div class="fase-titulo">ROLES<br>REPARTIDOS</div>
+  <div class="fase-subtitulo">Comprueba tu móvil en secreto<span class="dots"></span></div>
+  <div class="roles-aviso">— NO MUESTRES TU PANTALLA —</div>
+</div>
+
+<!-- ═══════════ NOCHE OSCURA ═══════════ -->
+<div class="pantalla" id="pantalla-accion">
+  <div class="fase-titulo" style="color:var(--sangre)">NOCHE<br>OSCURA</div>
+  <div id="accion-evento"></div>
+  <div class="instruccion-movil">↓ REALIZA TU ACCIÓN EN EL MÓVIL ↓</div>
+</div>
+
+<!-- ═══════════ REVELACIÓN ═══════════ -->
+<div class="pantalla" id="pantalla-revelacion">
+  <div id="rv-mensaje"></div>
+  <div id="rv-victima"></div>
+  <div id="rv-salvado"></div>
+  <div id="rv-extra"></div>
+</div>
+
+<!-- ═══════════ DEBATE ═══════════ -->
+<div class="pantalla" id="pantalla-debate">
+  <div class="fase-titulo">DEBATE</div>
+  <div id="debate-ronda" class="fase-subtitulo"></div>
+  <div class="debate-instrucciones">
+    Discutid entre vosotros. ¿Quién es el impostor?<br>
+    <span style="color:var(--rojo);font-style:normal;">Cuidado con lo que decís.</span>
+  </div>
+</div>
+
+<!-- ═══════════ VOTACIÓN ═══════════ -->
+<div class="pantalla" id="pantalla-votacion">
+  <div class="fase-titulo">VOTACIÓN</div>
+  <div class="votacion-desc">Vota desde tu móvil — el más votado queda expuesto</div>
+</div>
+
+<!-- ═══════════ RESULTADO VOTO ═══════════ -->
+<div class="pantalla" id="pantalla-resultado-voto">
+  <div class="rv2-supra">EL PUEBLO HA HABLADO</div>
+  <div id="rv2-titulo"></div>
+  <div id="rv2-subtitulo"></div>
+  <div id="rv2-rol"></div>
+</div>
+
+<!-- ═══════════ FIN ═══════════ -->
+<div class="pantalla" id="pantalla-fin">
+  <div id="fin-titulo"></div>
+  <div id="fin-subtitulo"></div>
+  <div class="sep" style="max-width:500px;margin-top:18px;"></div>
+  <div id="roles-finales"></div>
+</div>
+
+<!-- ═══════════ CONTROLES ═══════════ -->
+<div class="controles-bottom">
+  <button class="btn btn-primario" id="btn-siguiente">SIGUIENTE RONDA →</button>
+  <button class="btn btn-skip"    id="btn-skip-accion"   style="display:none">⏭ SALTAR NOCHE</button>
+  <button class="btn btn-skip"    id="btn-skip-debate"   style="display:none">⏭ SALTAR DEBATE</button>
+  <button class="btn btn-skip"    id="btn-skip-votacion" style="display:none">⏭ SALTAR VOTACIÓN</button>
+  <button class="btn btn-reset"   id="btn-reset">↺ NUEVA PARTIDA</button>
+</div>
+
+<script>
+  // Partículas flotantes
+  const pc = document.getElementById('particulas');
+  for(let i=0;i<20;i++){
+    const p=document.createElement('div'); p.className='particula';
+    p.style.cssText=`left:${Math.random()*100}%;width:${1+Math.random()*2.5}px;height:${1+Math.random()*2.5}px;opacity:${0.15+Math.random()*0.45};animation-duration:${9+Math.random()*16}s;animation-delay:${-Math.random()*24}s;`;
+    pc.appendChild(p);
+  }
+
+  // Timer y skip buttons — mostrar solo cuando toca
+  const observer = new MutationObserver(() => {
+    const id = document.querySelector('.pantalla.activa')?.id;
+    document.getElementById('timer-wrap').style.display        = ['pantalla-accion','pantalla-debate','pantalla-votacion'].includes(id)?'block':'none';
+    document.getElementById('btn-skip-accion').style.display   = id==='pantalla-accion'   ?'block':'none';
+    document.getElementById('btn-skip-debate').style.display   = id==='pantalla-debate'   ?'block':'none';
+    document.getElementById('btn-skip-votacion').style.display = id==='pantalla-votacion' ?'block':'none';
+  });
+  observer.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});
+</script>
+</body>
+</html>
