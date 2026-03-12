@@ -403,7 +403,7 @@ function escucharJugadores(){jugadoresRef.on('value',function(snap){jugadores=sn
 function escucharEstado(){estadoRef.on('value',function(snap){estadoActual=snap.val();});}
 
 function renderLobby(){
-  playMusic();
+  if(enLobby) playMusic();
   var arr=Object.values(jugadores);
   document.getElementById('player-count').textContent=arr.length;
   document.getElementById('lista-jugadores').innerHTML=arr.map(function(j,i){return '<div class="player-chip" style="animation-delay:'+i*0.07+'s"><span class="chip-dot '+(j.vivo===false?'muerto':'')+'"></span>'+j.nombre+'</div>';}).join('');
@@ -412,9 +412,12 @@ function renderLobby(){
   document.getElementById('min-players-msg').style.opacity=arr.length<4?'1':'0';
 }
 
+var enLobby = true;
+
 function iniciarJuego(){
   var arr=Object.entries(jugadores);
   if(arr.length<4) return;
+  enLobby = false;
   stopMusic(); sfx('start');
   var idx=shuffleArray(Array.from({length:arr.length},function(_,i){return i;}));
   var nImp=arr.length>=10?2:1, roles={};
@@ -517,7 +520,7 @@ function mostrarFin(ganador,jugs){
 }
 
 function resetJuego(){
-  clearInterval(timerInterval); stopMusic();
+  clearInterval(timerInterval); stopMusic(); enLobby = true;
   salaRef.set({estado:{fase:'lobby'}}).then(function(){mostrarPantalla('pantalla-lobby');document.getElementById('btn-siguiente').style.display='none';jugadores={};renderLobby();});
 }
 
