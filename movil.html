@@ -33,6 +33,7 @@
   window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-entrar').addEventListener('click', entrarAlJuego);
     document.getElementById('nombre-input').addEventListener('keydown', e => { if(e.key==='Enter') entrarAlJuego(); });
+  let faseActual = null;
     mostrarPantalla('pantalla-entrada');
   });
 
@@ -101,11 +102,20 @@
 
   function manejarFase(estado) {
     const vivo = jugadores[miId]?.vivo !== false;
-    switch(estado.fase) {
+    const faseNueva = estado.fase;
+
+    if (faseNueva === faseActual && (yaActue || yaVote)) return;
+
+    if (faseNueva !== faseActual) {
+      if (faseNueva === 'accion')   yaActue = false;
+      if (faseNueva === 'votacion') yaVote  = false;
+      faseActual = faseNueva;
+    }
+
+    switch(faseNueva) {
       case 'lobby':              mostrarPantalla('pantalla-espera'); break;
       case 'repartiendo_roles':  mostrarPantalla('pantalla-rol'); break;
       case 'accion':
-        yaActue = false;
         if (!vivo)                    mostrarPantalla('pantalla-muerto');
         else if (miRol==='impostor')  mostrarAccionImpostor(estado);
         else if (miRol==='medico')    mostrarAccionMedico(estado);
@@ -113,7 +123,6 @@
         break;
       case 'debate':             mostrarPantalla('pantalla-debate'); break;
       case 'votacion':
-        yaVote = false;
         if (!vivo) mostrarPantalla('pantalla-muerto');
         else       mostrarVotacion();
         break;
