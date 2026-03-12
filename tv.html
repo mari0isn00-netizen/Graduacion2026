@@ -23,8 +23,8 @@
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
 
-  const SALA       = "fiesta1";
-  const MOBILE_URL = "https://mari0isn00-netizen.github.io/el-impostor/movil.html?sala=fiesta1";
+  const SALA         = "fiesta1";
+  const MOBILE_URL   = "https://mari0isn00-netizen.github.io/el-impostor/movil.html?sala=fiesta1";
   const salaRef      = ref(db, `salas/${SALA}`);
   const jugadoresRef = ref(db, `salas/${SALA}/jugadores`);
   const estadoRef    = ref(db, `salas/${SALA}/estado`);
@@ -39,38 +39,54 @@
     document.getElementById('btn-iniciar').addEventListener('click', iniciarJuego);
     document.getElementById('btn-reset').addEventListener('click', resetJuego);
     document.getElementById('btn-siguiente').addEventListener('click', siguienteRonda);
+    document.getElementById('btn-tutorial').addEventListener('click', () => mostrarPantalla('pantalla-tutorial'));
+    document.getElementById('btn-cerrar-tutorial').addEventListener('click', () => mostrarPantalla('pantalla-lobby'));
     document.getElementById('btn-skip-accion').addEventListener('click',   () => { clearInterval(timerInterval); procesarAcciones(); });
     document.getElementById('btn-skip-debate').addEventListener('click',   () => { clearInterval(timerInterval); iniciarVotacion(); });
     document.getElementById('btn-skip-votacion').addEventListener('click', () => { clearInterval(timerInterval); procesarVotos(); });
+
+    let paso = 0;
+    const pasos = document.querySelectorAll('.tuto-paso');
+    const btnNext = document.getElementById('btn-tuto-next');
+    const btnPrev = document.getElementById('btn-tuto-prev');
+    const counter = document.getElementById('tuto-counter');
+    function renderPaso() {
+      pasos.forEach((p,i) => p.classList.toggle('activo', i === paso));
+      btnPrev.style.visibility = paso === 0 ? 'hidden' : 'visible';
+      btnNext.textContent = paso === pasos.length - 1 ? 'CERRAR' : 'SIGUIENTE →';
+      counter.textContent = `${paso + 1} / ${pasos.length}`;
+    }
+    btnNext.addEventListener('click', () => {
+      if (paso < pasos.length - 1) { paso++; renderPaso(); sfx('click'); }
+      else { mostrarPantalla('pantalla-lobby'); paso = 0; renderPaso(); }
+    });
+    btnPrev.addEventListener('click', () => { if (paso > 0) { paso--; renderPaso(); sfx('click'); } });
+    renderPaso();
   });
 
   function escucharJugadores() {
-    onValue(jugadoresRef, snap => {
-      jugadores = snap.val() || {};
-      renderLobby();
-    });
+    onValue(jugadoresRef, snap => { jugadores = snap.val() || {}; renderLobby(); });
   }
   function escucharEstado() {
     onValue(estadoRef, snap => { estadoActual = snap.val(); });
   }
 
-  // ── LOBBY ─────────────────────────────────
   function renderLobby() {
     const arr = Object.values(jugadores);
     document.getElementById('player-count').textContent = arr.length;
-    document.getElementById('lista-jugadores').innerHTML = arr.map((j, i) => `
-      <div class="player-chip" style="animation-delay:${i * 0.07}s">
-        <span class="chip-dot ${j.vivo === false ? 'muerto' : ''}"></span>${j.nombre}
+    document.getElementById('lista-jugadores').innerHTML = arr.map((j,i) => `
+      <div class="player-chip" style="animation-delay:${i*0.07}s">
+        <span class="chip-dot ${j.vivo===false?'muerto':''}"></span>${j.nombre}
       </div>`).join('');
     const ok = arr.length >= 4;
     document.getElementById('btn-iniciar').disabled = !ok || (estadoActual && estadoActual.fase !== 'lobby');
     document.getElementById('min-players-msg').style.opacity = arr.length < 4 ? '1' : '0';
   }
 
-  // ── INICIAR ────────────────────────────────
   async function iniciarJuego() {
     const arr = Object.entries(jugadores);
     if (arr.length < 4) return;
+    sfx('start');
     const idx  = shuffleArray([...Array(arr.length).keys()]);
     const nImp = arr.length >= 10 ? 2 : 1;
     const roles = {};
@@ -83,10 +99,10 @@
       updates[`salas/${SALA}/jugadores/${id}/rol`]  = roles[id];
       updates[`salas/${SALA}/jugadores/${id}/vivo`] = true;
     });
-    const impostores = arr.filter(([id]) => roles[id] === 'impostor').map(([,j]) => j.nombre);
-    const medicoPar  = arr.find(([id]) => roles[id] === 'medico');
+    const impostores = arr.filter(([id]) => roles[id]==='impostor').map(([,j]) => j.nombre);
+    const medicoPar  = arr.find(([id]) => roles[id]==='medico');
     arr.forEach(([id]) => {
-      if (roles[id] === 'impostor') {
+      if (roles[id]==='impostor') {
         updates[`salas/${SALA}/jugadores/${id}/sabemedico`] = medicoPar?.[0] ?? null;
         updates[`salas/${SALA}/jugadores/${id}/companeros`] = impostores.filter(n => n !== jugadores[id]?.nombre);
       }
@@ -97,8 +113,8 @@
     setTimeout(iniciarFaseAccion, 6000);
   }
 
-  // ── FASES ──────────────────────────────────
   async function iniciarFaseAccion() {
+    sfx('noche');
     const evento = eventoAleatorio();
     await update(estadoRef, { fase:'accion', accionImpostor:null, accionMedico:null, evento, votos:{} });
     mostrarPantalla('pantalla-accion');
@@ -112,19 +128,19 @@
     const vic  = e.accionImpostor, sal = e.accionMedico;
     let ultimaVictima = null, ultimoSalvado = null;
     if (vic) {
-      if (vic === sal) { ultimoSalvado = jugs[vic]?.nombre || '???'; }
-      else             { ultimaVictima = jugs[vic]?.nombre || '???'; await update(ref(db,`salas/${SALA}/jugadores/${vic}`), {vivo:false}); }
-    }
+      if (vic === sal) { ultimoSalvado = jugs[vic]?.nombre || '???'; sfx('salvado'); }
+      else             { ultimaVictima = jugs[vic]?.nombre || '???'; sfx('muerte'); await update(ref(db,`salas/${SALA}/jugadores/${vic}`),{vivo:false}); }
+    } else { sfx('silencio'); }
     const medicoMurio = vic && vic !== sal && jugs[vic]?.rol === 'medico';
-    await update(estadoRef, { fase:'revelacion', ultimaVictima, ultimoSalvado, medicoMurio: !!medicoMurio });
+    await update(estadoRef, { fase:'revelacion', ultimaVictima, ultimoSalvado, medicoMurio:!!medicoMurio });
     mostrarPantalla('pantalla-revelacion');
     document.getElementById('rv-mensaje').textContent =
       ultimaVictima ? '☠️ Esta noche alguien ha caído...' :
-      ultimoSalvado ? '💉 El médico salvó a alguien esta noche...' :
+      ultimoSalvado ? '💉 Alguien fue salvado esta noche...' :
                       '🌙 La noche ha sido tranquila... por ahora.';
     document.getElementById('rv-victima').textContent = ultimaVictima ? `💀 ${ultimaVictima} ha sido eliminado` : '';
-    document.getElementById('rv-salvado').textContent = ultimoSalvado ? '✨ Alguien fue salvado esta noche' : '';
-    document.getElementById('rv-extra').textContent   = medicoMurio ? '⚠️ El médico ha caído... los inocentes pierden su protección' : '';
+    document.getElementById('rv-salvado').textContent = ultimoSalvado ? '✨ El médico actuó esta noche' : '';
+    document.getElementById('rv-extra').textContent   = medicoMurio ? '⚠️ El médico ha caído...' : '';
     const jugs2 = (await get(jugadoresRef)).val() || {};
     const fin   = verificarFin(jugs2);
     if (fin) { setTimeout(() => mostrarFin(fin, jugs2), 4000); return; }
@@ -132,6 +148,7 @@
   }
 
   async function iniciarDebate() {
+    sfx('debate');
     const ronda = (await get(estadoRef)).val()?.ronda || 1;
     await update(estadoRef, { fase:'debate' });
     mostrarPantalla('pantalla-debate');
@@ -140,6 +157,7 @@
   }
 
   async function iniciarVotacion() {
+    sfx('votacion');
     await update(estadoRef, { fase:'votacion', votos:{} });
     mostrarPantalla('pantalla-votacion');
     iniciarTimer(30, procesarVotos);
@@ -149,16 +167,17 @@
     const votos = (await get(estadoRef)).val()?.votos || {};
     const jugs  = (await get(jugadoresRef)).val() || {};
     const cnt   = {};
-    Object.values(votos).forEach(id => { cnt[id] = (cnt[id]||0)+1; });
-    let max = 0, masVotado = null, empate = false;
+    Object.values(votos).forEach(id => { cnt[id]=(cnt[id]||0)+1; });
+    let max=0, masVotado=null, empate=false;
     Object.entries(cnt).forEach(([id,v]) => {
-      if (v > max)      { max = v; masVotado = id; empate = false; }
-      else if (v === max) empate = true;
+      if (v>max)       { max=v; masVotado=id; empate=false; }
+      else if (v===max)  empate=true;
     });
     const nombre = masVotado ? jugs[masVotado]?.nombre : null;
     const rol    = masVotado ? jugs[masVotado]?.rol    : null;
     await update(estadoRef, { fase:'resultado_voto', resultadoVoto:{ masVotado, masVotadoNombre:nombre, masVotadoRol:rol, maxVotos:max, empate } });
-    if (!empate && masVotado && rol === 'impostor') await update(ref(db,`salas/${SALA}/jugadores/${masVotado}`), {vivo:false});
+    if (!empate && masVotado && rol==='impostor') await update(ref(db,`salas/${SALA}/jugadores/${masVotado}`),{vivo:false});
+    sfx('revelacion');
     mostrarPantalla('pantalla-resultado-voto');
     if (empate || !masVotado) {
       document.getElementById('rv2-titulo').textContent    = '🤝 EMPATE';
@@ -177,27 +196,27 @@
 
   async function siguienteRonda() {
     document.getElementById('btn-siguiente').style.display = 'none';
-    const ronda = ((await get(estadoRef)).val()?.ronda || 1) + 1;
-    await update(estadoRef, { ronda });
+    const ronda = ((await get(estadoRef)).val()?.ronda||1)+1;
+    await update(estadoRef,{ronda});
     iniciarFaseAccion();
   }
 
-  // ── FIN ────────────────────────────────────
   function verificarFin(jugs) {
-    const vivos  = Object.values(jugs).filter(j => j.vivo !== false);
-    const impost = vivos.filter(j => j.rol === 'impostor');
-    const inoce  = vivos.filter(j => j.rol !== 'impostor');
-    if (impost.length === 0)            return 'inocentes';
-    if (impost.length >= inoce.length)  return 'impostor';
+    const vivos = Object.values(jugs).filter(j=>j.vivo!==false);
+    const imp   = vivos.filter(j=>j.rol==='impostor');
+    const ino   = vivos.filter(j=>j.rol!=='impostor');
+    if (imp.length===0)          return 'inocentes';
+    if (imp.length>=ino.length)  return 'impostor';
     return null;
   }
 
   async function mostrarFin(ganador, jugs) {
     clearInterval(timerInterval);
-    await update(estadoRef, { fase:'fin', ganador });
+    sfx(ganador==='impostor' ? 'fin_malo' : 'fin_bueno');
+    await update(estadoRef,{fase:'fin',ganador});
     mostrarPantalla('pantalla-fin');
-    document.getElementById('fin-titulo').textContent    = ganador === 'impostor' ? '🔪 LOS IMPOSTORES GANAN' : '✨ LOS INOCENTES GANAN';
-    document.getElementById('fin-subtitulo').textContent = ganador === 'impostor' ? 'La oscuridad se ha apoderado de la fiesta' : 'La verdad ha triunfado esta noche';
+    document.getElementById('fin-titulo').textContent    = ganador==='impostor' ? '🔪 LOS IMPOSTORES GANAN' : '✨ LOS INOCENTES GANAN';
+    document.getElementById('fin-subtitulo').textContent = ganador==='impostor' ? 'La oscuridad se ha apoderado de la fiesta' : 'La verdad ha triunfado esta noche';
     document.getElementById('roles-finales').innerHTML   = Object.values(jugs).map((j,i) => `
       <div class="rol-final ${j.rol}" style="animation-delay:${i*0.08}s">
         <span>${emoji(j.rol)}</span><strong>${j.nombre}</strong><small>${rolNombre(j.rol)}</small>
@@ -206,32 +225,129 @@
 
   async function resetJuego() {
     clearInterval(timerInterval);
-    await set(salaRef, { jugadores:{}, estado:{ fase:'lobby' } });
+    await set(salaRef,{jugadores:{},estado:{fase:'lobby'}});
     mostrarPantalla('pantalla-lobby');
-    document.getElementById('btn-siguiente').style.display = 'none';
+    document.getElementById('btn-siguiente').style.display='none';
   }
 
-  // ── HELPERS ────────────────────────────────
   function mostrarPantalla(id) {
-    document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+    document.querySelectorAll('.pantalla').forEach(p=>p.classList.remove('activa'));
     document.getElementById(id)?.classList.add('activa');
   }
+
   function iniciarTimer(seg, cb) {
     clearInterval(timerInterval);
-    let t = seg;
-    const el = document.getElementById('timer'), cr = document.getElementById('timer-circle'), C = 283;
-    const tick = () => {
-      if (el) el.textContent = t;
-      if (cr) { cr.style.strokeDashoffset = C*(1-t/seg); cr.style.stroke = t<=10?'#ff4444':t<=20?'#ffaa00':'#c8a96e'; }
+    let t=seg;
+    const el=document.getElementById('timer'), cr=document.getElementById('timer-circle'), C=283;
+    const tick=()=>{
+      if(el) el.textContent=t;
+      if(cr){ cr.style.strokeDashoffset=C*(1-t/seg); cr.style.stroke=t<=10?'#ff4444':t<=20?'#ffaa00':'#c8a96e'; }
+      if(t<=10 && t>0) sfx('tick');
     };
     tick();
-    timerInterval = setInterval(() => { t--; tick(); if(t<=0){ clearInterval(timerInterval); cb(); }}, 1000);
+    timerInterval=setInterval(()=>{ t--; tick(); if(t<=0){clearInterval(timerInterval);cb();} },1000);
   }
+
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let actx = null;
+  function getACtx() { if(!actx) actx=new AudioCtx(); return actx; }
+
+  function sfx(tipo) {
+    try {
+      const c = getACtx();
+      const master = c.createGain(); master.gain.value=0.4; master.connect(c.destination);
+      if (tipo==='tick') {
+        const o=c.createOscillator(), g=c.createGain();
+        o.type='sine'; o.frequency.value=880;
+        g.gain.setValueAtTime(0.3,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.08);
+        o.connect(g); g.connect(master); o.start(); o.stop(c.currentTime+0.08);
+      } else if (tipo==='click') {
+        const o=c.createOscillator(), g=c.createGain();
+        o.type='sine'; o.frequency.value=440;
+        g.gain.setValueAtTime(0.2,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.1);
+        o.connect(g); g.connect(master); o.start(); o.stop(c.currentTime+0.1);
+      } else if (tipo==='start') {
+        [261,329,392,523].forEach((f,i)=>{
+          const o=c.createOscillator(), g=c.createGain();
+          o.type='sine'; o.frequency.value=f;
+          const t=c.currentTime+i*0.15;
+          g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.3,t+0.05); g.gain.exponentialRampToValueAtTime(0.001,t+0.4);
+          o.connect(g); g.connect(master); o.start(t); o.stop(t+0.4);
+        });
+      } else if (tipo==='noche') {
+        const o=c.createOscillator(), g=c.createGain(), f=c.createBiquadFilter();
+        o.type='sawtooth'; o.frequency.setValueAtTime(80,c.currentTime); o.frequency.linearRampToValueAtTime(40,c.currentTime+2);
+        f.type='lowpass'; f.frequency.value=200;
+        g.gain.setValueAtTime(0,c.currentTime); g.gain.linearRampToValueAtTime(0.5,c.currentTime+0.3); g.gain.linearRampToValueAtTime(0,c.currentTime+2.5);
+        o.connect(f); f.connect(g); g.connect(master); o.start(); o.stop(c.currentTime+2.5);
+      } else if (tipo==='muerte') {
+        const o=c.createOscillator(), g=c.createGain();
+        o.type='sawtooth'; o.frequency.setValueAtTime(200,c.currentTime); o.frequency.exponentialRampToValueAtTime(40,c.currentTime+1.5);
+        g.gain.setValueAtTime(0.6,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+1.8);
+        o.connect(g); g.connect(master); o.start(); o.stop(c.currentTime+1.8);
+        setTimeout(()=>{
+          const o2=c.createOscillator(), g2=c.createGain();
+          o2.type='sine'; o2.frequency.value=60;
+          g2.gain.setValueAtTime(0.4,c.currentTime); g2.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.8);
+          o2.connect(g2); g2.connect(master); o2.start(); o2.stop(c.currentTime+0.8);
+        },400);
+      } else if (tipo==='salvado') {
+        [523,659,784].forEach((f,i)=>{
+          const o=c.createOscillator(), g=c.createGain();
+          o.type='sine'; o.frequency.value=f;
+          const t=c.currentTime+i*0.12;
+          g.gain.setValueAtTime(0.3,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.5);
+          o.connect(g); g.connect(master); o.start(t); o.stop(t+0.5);
+        });
+      } else if (tipo==='silencio') {
+        const o=c.createOscillator(), g=c.createGain(), f=c.createBiquadFilter();
+        o.type='sine'; o.frequency.value=110; f.type='lowpass'; f.frequency.value=300;
+        g.gain.setValueAtTime(0.2,c.currentTime); g.gain.linearRampToValueAtTime(0,c.currentTime+2);
+        o.connect(f); f.connect(g); g.connect(master); o.start(); o.stop(c.currentTime+2);
+      } else if (tipo==='debate') {
+        [220,277,330,370].forEach((f,i)=>{
+          const o=c.createOscillator(), g=c.createGain();
+          o.type='triangle'; o.frequency.value=f;
+          const t=c.currentTime+i*0.1;
+          g.gain.setValueAtTime(0.25,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.6);
+          o.connect(g); g.connect(master); o.start(t); o.stop(t+0.6);
+        });
+      } else if (tipo==='votacion') {
+        const o=c.createOscillator(), g=c.createGain();
+        o.type='square'; o.frequency.setValueAtTime(330,c.currentTime); o.frequency.setValueAtTime(440,c.currentTime+0.15);
+        g.gain.setValueAtTime(0.2,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.5);
+        o.connect(g); g.connect(master); o.start(); o.stop(c.currentTime+0.5);
+      } else if (tipo==='revelacion') {
+        const o=c.createOscillator(), g=c.createGain();
+        o.type='sine'; o.frequency.setValueAtTime(110,c.currentTime); o.frequency.exponentialRampToValueAtTime(440,c.currentTime+0.6);
+        g.gain.setValueAtTime(0.5,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+1);
+        o.connect(g); g.connect(master); o.start(); o.stop(c.currentTime+1);
+      } else if (tipo==='fin_malo') {
+        [220,185,155,110].forEach((f,i)=>{
+          const o=c.createOscillator(), g=c.createGain();
+          o.type='sawtooth'; o.frequency.value=f;
+          const t=c.currentTime+i*0.3;
+          g.gain.setValueAtTime(0.4,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.8);
+          o.connect(g); g.connect(master); o.start(t); o.stop(t+0.8);
+        });
+      } else if (tipo==='fin_bueno') {
+        [261,330,392,523,659].forEach((f,i)=>{
+          const o=c.createOscillator(), g=c.createGain();
+          o.type='sine'; o.frequency.value=f;
+          const t=c.currentTime+i*0.18;
+          g.gain.setValueAtTime(0.35,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.7);
+          o.connect(g); g.connect(master); o.start(t); o.stop(t+0.7);
+        });
+      }
+    } catch(e) {}
+  }
+
   function emoji(r) { return {impostor:'🔪',medico:'🩺',inocente:'😇'}[r]||'❓'; }
   function rolNombre(r) { return {impostor:'Impostor',medico:'Médico',inocente:'Inocente'}[r]||'???'; }
+
   function eventoAleatorio() {
-    const e = [
-      '⚡ Apagón repentino — el médico no puede actuar esta ronda',
+    const e=[
+      '⚡ Apagón — el médico no puede actuar esta ronda',
       '👁️ Alguien vio una sombra moverse entre los invitados',
       '🍷 La copa de alguien fue envenenada... ¿de quién?',
       '🕯️ Solo una vela ilumina la sala esta noche',
@@ -244,6 +360,7 @@
     ];
     return e[Math.floor(Math.random()*e.length)];
   }
+
   function shuffleArray(a) {
     for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
     return a;
@@ -252,240 +369,119 @@
 
 <style>
   :root {
-    --negro: #07070d;
-    --rojo:  #b83232;
-    --oro:   #c8a96e;
-    --crema: #ede5d0;
-    --sangre:#7a0000;
-    --verde: #4a9e5c;
+    --negro:#07070d; --rojo:#b83232; --oro:#c8a96e; --crema:#ede5d0; --sangre:#7a0000; --verde:#4a9e5c;
   }
-  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--negro);color:var(--crema);font-family:'Crimson Pro',serif;height:100vh;overflow:hidden;position:relative;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 80% at 12% 50%,rgba(160,40,10,0.08) 0%,transparent 65%),radial-gradient(ellipse 60% 80% at 88% 50%,rgba(160,40,10,0.08) 0%,transparent 65%),radial-gradient(ellipse 100% 40% at 50% 105%,rgba(90,10,0,0.18) 0%,transparent 55%);}
+  .particula{position:fixed;border-radius:50%;background:rgba(200,169,110,0.35);animation:flotar linear infinite;pointer-events:none;}
+  @keyframes flotar{0%{transform:translateY(105vh) translateX(0);opacity:0;}8%{opacity:1;}92%{opacity:0.5;}100%{transform:translateY(-8vh) translateX(20px);opacity:0;}}
+  .gota{position:fixed;top:0;width:2px;background:linear-gradient(180deg,var(--sangre) 0%,rgba(120,0,0,0.25) 60%,transparent 100%);animation:gotear ease-in infinite;opacity:0;border-radius:0 0 2px 2px;}
+  @keyframes gotear{0%{height:0;opacity:0;}12%{opacity:0.8;}100%{height:150px;opacity:0;}}
+  .pantalla{display:none;position:fixed;inset:0;z-index:1;flex-direction:column;align-items:center;justify-content:center;padding:60px;}
+  .pantalla.activa{display:flex;}
+  .logo-tv{position:fixed;top:26px;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:clamp(20px,2.8vw,36px);letter-spacing:12px;color:var(--oro);text-shadow:0 0 60px rgba(200,169,110,0.2);z-index:100;white-space:nowrap;}
+  .sep{width:100%;max-width:700px;height:1px;background:linear-gradient(90deg,transparent,var(--oro),transparent);opacity:0.3;margin:14px 0;}
+  .timer-wrap{position:fixed;top:20px;right:36px;z-index:200;display:none;}
+  .timer-svg{transform:rotate(-90deg);}
+  .timer-bg{fill:none;stroke:rgba(200,169,110,0.07);stroke-width:5;}
+  #timer-circle{fill:none;stroke:var(--oro);stroke-width:5;stroke-dasharray:283;stroke-dashoffset:0;stroke-linecap:round;transition:stroke-dashoffset 1s linear,stroke 0.3s;}
+  #timer{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--oro);}
 
-  body {
-    background: var(--negro);
-    color: var(--crema);
-    font-family: 'Crimson Pro', serif;
-    height: 100vh; overflow: hidden; position: relative;
-  }
+  #pantalla-lobby{justify-content:center;gap:0;padding-top:70px;}
+  .lobby-titulo{font-family:'Bebas Neue',sans-serif;font-size:clamp(72px,13vw,170px);letter-spacing:18px;line-height:0.85;text-align:center;text-shadow:0 0 100px rgba(184,50,50,0.35),0 0 220px rgba(184,50,50,0.12);animation:respira 9s ease-in-out infinite;}
+  @keyframes respira{0%,100%{text-shadow:0 0 100px rgba(184,50,50,0.35),0 0 220px rgba(184,50,50,0.12);}50%{text-shadow:0 0 140px rgba(184,50,50,0.55),0 0 280px rgba(184,50,50,0.2);}}
+  .lobby-subtitulo{font-style:italic;font-size:clamp(13px,1.6vw,20px);letter-spacing:5px;color:rgba(237,229,208,0.3);text-align:center;margin-top:10px;margin-bottom:28px;}
+  .lobby-bottom{display:flex;gap:80px;align-items:flex-start;justify-content:center;width:100%;max-width:1100px;margin-top:10px;}
+  .lobby-url-box{display:flex;flex-direction:column;gap:10px;}
+  .url-label{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:5px;color:rgba(200,169,110,0.4);}
+  #qrcode-wrap{background:#07070d;padding:10px;border:1px solid rgba(200,169,110,0.3);display:inline-block;}
+  .lobby-acciones{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
+  .lobby-jugadores{flex:1;max-width:580px;}
+  .jugadores-header{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;}
+  .jugadores-label{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:5px;color:rgba(200,169,110,0.4);}
+  #player-count{font-family:'Bebas Neue',sans-serif;font-size:44px;color:var(--rojo);line-height:1;}
+  #lista-jugadores{display:flex;flex-wrap:wrap;gap:8px;min-height:44px;}
+  .player-chip{display:flex;align-items:center;gap:8px;background:rgba(200,169,110,0.05);border:1px solid rgba(200,169,110,0.15);padding:7px 16px;font-size:clamp(13px,1.3vw,17px);animation:chipIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;}
+  @keyframes chipIn{from{opacity:0;transform:scale(0.7) translateY(-8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  .chip-dot{width:7px;height:7px;border-radius:50%;background:var(--oro);flex-shrink:0;animation:pulsar 2s ease-in-out infinite;}
+  .chip-dot.muerto{background:var(--sangre);animation:none;}
+  @keyframes pulsar{0%,100%{opacity:1;}50%{opacity:0.25;}}
+  #min-players-msg{font-size:13px;font-style:italic;color:rgba(237,229,208,0.28);transition:opacity 0.3s;}
 
-  /* Fondo atmosférico */
-  body::before {
-    content:''; position:fixed; inset:0; pointer-events:none;
-    background:
-      radial-gradient(ellipse 60% 80% at 12% 50%, rgba(160,40,10,0.08) 0%, transparent 65%),
-      radial-gradient(ellipse 60% 80% at 88% 50%, rgba(160,40,10,0.08) 0%, transparent 65%),
-      radial-gradient(ellipse 100% 40% at 50% 105%, rgba(90,10,0,0.18) 0%, transparent 55%);
-  }
+  .btn{font-family:'Bebas Neue',sans-serif;letter-spacing:5px;border:none;cursor:pointer;transition:all 0.18s;}
+  .btn-primario{font-size:19px;padding:13px 42px;background:var(--rojo);color:var(--crema);}
+  .btn-primario:hover:not(:disabled){background:#d43e3e;transform:translateY(-2px);box-shadow:0 6px 26px rgba(184,50,50,0.4);}
+  .btn-primario:disabled{opacity:0.22;cursor:not-allowed;}
+  .btn-secundario{font-size:14px;padding:10px 28px;background:transparent;color:var(--oro);border:1px solid rgba(200,169,110,0.35);letter-spacing:5px;}
+  .btn-secundario:hover{background:rgba(200,169,110,0.08);}
+  .btn-skip{font-size:12px;padding:7px 20px;background:transparent;color:rgba(237,229,208,0.3);border:1px solid rgba(237,229,208,0.12);letter-spacing:4px;}
+  .btn-skip:hover{color:var(--crema);border-color:rgba(237,229,208,0.38);}
+  .btn-reset{font-size:11px;padding:6px 18px;background:transparent;color:rgba(200,169,110,0.35);border:1px solid rgba(200,169,110,0.18);letter-spacing:4px;}
+  .btn-reset:hover{color:var(--oro);}
 
-  /* Partículas */
-  .particula {
-    position:fixed; border-radius:50%;
-    background:rgba(200,169,110,0.35);
-    animation: flotar linear infinite;
-    pointer-events:none;
-  }
-  @keyframes flotar {
-    0%  { transform:translateY(105vh) translateX(0); opacity:0; }
-    8%  { opacity:1; }
-    92% { opacity:0.5; }
-    100%{ transform:translateY(-8vh) translateX(20px); opacity:0; }
-  }
+  .controles-bottom{position:fixed;bottom:26px;right:34px;display:flex;flex-direction:column;gap:8px;z-index:300;}
+  #btn-siguiente{display:none;}
 
-  /* Gotas */
-  .gota {
-    position:fixed; top:0; width:2px;
-    background:linear-gradient(180deg, var(--sangre) 0%, rgba(120,0,0,0.25) 60%, transparent 100%);
-    animation:gotear ease-in infinite; opacity:0; border-radius:0 0 2px 2px;
-  }
-  @keyframes gotear {
-    0%  { height:0;     opacity:0; }
-    12% { opacity:0.8; }
-    100%{ height:150px; opacity:0; }
-  }
+  .fase-titulo{font-family:'Bebas Neue',sans-serif;font-size:clamp(54px,10vw,128px);letter-spacing:14px;text-align:center;line-height:0.88;animation:entrar 0.7s cubic-bezier(0.34,1.2,0.64,1);}
+  .fase-subtitulo{font-style:italic;font-size:clamp(15px,2vw,25px);color:rgba(237,229,208,0.48);text-align:center;margin-top:18px;animation:entrar 0.6s ease 0.15s both;}
+  @keyframes entrar{from{opacity:0;transform:translateY(26px);}to{opacity:1;transform:translateY(0);}}
 
-  .pantalla {
-    display:none; position:fixed; inset:0; z-index:1;
-    flex-direction:column; align-items:center; justify-content:center; padding:60px;
-  }
-  .pantalla.activa { display:flex; }
+  #pantalla-accion{gap:0;}
+  #accion-evento{max-width:660px;font-size:clamp(15px,1.9vw,23px);font-style:italic;color:var(--oro);text-align:center;padding:18px 30px;border-left:3px solid var(--rojo);background:rgba(184,50,50,0.04);margin-top:26px;line-height:1.55;animation:entrar 0.6s ease 0.3s both;}
+  .instruccion-movil{margin-top:34px;font-size:clamp(11px,1.1vw,15px);letter-spacing:4px;color:rgba(237,229,208,0.2);animation:pulsar 2.5s ease-in-out infinite;}
+  @keyframes pulsar{0%,100%{opacity:0.2;}50%{opacity:0.7;}}
+  .debate-instrucciones{font-size:clamp(15px,1.9vw,23px);color:rgba(237,229,208,0.58);text-align:center;line-height:2;margin-top:18px;animation:entrar 0.6s ease 0.3s both;}
+  #rv-mensaje{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,6vw,70px);letter-spacing:8px;text-align:center;animation:entrar 0.6s ease;}
+  #rv-victima{font-size:clamp(20px,3.5vw,42px);color:var(--rojo);margin-top:18px;animation:entrar 0.5s ease 0.3s both;}
+  #rv-salvado{font-size:clamp(15px,2vw,25px);color:var(--verde);margin-top:10px;animation:entrar 0.5s ease 0.5s both;}
+  #rv-extra{font-size:17px;color:var(--oro);font-style:italic;margin-top:13px;animation:entrar 0.5s ease 0.7s both;}
+  .votacion-desc{font-size:clamp(15px,1.9vw,22px);color:var(--oro);font-style:italic;text-align:center;margin-top:18px;animation:entrar 0.5s ease 0.3s both;}
+  .rv2-supra{font-family:'Bebas Neue',sans-serif;letter-spacing:8px;font-size:14px;color:rgba(237,229,208,0.22);margin-bottom:12px;}
+  #rv2-titulo{font-family:'Bebas Neue',sans-serif;font-size:clamp(50px,10vw,126px);letter-spacing:8px;text-align:center;animation:revelar 0.9s cubic-bezier(0.34,1.56,0.64,1);}
+  #rv2-subtitulo{font-size:clamp(15px,2vw,23px);color:rgba(237,229,208,0.48);text-align:center;animation:entrar 0.5s ease 0.35s both;}
+  #rv2-rol{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,4vw,50px);letter-spacing:8px;text-align:center;margin-top:18px;animation:revelar 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.5s both;}
+  @keyframes revelar{from{opacity:0;transform:scale(0.6) translateY(14px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  #pantalla-roles .fase-titulo{color:var(--oro);}
+  .roles-aviso{margin-top:34px;font-size:12px;letter-spacing:6px;color:rgba(237,229,208,0.18);text-align:center;}
+  #fin-titulo{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,7vw,88px);letter-spacing:10px;text-align:center;animation:revelar 1s ease;}
+  #fin-subtitulo{font-size:clamp(15px,1.9vw,21px);color:rgba(237,229,208,0.48);font-style:italic;text-align:center;margin-top:8px;}
+  #roles-finales{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:26px;max-width:1000px;}
+  .rol-final{display:flex;flex-direction:column;align-items:center;padding:12px 20px;border:1px solid rgba(200,169,110,0.14);gap:4px;font-size:15px;animation:entrar 0.4s ease both;}
+  .rol-final.impostor{border-color:var(--rojo);background:rgba(184,50,50,0.07);}
+  .rol-final.medico{border-color:var(--verde);background:rgba(74,158,92,0.06);}
+  .rol-final span{font-size:22px;}
+  .rol-final small{color:rgba(237,229,208,0.38);font-size:11px;letter-spacing:2px;}
+  .dots::after{content:'';animation:dots 1.5s steps(4,end) infinite;}
+  @keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
 
-  /* Logo */
-  .logo-tv {
-    position:fixed; top:26px; left:50%; transform:translateX(-50%);
-    font-family:'Bebas Neue', sans-serif;
-    font-size:clamp(20px,2.8vw,36px); letter-spacing:12px;
-    color:var(--oro);
-    text-shadow:0 0 60px rgba(200,169,110,0.2), 0 0 120px rgba(200,169,110,0.08);
-    z-index:100; white-space:nowrap;
-  }
-
-  .sep {
-    width:100%; max-width:700px; height:1px;
-    background:linear-gradient(90deg,transparent,var(--oro),transparent);
-    opacity:0.3; margin:14px 0;
-  }
-
-  /* Timer */
-  .timer-wrap { position:fixed; top:20px; right:36px; z-index:200; display:none; }
-  .timer-svg  { transform:rotate(-90deg); }
-  .timer-bg   { fill:none; stroke:rgba(200,169,110,0.07); stroke-width:5; }
-  #timer-circle { fill:none; stroke:var(--oro); stroke-width:5; stroke-dasharray:283; stroke-dashoffset:0; stroke-linecap:round; transition:stroke-dashoffset 1s linear,stroke 0.3s; }
-  #timer { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--oro); }
-
-  /* ── LOBBY ─────────────────────────────── */
-  #pantalla-lobby { justify-content:center; gap:0; padding-top:70px; }
-
-  .lobby-titulo {
-    font-family:'Bebas Neue', sans-serif;
-    font-size:clamp(72px,13vw,170px); letter-spacing:18px; line-height:0.85; text-align:center;
-    text-shadow:0 0 100px rgba(184,50,50,0.35), 0 0 220px rgba(184,50,50,0.12);
-    animation:respira 9s ease-in-out infinite;
-  }
-  @keyframes respira {
-    0%,100% { text-shadow:0 0 100px rgba(184,50,50,0.35),0 0 220px rgba(184,50,50,0.12); }
-    50%     { text-shadow:0 0 140px rgba(184,50,50,0.55),0 0 280px rgba(184,50,50,0.2); }
-  }
-
-  .lobby-subtitulo {
-    font-style:italic; font-size:clamp(13px,1.6vw,20px); letter-spacing:5px;
-    color:rgba(237,229,208,0.3); text-align:center; margin-top:10px; margin-bottom:28px;
-  }
-
-  .lobby-bottom {
-    display:flex; gap:80px; align-items:flex-start;
-    justify-content:center; width:100%; max-width:1100px; margin-top:10px;
-  }
-
-  .lobby-url-box { display:flex; flex-direction:column; gap:10px; }
-  .url-label { font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:5px; color:rgba(200,169,110,0.4); }
-  #url-movil {
-    font-family:monospace; font-size:clamp(9px,0.9vw,13px);
-    color:var(--oro); background:rgba(200,169,110,0.05);
-    border:1px solid rgba(200,169,110,0.18); padding:8px 14px;
-    word-break:break-all; max-width:340px; line-height:1.6;
-  }
-
-  .lobby-acciones { display:flex; flex-direction:column; gap:10px; margin-top:18px; }
-
-  .lobby-jugadores { flex:1; max-width:580px; }
-
-  .jugadores-header { display:flex; align-items:baseline; gap:14px; margin-bottom:14px; }
-  .jugadores-label  { font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:5px; color:rgba(200,169,110,0.4); }
-  #player-count     { font-family:'Bebas Neue',sans-serif; font-size:44px; color:var(--rojo); line-height:1; }
-
-  #lista-jugadores { display:flex; flex-wrap:wrap; gap:8px; min-height:44px; }
-
-  .player-chip {
-    display:flex; align-items:center; gap:8px;
-    background:rgba(200,169,110,0.05); border:1px solid rgba(200,169,110,0.15);
-    padding:7px 16px; font-size:clamp(13px,1.3vw,17px);
-    animation:chipIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
-  }
-  @keyframes chipIn { from{opacity:0;transform:scale(0.7) translateY(-8px);} to{opacity:1;transform:scale(1) translateY(0);} }
-
-  .chip-dot { width:7px; height:7px; border-radius:50%; background:var(--oro); flex-shrink:0; animation:pulsar 2s ease-in-out infinite; }
-  .chip-dot.muerto { background:var(--sangre); animation:none; }
-  @keyframes pulsar { 0%,100%{opacity:1;} 50%{opacity:0.25;} }
-
-  #min-players-msg { font-size:13px; font-style:italic; color:rgba(237,229,208,0.28); transition:opacity 0.3s; }
-
-  /* Botones */
-  .btn { font-family:'Bebas Neue',sans-serif; letter-spacing:5px; border:none; cursor:pointer; transition:all 0.18s; }
-  .btn-primario { font-size:19px; padding:13px 42px; background:var(--rojo); color:var(--crema); }
-  .btn-primario:hover:not(:disabled) { background:#d43e3e; transform:translateY(-2px); box-shadow:0 6px 26px rgba(184,50,50,0.4); }
-  .btn-primario:disabled { opacity:0.22; cursor:not-allowed; }
-  .btn-skip  { font-size:12px; padding:7px 20px; background:transparent; color:rgba(237,229,208,0.3); border:1px solid rgba(237,229,208,0.12); letter-spacing:4px; }
-  .btn-skip:hover { color:var(--crema); border-color:rgba(237,229,208,0.38); }
-  .btn-reset { font-size:11px; padding:6px 18px; background:transparent; color:rgba(200,169,110,0.35); border:1px solid rgba(200,169,110,0.18); letter-spacing:4px; }
-  .btn-reset:hover { color:var(--oro); }
-
-  .controles-bottom { position:fixed; bottom:26px; right:34px; display:flex; flex-direction:column; gap:8px; z-index:300; }
-  #btn-siguiente { display:none; }
-
-  /* Fases */
-  .fase-titulo {
-    font-family:'Bebas Neue',sans-serif;
-    font-size:clamp(54px,10vw,128px); letter-spacing:14px;
-    text-align:center; line-height:0.88;
-    animation:entrar 0.7s cubic-bezier(0.34,1.2,0.64,1);
-  }
-  .fase-subtitulo {
-    font-style:italic; font-size:clamp(15px,2vw,25px);
-    color:rgba(237,229,208,0.48); text-align:center; margin-top:18px;
-    animation:entrar 0.6s ease 0.15s both;
-  }
-  @keyframes entrar { from{opacity:0;transform:translateY(26px);} to{opacity:1;transform:translateY(0);} }
-
-  /* Acción */
-  #pantalla-accion { gap:0; }
-  #accion-evento {
-    max-width:660px; font-size:clamp(15px,1.9vw,23px); font-style:italic;
-    color:var(--oro); text-align:center; padding:18px 30px;
-    border-left:3px solid var(--rojo); background:rgba(184,50,50,0.04);
-    margin-top:26px; line-height:1.55; animation:entrar 0.6s ease 0.3s both;
-  }
-  .instruccion-movil {
-    margin-top:34px; font-size:clamp(11px,1.1vw,15px); letter-spacing:4px;
-    color:rgba(237,229,208,0.2); animation:pulsar 2.5s ease-in-out infinite;
-  }
-  @keyframes pulsar { 0%,100%{opacity:0.2;} 50%{opacity:0.7;} }
-
-  /* Debate */
-  .debate-instrucciones {
-    font-size:clamp(15px,1.9vw,23px); color:rgba(237,229,208,0.58);
-    text-align:center; line-height:2; margin-top:18px;
-    animation:entrar 0.6s ease 0.3s both;
-  }
-
-  /* Revelación */
-  #rv-mensaje  { font-family:'Bebas Neue',sans-serif; font-size:clamp(34px,6vw,70px); letter-spacing:8px; text-align:center; animation:entrar 0.6s ease; }
-  #rv-victima  { font-size:clamp(20px,3.5vw,42px); color:var(--rojo); margin-top:18px; animation:entrar 0.5s ease 0.3s both; }
-  #rv-salvado  { font-size:clamp(15px,2vw,25px); color:var(--verde); margin-top:10px; animation:entrar 0.5s ease 0.5s both; }
-  #rv-extra    { font-size:17px; color:var(--oro); font-style:italic; margin-top:13px; animation:entrar 0.5s ease 0.7s both; }
-
-  /* Votación */
-  .votacion-desc { font-size:clamp(15px,1.9vw,22px); color:var(--oro); font-style:italic; text-align:center; margin-top:18px; animation:entrar 0.5s ease 0.3s both; }
-
-  /* Resultado voto */
-  .rv2-supra { font-family:'Bebas Neue',sans-serif; letter-spacing:8px; font-size:14px; color:rgba(237,229,208,0.22); margin-bottom:12px; }
-  #rv2-titulo { font-family:'Bebas Neue',sans-serif; font-size:clamp(50px,10vw,126px); letter-spacing:8px; text-align:center; animation:revelar 0.9s cubic-bezier(0.34,1.56,0.64,1); }
-  #rv2-subtitulo { font-size:clamp(15px,2vw,23px); color:rgba(237,229,208,0.48); text-align:center; animation:entrar 0.5s ease 0.35s both; }
-  #rv2-rol { font-family:'Bebas Neue',sans-serif; font-size:clamp(22px,4vw,50px); letter-spacing:8px; text-align:center; margin-top:18px; animation:revelar 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.5s both; }
-  @keyframes revelar { from{opacity:0;transform:scale(0.6) translateY(14px);} to{opacity:1;transform:scale(1) translateY(0);} }
-
-  /* Roles repartidos */
-  #pantalla-roles .fase-titulo { color:var(--oro); }
-  .roles-aviso { margin-top:34px; font-size:12px; letter-spacing:6px; color:rgba(237,229,208,0.18); text-align:center; }
-
-  /* Fin */
-  #fin-titulo { font-family:'Bebas Neue',sans-serif; font-size:clamp(38px,7vw,88px); letter-spacing:10px; text-align:center; animation:revelar 1s ease; }
-  #fin-subtitulo { font-size:clamp(15px,1.9vw,21px); color:rgba(237,229,208,0.48); font-style:italic; text-align:center; margin-top:8px; }
-  #roles-finales { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:26px; max-width:1000px; }
-  .rol-final { display:flex; flex-direction:column; align-items:center; padding:12px 20px; border:1px solid rgba(200,169,110,0.14); gap:4px; font-size:15px; animation:entrar 0.4s ease both; }
-  .rol-final.impostor { border-color:var(--rojo); background:rgba(184,50,50,0.07); }
-  .rol-final.medico   { border-color:var(--verde); background:rgba(74,158,92,0.06); }
-  .rol-final span  { font-size:22px; }
-  .rol-final small { color:rgba(237,229,208,0.38); font-size:11px; letter-spacing:2px; }
-
-  .dots::after { content:''; animation:dots 1.5s steps(4,end) infinite; }
-  @keyframes dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
+  /* TUTORIAL */
+  #pantalla-tutorial{background:rgba(7,7,13,0.97);padding:40px 80px;gap:0;justify-content:center;}
+  .tuto-inner{width:100%;max-width:780px;display:flex;flex-direction:column;align-items:center;gap:0;}
+  .tuto-paso{display:none;flex-direction:column;align-items:center;text-align:center;gap:20px;animation:entrar 0.4s ease;}
+  .tuto-paso.activo{display:flex;}
+  .tuto-emoji{font-size:72px;line-height:1;}
+  .tuto-titulo{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,60px);letter-spacing:8px;color:var(--oro);}
+  .tuto-texto{font-size:clamp(16px,2vw,22px);color:rgba(237,229,208,0.75);line-height:1.8;max-width:620px;}
+  .tuto-texto strong{color:var(--crema);}
+  .tuto-texto .tag-imp{color:#e05555;}
+  .tuto-texto .tag-med{color:#5cb85c;}
+  .tuto-texto .tag-ino{color:var(--oro);}
+  .tuto-nav{display:flex;align-items:center;gap:24px;margin-top:36px;}
+  #tuto-counter{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:4px;color:rgba(237,229,208,0.3);min-width:60px;text-align:center;}
 </style>
 </head>
 <body>
 
-<!-- Partículas (JS las genera) -->
 <div id="particulas" style="position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;"></div>
-
-<!-- Gotas de sangre -->
-<div class="gota" style="left:8%;  animation-delay:0s;   animation-duration:4.3s"></div>
-<div class="gota" style="left:22%; animation-delay:2.1s; animation-duration:5.2s"></div>
-<div class="gota" style="left:46%; animation-delay:0.7s; animation-duration:3.8s"></div>
-<div class="gota" style="left:70%; animation-delay:1.5s; animation-duration:4.7s"></div>
-<div class="gota" style="left:88%; animation-delay:3.0s; animation-duration:4.0s"></div>
+<div class="gota" style="left:8%;animation-delay:0s;animation-duration:4.3s"></div>
+<div class="gota" style="left:22%;animation-delay:2.1s;animation-duration:5.2s"></div>
+<div class="gota" style="left:46%;animation-delay:0.7s;animation-duration:3.8s"></div>
+<div class="gota" style="left:70%;animation-delay:1.5s;animation-duration:4.7s"></div>
+<div class="gota" style="left:88%;animation-delay:3.0s;animation-duration:4.0s"></div>
 
 <div class="logo-tv">EL IMPOSTOR</div>
 
-<!-- Timer -->
 <div class="timer-wrap" id="timer-wrap">
   <svg class="timer-svg" width="94" height="94" viewBox="0 0 100 100">
     <circle class="timer-bg" cx="50" cy="50" r="45"/>
@@ -494,7 +490,7 @@
   <div id="timer">45</div>
 </div>
 
-<!-- ═══════════ LOBBY ═══════════ -->
+<!-- LOBBY -->
 <div class="pantalla activa" id="pantalla-lobby">
   <div class="lobby-titulo">EL IMPOSTOR</div>
   <div class="lobby-subtitulo">una noche de secretos, traición y muerte</div>
@@ -502,9 +498,10 @@
   <div class="lobby-bottom">
     <div class="lobby-url-box">
       <div class="url-label">Escanea para unirte</div>
-      <div id="qrcode" style="background:#07070d; padding:10px; border:1px solid rgba(200,169,110,0.3); display:inline-block;"></div>
+      <div id="qrcode-wrap"><div id="qrcode"></div></div>
       <div class="lobby-acciones">
         <button class="btn btn-primario" id="btn-iniciar">COMENZAR PARTIDA</button>
+        <button class="btn btn-secundario" id="btn-tutorial">¿CÓMO SE JUEGA?</button>
         <div id="min-players-msg">mínimo 4 jugadores para empezar</div>
       </div>
     </div>
@@ -518,21 +515,83 @@
   </div>
 </div>
 
-<!-- ═══════════ ROLES REPARTIDOS ═══════════ -->
+<!-- TUTORIAL -->
+<div class="pantalla" id="pantalla-tutorial">
+  <div class="tuto-inner">
+
+    <div class="tuto-paso">
+      <div class="tuto-emoji">🎭</div>
+      <div class="tuto-titulo">EL IMPOSTOR</div>
+      <div class="tuto-texto">Un juego de engaño, deducción y supervivencia.<br>Cada jugador recibe un rol secreto en su móvil.<br><strong>Nadie sabe quién es quién.</strong></div>
+    </div>
+
+    <div class="tuto-paso">
+      <div class="tuto-emoji">🔪</div>
+      <div class="tuto-titulo">EL IMPOSTOR</div>
+      <div class="tuto-texto">Hay <span class="tag-imp"><strong>uno o dos impostores</strong></span> entre vosotros.<br>Cada noche eligen en secreto a quién <strong>eliminar</strong>.<br>Su objetivo: quedar en mayoría sin ser descubiertos.</div>
+    </div>
+
+    <div class="tuto-paso">
+      <div class="tuto-emoji">🩺</div>
+      <div class="tuto-titulo">EL MÉDICO</div>
+      <div class="tuto-texto">Hay <span class="tag-med"><strong>un médico</strong></span> entre los inocentes.<br>Cada noche elige a alguien para <strong>proteger</strong>.<br>Si acierta quién va a ser eliminado, lo salva.<br>El impostor sabe que existe... pero no quién es.</div>
+    </div>
+
+    <div class="tuto-paso">
+      <div class="tuto-emoji">😇</div>
+      <div class="tuto-titulo">LOS INOCENTES</div>
+      <div class="tuto-texto">El resto sois <span class="tag-ino"><strong>inocentes</strong></span>.<br>No tenéis poderes especiales, pero tenéis el voto.<br>Observad, debatid y <strong>eliminad al impostor</strong> antes de que sea tarde.</div>
+    </div>
+
+    <div class="tuto-paso">
+      <div class="tuto-emoji">🌙</div>
+      <div class="tuto-titulo">LA NOCHE</div>
+      <div class="tuto-texto">Cada ronda empieza con la <strong>noche oscura</strong>.<br>El impostor actúa desde su móvil en silencio.<br>El médico protege a alguien simultáneamente.<br>Los inocentes esperan... sin saber qué pasa.</div>
+    </div>
+
+    <div class="tuto-paso">
+      <div class="tuto-emoji">💬</div>
+      <div class="tuto-titulo">EL DEBATE</div>
+      <div class="tuto-texto">Al amanecer se revela si alguien murió.<br>Tenéis <strong>90 segundos</strong> para debatir en voz alta.<br>Acusad, defended, mentid... o decid la verdad.<br>El impostor también puede hablar.</div>
+    </div>
+
+    <div class="tuto-paso">
+      <div class="tuto-emoji">🗳️</div>
+      <div class="tuto-titulo">LA VOTACIÓN</div>
+      <div class="tuto-texto">Después del debate, todos votan desde el móvil.<br>El más votado queda <strong>expuesto</strong> y se revela su rol.<br>Si era el impostor, los inocentes ganan esa ronda.<br>Si no... el impostor sigue libre.</div>
+    </div>
+
+    <div class="tuto-paso">
+      <div class="tuto-emoji">🏆</div>
+      <div class="tuto-titulo">¿QUIÉN GANA?</div>
+      <div class="tuto-texto"><span class="tag-ino"><strong>Inocentes:</strong></span> eliminad al impostor por votación.<br><span class="tag-imp"><strong>Impostor:</strong></span> quedaos en igual número que los inocentes.<br><br>El juego dura hasta que alguien gane. <strong>Buena suerte.</strong></div>
+    </div>
+
+    <div class="tuto-nav">
+      <button class="btn btn-skip" id="btn-tuto-prev">← ATRÁS</button>
+      <div id="tuto-counter">1 / 8</div>
+      <button class="btn btn-primario" id="btn-tuto-next">SIGUIENTE →</button>
+    </div>
+    <button class="btn btn-reset" id="btn-cerrar-tutorial" style="margin-top:16px;">✕ CERRAR</button>
+
+  </div>
+</div>
+
+<!-- ROLES REPARTIDOS -->
 <div class="pantalla" id="pantalla-roles">
   <div class="fase-titulo">ROLES<br>REPARTIDOS</div>
   <div class="fase-subtitulo">Comprueba tu móvil en secreto<span class="dots"></span></div>
   <div class="roles-aviso">— NO MUESTRES TU PANTALLA —</div>
 </div>
 
-<!-- ═══════════ NOCHE OSCURA ═══════════ -->
+<!-- NOCHE OSCURA -->
 <div class="pantalla" id="pantalla-accion">
   <div class="fase-titulo" style="color:var(--sangre)">NOCHE<br>OSCURA</div>
   <div id="accion-evento"></div>
   <div class="instruccion-movil">↓ REALIZA TU ACCIÓN EN EL MÓVIL ↓</div>
 </div>
 
-<!-- ═══════════ REVELACIÓN ═══════════ -->
+<!-- REVELACIÓN -->
 <div class="pantalla" id="pantalla-revelacion">
   <div id="rv-mensaje"></div>
   <div id="rv-victima"></div>
@@ -540,7 +599,7 @@
   <div id="rv-extra"></div>
 </div>
 
-<!-- ═══════════ DEBATE ═══════════ -->
+<!-- DEBATE -->
 <div class="pantalla" id="pantalla-debate">
   <div class="fase-titulo">DEBATE</div>
   <div id="debate-ronda" class="fase-subtitulo"></div>
@@ -550,13 +609,13 @@
   </div>
 </div>
 
-<!-- ═══════════ VOTACIÓN ═══════════ -->
+<!-- VOTACIÓN -->
 <div class="pantalla" id="pantalla-votacion">
   <div class="fase-titulo">VOTACIÓN</div>
   <div class="votacion-desc">Vota desde tu móvil — el más votado queda expuesto</div>
 </div>
 
-<!-- ═══════════ RESULTADO VOTO ═══════════ -->
+<!-- RESULTADO VOTO -->
 <div class="pantalla" id="pantalla-resultado-voto">
   <div class="rv2-supra">EL PUEBLO HA HABLADO</div>
   <div id="rv2-titulo"></div>
@@ -564,7 +623,7 @@
   <div id="rv2-rol"></div>
 </div>
 
-<!-- ═══════════ FIN ═══════════ -->
+<!-- FIN -->
 <div class="pantalla" id="pantalla-fin">
   <div id="fin-titulo"></div>
   <div id="fin-subtitulo"></div>
@@ -572,38 +631,30 @@
   <div id="roles-finales"></div>
 </div>
 
-<!-- ═══════════ CONTROLES ═══════════ -->
+<!-- CONTROLES -->
 <div class="controles-bottom">
   <button class="btn btn-primario" id="btn-siguiente">SIGUIENTE RONDA →</button>
-  <button class="btn btn-skip"    id="btn-skip-accion"   style="display:none">⏭ SALTAR NOCHE</button>
-  <button class="btn btn-skip"    id="btn-skip-debate"   style="display:none">⏭ SALTAR DEBATE</button>
-  <button class="btn btn-skip"    id="btn-skip-votacion" style="display:none">⏭ SALTAR VOTACIÓN</button>
-  <button class="btn btn-reset"   id="btn-reset">↺ NUEVA PARTIDA</button>
+  <button class="btn btn-skip" id="btn-skip-accion"   style="display:none">⏭ SALTAR NOCHE</button>
+  <button class="btn btn-skip" id="btn-skip-debate"   style="display:none">⏭ SALTAR DEBATE</button>
+  <button class="btn btn-skip" id="btn-skip-votacion" style="display:none">⏭ SALTAR VOTACIÓN</button>
+  <button class="btn btn-reset" id="btn-reset">↺ NUEVA PARTIDA</button>
 </div>
 
 <script>
-  // Partículas flotantes
-  const pc = document.getElementById('particulas');
-  for(let i=0;i<20;i++){
-    const p=document.createElement('div'); p.className='particula';
-    p.style.cssText=`left:${Math.random()*100}%;width:${1+Math.random()*2.5}px;height:${1+Math.random()*2.5}px;opacity:${0.15+Math.random()*0.45};animation-duration:${9+Math.random()*16}s;animation-delay:${-Math.random()*24}s;`;
-    pc.appendChild(p);
-  }
+  const pc=document.getElementById('particulas');
+  for(let i=0;i<20;i++){const p=document.createElement('div');p.className='particula';p.style.cssText=`left:${Math.random()*100}%;width:${1+Math.random()*2.5}px;height:${1+Math.random()*2.5}px;opacity:${0.15+Math.random()*0.45};animation-duration:${9+Math.random()*16}s;animation-delay:${-Math.random()*24}s;`;pc.appendChild(p);}
 
-  // QR — fuera del módulo para evitar conflictos
-  const QRURL = "https://mari0isn00-netizen.github.io/el-impostor/movil.html?sala=fiesta1";
-  new QRCode(document.getElementById('qrcode'), {
-    text: QRURL, width: 180, height: 180,
-    colorDark: '#c8a96e', colorLight: '#07070d',
+  new QRCode(document.getElementById('qrcode'),{
+    text:"https://mari0isn00-netizen.github.io/el-impostor/movil.html?sala=fiesta1",
+    width:180,height:180,colorDark:'#c8a96e',colorLight:'#07070d'
   });
 
-  // Timer y skip buttons — mostrar solo cuando toca
-  const observer = new MutationObserver(() => {
-    const id = document.querySelector('.pantalla.activa')?.id;
-    document.getElementById('timer-wrap').style.display        = ['pantalla-accion','pantalla-debate','pantalla-votacion'].includes(id)?'block':'none';
-    document.getElementById('btn-skip-accion').style.display   = id==='pantalla-accion'   ?'block':'none';
-    document.getElementById('btn-skip-debate').style.display   = id==='pantalla-debate'   ?'block':'none';
-    document.getElementById('btn-skip-votacion').style.display = id==='pantalla-votacion' ?'block':'none';
+  const observer=new MutationObserver(()=>{
+    const id=document.querySelector('.pantalla.activa')?.id;
+    document.getElementById('timer-wrap').style.display=['pantalla-accion','pantalla-debate','pantalla-votacion'].includes(id)?'block':'none';
+    document.getElementById('btn-skip-accion').style.display=id==='pantalla-accion'?'block':'none';
+    document.getElementById('btn-skip-debate').style.display=id==='pantalla-debate'?'block':'none';
+    document.getElementById('btn-skip-votacion').style.display=id==='pantalla-votacion'?'block':'none';
   });
   observer.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});
 </script>
