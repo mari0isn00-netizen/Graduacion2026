@@ -34,11 +34,6 @@
   let timerInterval = null;
 
   window.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('url-movil').textContent = MOBILE_URL;
-    new QRCode(document.getElementById('qrcode'), {
-      text: MOBILE_URL, width: 160, height: 160,
-      colorDark: '#c8a96e', colorLight: '#07070d',
-    });
     escucharJugadores();
     escucharEstado();
     document.getElementById('btn-iniciar').addEventListener('click', iniciarJuego);
@@ -594,6 +589,13 @@
     p.style.cssText=`left:${Math.random()*100}%;width:${1+Math.random()*2.5}px;height:${1+Math.random()*2.5}px;opacity:${0.15+Math.random()*0.45};animation-duration:${9+Math.random()*16}s;animation-delay:${-Math.random()*24}s;`;
     pc.appendChild(p);
   }
+
+  // QR — fuera del módulo para evitar conflictos
+  const QRURL = "https://mari0isn00-netizen.github.io/el-impostor/movil.html?sala=fiesta1";
+  new QRCode(document.getElementById('qrcode'), {
+    text: QRURL, width: 180, height: 180,
+    colorDark: '#c8a96e', colorLight: '#07070d',
+  });
 
   // Timer y skip buttons — mostrar solo cuando toca
   const observer = new MutationObserver(() => {
