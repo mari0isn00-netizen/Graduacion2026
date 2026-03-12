@@ -225,9 +225,11 @@
 
   async function resetJuego() {
     clearInterval(timerInterval);
-    await set(salaRef,{jugadores:{},estado:{fase:'lobby'}});
+    await set(salaRef, { estado:{ fase:'lobby' } });
     mostrarPantalla('pantalla-lobby');
     document.getElementById('btn-siguiente').style.display='none';
+    jugadores = {};
+    renderLobby();
   }
 
   function mostrarPantalla(id) {
@@ -521,50 +523,50 @@
 
     <div class="tuto-paso">
       <div class="tuto-emoji">🎭</div>
-      <div class="tuto-titulo">EL IMPOSTOR</div>
-      <div class="tuto-texto">Un juego de engaño, deducción y supervivencia.<br>Cada jugador recibe un rol secreto en su móvil.<br><strong>Nadie sabe quién es quién.</strong></div>
+      <div class="tuto-titulo">CÓMO SE JUEGA</div>
+      <div class="tuto-texto">Cada jugador recibe un rol secreto en su móvil.<br>Hay tres roles: <span class="tag-imp"><strong>Impostor</strong></span>, <span class="tag-med"><strong>Médico</strong></span> e <span class="tag-ino"><strong>Inocente</strong></span>.<br>El juego se divide en rondas de noche, debate y votación.</div>
     </div>
 
     <div class="tuto-paso">
       <div class="tuto-emoji">🔪</div>
       <div class="tuto-titulo">EL IMPOSTOR</div>
-      <div class="tuto-texto">Hay <span class="tag-imp"><strong>uno o dos impostores</strong></span> entre vosotros.<br>Cada noche eligen en secreto a quién <strong>eliminar</strong>.<br>Su objetivo: quedar en mayoría sin ser descubiertos.</div>
+      <div class="tuto-texto">Cada noche elige en secreto a quién <strong>eliminar</strong>.<br>Durante el debate debe pasar desapercibido.<br>Gana si iguala en número a los jugadores restantes.</div>
     </div>
 
     <div class="tuto-paso">
       <div class="tuto-emoji">🩺</div>
       <div class="tuto-titulo">EL MÉDICO</div>
-      <div class="tuto-texto">Hay <span class="tag-med"><strong>un médico</strong></span> entre los inocentes.<br>Cada noche elige a alguien para <strong>proteger</strong>.<br>Si acierta quién va a ser eliminado, lo salva.<br>El impostor sabe que existe... pero no quién es.</div>
+      <div class="tuto-texto">Cada noche elige a alguien para <strong>proteger</strong>.<br>Si el impostor ataca a esa persona, la salva.<br>El impostor sabe que existe un médico, pero no quién es.</div>
     </div>
 
     <div class="tuto-paso">
       <div class="tuto-emoji">😇</div>
       <div class="tuto-titulo">LOS INOCENTES</div>
-      <div class="tuto-texto">El resto sois <span class="tag-ino"><strong>inocentes</strong></span>.<br>No tenéis poderes especiales, pero tenéis el voto.<br>Observad, debatid y <strong>eliminad al impostor</strong> antes de que sea tarde.</div>
+      <div class="tuto-texto">No tienen acciones especiales durante la noche.<br>Su única herramienta es el debate y el voto.<br>Deben identificar al impostor antes de quedar en minoría.</div>
     </div>
 
     <div class="tuto-paso">
       <div class="tuto-emoji">🌙</div>
       <div class="tuto-titulo">LA NOCHE</div>
-      <div class="tuto-texto">Cada ronda empieza con la <strong>noche oscura</strong>.<br>El impostor actúa desde su móvil en silencio.<br>El médico protege a alguien simultáneamente.<br>Los inocentes esperan... sin saber qué pasa.</div>
+      <div class="tuto-texto">El impostor y el médico actúan en silencio desde su móvil.<br>Los inocentes esperan sin saber qué ocurre.<br>Al terminar, se anuncia si hubo eliminación.</div>
     </div>
 
     <div class="tuto-paso">
       <div class="tuto-emoji">💬</div>
       <div class="tuto-titulo">EL DEBATE</div>
-      <div class="tuto-texto">Al amanecer se revela si alguien murió.<br>Tenéis <strong>90 segundos</strong> para debatir en voz alta.<br>Acusad, defended, mentid... o decid la verdad.<br>El impostor también puede hablar.</div>
+      <div class="tuto-texto">90 segundos para discutir en voz alta.<br>Se puede acusar, defender o mentir — sin restricciones.<br>El impostor participa como cualquier otro jugador.</div>
     </div>
 
     <div class="tuto-paso">
       <div class="tuto-emoji">🗳️</div>
       <div class="tuto-titulo">LA VOTACIÓN</div>
-      <div class="tuto-texto">Después del debate, todos votan desde el móvil.<br>El más votado queda <strong>expuesto</strong> y se revela su rol.<br>Si era el impostor, los inocentes ganan esa ronda.<br>Si no... el impostor sigue libre.</div>
+      <div class="tuto-texto">Todos votan desde el móvil al sospechoso principal.<br>El más votado queda expuesto y se revela su rol.<br>En caso de empate, nadie es expulsado esa ronda.</div>
     </div>
 
     <div class="tuto-paso">
       <div class="tuto-emoji">🏆</div>
-      <div class="tuto-titulo">¿QUIÉN GANA?</div>
-      <div class="tuto-texto"><span class="tag-ino"><strong>Inocentes:</strong></span> eliminad al impostor por votación.<br><span class="tag-imp"><strong>Impostor:</strong></span> quedaos en igual número que los inocentes.<br><br>El juego dura hasta que alguien gane. <strong>Buena suerte.</strong></div>
+      <div class="tuto-titulo">CONDICIÓN DE VICTORIA</div>
+      <div class="tuto-texto"><span class="tag-ino"><strong>Inocentes:</strong></span> eliminar al impostor por votación.<br><span class="tag-imp"><strong>Impostor:</strong></span> igualar en número a los inocentes vivos.<br><br>El juego termina en cuanto se cumple una de las dos.</div>
     </div>
 
     <div class="tuto-nav">
