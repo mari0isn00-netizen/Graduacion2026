@@ -427,7 +427,7 @@ function iniciarJuego(){
   var impostores=arr.filter(function(e){return roles[e[0]]==='impostor';}).map(function(e){return e[1].nombre;});
   var medicoPar=arr.find(function(e){return roles[e[0]]==='medico';});
   arr.forEach(function(e){if(roles[e[0]]==='impostor'){updates['salas/'+SALA+'/jugadores/'+e[0]+'/sabemedico']=medicoPar?medicoPar[0]:null;updates['salas/'+SALA+'/jugadores/'+e[0]+'/companeros']=impostores.filter(function(n){return n!==(jugadores[e[0]]&&jugadores[e[0]].nombre);});}});
-  db.ref().update(updates).then(function(){return estadoRef.set({fase:'repartiendo_roles',ronda:1,maxRondas:5,accionImpostor:null,accionMedico:null,evento:null,ultimaVictima:null,ultimoSalvado:null,votos:{},resultadoVoto:null});}).then(function(){mostrarPantalla('pantalla-roles');setTimeout(iniciarFaseAccion,6000);});
+  db.ref().update(updates).then(function(){return estadoRef.set({fase:'repartiendo_roles',ronda:1,maxRondas:5,accionImpostor:null,accionMedico:null,evento:null,ultimaVictima:null,ultimoSalvado:null,votos:{},resultadoVoto:null});}).then(function(){mostrarPantalla('pantalla-roles');setTimeout(iniciarFaseAccion,10000);});
 }
 
 function iniciarFaseAccion(){

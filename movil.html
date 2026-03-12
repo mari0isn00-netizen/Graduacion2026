@@ -154,6 +154,12 @@
       document.getElementById('rol-extra').innerHTML = '';
     }
     if (navigator.vibrate) navigator.vibrate([100,50,100]);
+
+    // Si la fase ya cambió a 'accion' antes de que llegara el rol, avanzar ahora
+    get(ref(db, `salas/${SALA}/estado`)).then(snap => {
+      const estado = snap.val();
+      if (estado && estado.fase === 'accion') manejarFase(estado);
+    });
   }
 
   function mostrarAccionImpostor(estado) {
