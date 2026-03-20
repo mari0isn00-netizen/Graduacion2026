@@ -549,15 +549,27 @@ function girar(tIdx){
   document.getElementById('rl-sel').classList.remove('show');
   document.getElementById('rl-selsub').classList.remove('show');
   playS('drum_roll');
+
+  // El puntero está en la parte SUPERIOR de la ruleta (−π/2 desde el origen)
+  // Para que el segmento tIdx quede bajo el puntero, su centro debe estar en −π/2
+  // Centro del segmento tIdx = rAng + tIdx*NARC + NARC/2
+  // Queremos que ese centro quede en −π/2 + k*2π (k entero)
+  // => necesitamos girar: delta = (−π/2 − (rAng + tIdx*NARC + NARC/2)) mod 2π
+  // Luego añadimos vueltas completas para que la animación sea vistosa
+
   let extra;
-  if(tIdx!==undefined){
-    const sc=(Math.PI*2)-tIdx*NARC-NARC/2;
-    const tn=((sc-rAng)%(Math.PI*2)+(Math.PI*2))%(Math.PI*2);
-    extra=tn+(Math.floor(Math.random()*3)+8)*Math.PI*2;
+  const minVueltas = 8;
+  if(tIdx !== undefined && tIdx >= 0 && tIdx < JUEGOS_RULETA.length){
+    const target = -Math.PI/2 - NARC/2 - tIdx*NARC; // ángulo de inicio del segmento bajo el puntero
+    let delta = (target - rAng) % (Math.PI*2);
+    if(delta <= 0) delta += Math.PI*2; // asegurar giro positivo (sentido horario)
+    extra = delta + (minVueltas + Math.floor(Math.random()*3)) * Math.PI*2;
   } else {
-    extra=(Math.floor(Math.random()*5)+8)*Math.PI*2;
+    // Aleatorio
+    extra = (Math.floor(Math.random()*5) + minVueltas) * Math.PI*2;
   }
-  const dur=5500,st=performance.now(),sa=rAng;
+
+  const dur=5500, st=performance.now(), sa=rAng;
   let lastSect=Math.floor(rAng/NARC);
   function ease(t){return 1-Math.pow(1-t,4.5);}
   function anim(now){
@@ -569,11 +581,11 @@ function girar(tIdx){
     if(t<1){requestAnimationFrame(anim);}
     else{
       rAng=(sa+extra)%(Math.PI*2);spinning=false;
-      const norm=(((-Math.PI/2)-rAng)%(Math.PI*2)+(Math.PI*2))%(Math.PI*2);
+      // El segmento bajo el puntero: puntero en −π/2, relativo al ángulo actual
+      const norm=((-Math.PI/2)-rAng%(Math.PI*2)+(Math.PI*2)*10)%(Math.PI*2);
       selIdx=Math.floor(norm/NARC)%JUEGOS_RULETA.length;
       drawR(rAng);playS('fanfare');sparks();
       const j=JUEGOS_RULETA[selIdx];
-      // Encontrar el índice global en JUEGOS para mostrarAlertaLoc/mostrarInstr
       const globalIdx=JUEGOS.findIndex(g=>g.id===j.id);
       setTimeout(()=>{
         document.getElementById('rl-sel').textContent=j.e+' '+j.n;
