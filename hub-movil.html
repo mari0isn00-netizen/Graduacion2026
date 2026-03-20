@@ -405,7 +405,7 @@ body { padding-bottom: 32px; }
   <!-- TAB: TV Control -->
   <div class="tab-panel active" id="tab-tv">
     <div class="control-section">
-      <div class="section-label">◆ PANTALLA TV</div>
+      <div class="section-label">◆ TV INTERIOR 🏠</div>
       <button class="btn-control primary" id="btn-standby">
         <span class="btn-icon">✨</span>
         <div>
@@ -427,23 +427,52 @@ body { padding-bottom: 32px; }
           <span class="btn-sub">Muestra el ranking en TV</span>
         </div>
       </button>
+      <button class="btn-control primary" id="btn-pick">
+        <span class="btn-icon">🎯</span>
+        <div>
+          ELEGIR JUEGO
+          <span class="btn-sub">El admin elige manualmente</span>
+        </div>
+      </button>
     </div>
 
     <div class="control-section">
-      <div class="section-label">◆ PANTALLAS</div>
-      <button class="btn-control" id="btn-sync-interior">
-        <span class="btn-icon">🏠</span>
-        <div>
-          SINCRONIZAR TV INTERIOR
-          <span class="btn-sub">Casa · juegos digitales</span>
-        </div>
-      </button>
-      <button class="btn-control" id="btn-sync-exterior">
+      <div class="section-label">◆ TV EXTERIOR 🌿</div>
+      <button class="btn-control" style="border-color:rgba(0,200,83,0.2)" id="btn-ext-standby">
         <span class="btn-icon">🌿</span>
-        <div>
-          SINCRONIZAR TV EXTERIOR
-          <span class="btn-sub">Porche · juegos de campo</span>
-        </div>
+        <div>STANDBY EXTERIOR<span class="btn-sub">Pantalla de espera porche</span></div>
+      </button>
+      <button class="btn-control" style="border-color:rgba(0,200,83,0.2)" id="btn-ext-ranking">
+        <span class="btn-icon">🏆</span>
+        <div>RANKING EXTERIOR<span class="btn-sub">Clasificación en TV porche</span></div>
+      </button>
+      <button class="btn-control" style="border-color:rgba(0,200,83,0.2)" id="btn-ext-esconder">
+        <span class="btn-icon">🫙</span>
+        <div>LANZAR ESCONDER OBJETO<span class="btn-sub">Instrucciones en TV exterior</span></div>
+      </button>
+      <button class="btn-control" style="border-color:rgba(0,200,83,0.2)" id="btn-ext-escondite">
+        <span class="btn-icon">🏃</span>
+        <div>LANZAR ESCONDITE<span class="btn-sub">Instrucciones en TV exterior</span></div>
+      </button>
+    </div>
+
+    <div class="control-section">
+      <div class="section-label">◆ TIMERS DE CAMPO ⏱️</div>
+      <button class="btn-control" style="border-color:rgba(0,200,83,0.18)" id="btn-t-equipos">
+        <span class="btn-icon">👥</span>
+        <div>12 MIN — Formar equipos<span class="btn-sub">Esconder objeto · fase inicial</span></div>
+      </button>
+      <button class="btn-control" style="border-color:rgba(0,200,83,0.18)" id="btn-t-esconder">
+        <span class="btn-icon">🫙</span>
+        <div>10 MIN — Esconder objeto<span class="btn-sub">A esconder por el campo</span></div>
+      </button>
+      <button class="btn-control" style="border-color:rgba(0,200,83,0.18)" id="btn-t-buscar">
+        <span class="btn-icon">🔍</span>
+        <div>6 MIN — Buscar el objeto<span class="btn-sub">A encontrarlo</span></div>
+      </button>
+      <button class="btn-control" style="border-color:rgba(255,140,0,0.2)" id="btn-t-escondite">
+        <span class="btn-icon">🏃</span>
+        <div>5 MIN — Escondite extremo<span class="btn-sub">Tiempo del escondite</span></div>
       </button>
     </div>
 
@@ -704,22 +733,33 @@ document.getElementById('btn-reset-puntos').addEventListener('click', () => {
 });
 
 // ─── CONTROL TV ───
+const hubExtRef = db.ref('hub_exterior');
+
 function enviarComando(cmd, extra = {}) {
   hubRef.update({ comando: cmd, ...extra, timestamp: Date.now() });
-  showToast('Enviado a TV');
+  showToast('📺 Interior: ' + cmd);
+}
+function enviarComandoExt(cmd, extra = {}) {
+  hubExtRef.update({ comando: cmd, ...extra, timestamp: Date.now() });
+  showToast('🌿 Exterior: ' + cmd);
+}
+function startTimerExt(secs, label, fase) {
+  hubExtRef.update({ comando: 'timer', timerConfig: { secs, label, fase }, timestamp: Date.now() });
+  showToast('⏱️ Timer: ' + label);
 }
 
 document.getElementById('btn-standby').addEventListener('click', () => enviarComando('standby'));
 document.getElementById('btn-ruleta').addEventListener('click', () => enviarComando('ruleta'));
 document.getElementById('btn-ranking').addEventListener('click', () => enviarComando('ranking'));
-document.getElementById('btn-sync-interior').addEventListener('click', () => {
-  hubRef.update({ pantalla: 'interior' });
-  showToast('TV Interior sincronizada');
-});
-document.getElementById('btn-sync-exterior').addEventListener('click', () => {
-  hubRef.update({ pantalla: 'exterior' });
-  showToast('TV Exterior sincronizada');
-});
+document.getElementById('btn-pick').addEventListener('click', () => enviarComando('pick'));
+document.getElementById('btn-ext-standby').addEventListener('click', () => enviarComandoExt('standby'));
+document.getElementById('btn-ext-ranking').addEventListener('click', () => enviarComandoExt('ranking'));
+document.getElementById('btn-ext-esconder').addEventListener('click', () => enviarComandoExt('instrucciones', { juegoIndex: 0 }));
+document.getElementById('btn-ext-escondite').addEventListener('click', () => enviarComandoExt('instrucciones', { juegoIndex: 1 }));
+document.getElementById('btn-t-equipos').addEventListener('click', () => startTimerExt(720, 'Formar equipos', 'ELIGE TU EQUIPO'));
+document.getElementById('btn-t-esconder').addEventListener('click', () => startTimerExt(600, 'Tiempo de esconder', 'ESCONDER OBJETO'));
+document.getElementById('btn-t-buscar').addEventListener('click', () => startTimerExt(360, 'Tiempo de buscar', '¡A BUSCAR!'));
+document.getElementById('btn-t-escondite').addEventListener('click', () => startTimerExt(300, 'Escondite Extremo', 'EN JUEGO'));
 
 function lanzarJuego(idx) {
   enviarComando('lanzar', { juegoIndex: idx });
