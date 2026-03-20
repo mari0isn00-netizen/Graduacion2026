@@ -529,13 +529,24 @@ function abrirModalParams(juego, onConfirm){
         <button class="p-btn" onclick="chgParam('${p.key}',1,${p.min},${p.max})">+</button>
       </div>
     </div>`).join('');
-  // Mostrar link para que el admin juegue
-  const url=juego.id+'-movil.html';
+  // Botón principal: ir al panel del juego
   document.getElementById('modal-params-content').innerHTML+=`
-    <a class="jugar-link" href="${url}" target="_blank">📱 UNIRME COMO JUGADOR →</a>`;
+    <a class="jugar-link" style="background:linear-gradient(135deg,rgba(124,92,191,0.2),rgba(124,92,191,0.08));border-color:rgba(124,92,191,0.4);color:var(--purple2);text-decoration:none;display:block;width:100%;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:4px;padding:14px;text-align:center;margin-top:10px" href="${juego.id}-admin.html" onclick="guardarParamsYAbrir('${juego.id}')">
+      ⚙️ ABRIR PANEL DEL JUEGO →
+    </a>
+    <div style="font-size:9px;letter-spacing:3px;color:rgba(201,168,76,0.25);text-align:center;margin-top:6px">Desde el panel podrás iniciar cuando quieras y luego unirte como jugador</div>`;
   modalOnConfirm=onConfirm;
-  document.getElementById('modal-confirm-btn').onclick=()=>{cerrarModal();onConfirm(modalParamVals);};
+  document.getElementById('modal-confirm-btn').style.display='none'; // ocultamos el botón genérico
   document.getElementById('modal-params').classList.add('open');
+}
+
+function guardarParamsYAbrir(juegoId){
+  // Guardar parámetros en Firebase antes de abrir el panel
+  db.ref('gameParams/'+juegoId).set({...modalParamVals,timestamp:Date.now()});
+  if(juegoId==='undercover'){
+    db.ref('undercover').update({spyCount:modalParamVals.spyCount||1,fase:'lobby'});
+  }
+  cerrarModal();
 }
 
 function chgParam(key,d,min,max){
@@ -545,6 +556,7 @@ function chgParam(key,d,min,max){
 
 function cerrarModal(){
   document.getElementById('modal-params').classList.remove('open');
+  document.getElementById('modal-confirm-btn').style.display='';
   modalOnConfirm=null;
 }
 

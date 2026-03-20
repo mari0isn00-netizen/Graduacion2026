@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Undercover — Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{--purple:#7c5cbf;--purple2:#a07de0;--dark:#04050d;--cream:#f0e6cc;--cream2:#6a5a3a;--spy:#cc1111;--spy2:#ff3333;--green:#00c853;--gold:#c9a84c;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{background:var(--dark);color:var(--cream);font-family:'Share Tech Mono',monospace;min-height:100%;}
+.wrap{padding:18px 16px 60px;}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid rgba(124,92,191,0.15);margin-bottom:16px;}
+.header-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:5px;color:var(--purple2);}
+.header-fase{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:3px;color:rgba(124,92,191,0.4);background:rgba(124,92,191,0.06);padding:3px 8px;border:1px solid rgba(124,92,191,0.12);}
+
+.slbl{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:6px;color:rgba(124,92,191,0.25);margin-bottom:8px;margin-top:16px;}
+
+/* Jugadores */
+.jug-grid{display:flex;flex-wrap:wrap;gap:5px;background:rgba(0,0,0,0.2);border:1px solid rgba(124,92,191,0.08);padding:10px;min-height:44px;margin-bottom:6px;}
+.jchip{background:rgba(124,92,191,0.07);border:1px solid rgba(124,92,191,0.18);padding:4px 10px;font-size:10px;color:rgba(160,125,224,0.8);}
+.jchip.spy{border-color:rgba(204,17,17,0.4);color:var(--spy2);}
+.jchip.eli{opacity:0.3;text-decoration:line-through;}
+
+/* Spy selector */
+.spy-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(204,17,17,0.04);border:1px solid rgba(204,17,17,0.15);margin-bottom:8px;}
+.spy-lbl{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:4px;color:rgba(204,17,17,0.5);flex:1;}
+.spy-btn{width:34px;height:34px;background:rgba(204,17,17,0.07);border:1px solid rgba(204,17,17,0.2);color:var(--spy2);font-family:'Bebas Neue',sans-serif;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.spy-btn:active{background:rgba(204,17,17,0.2);}
+.spy-num{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--spy2);min-width:36px;text-align:center;}
+
+/* Botones */
+.btn-big{width:100%;background:linear-gradient(135deg,rgba(124,92,191,0.25),rgba(124,92,191,0.1));border:1px solid rgba(124,92,191,0.5);color:var(--purple2);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:5px;padding:18px;cursor:pointer;transition:all 0.15s;margin-bottom:8px;}
+.btn-big:active{transform:scale(0.97);background:rgba(124,92,191,0.3);}
+.btn-big:disabled{opacity:0.3;cursor:not-allowed;}
+.btn-big.verde{background:linear-gradient(135deg,rgba(0,200,83,0.2),rgba(0,200,83,0.07));border-color:rgba(0,200,83,0.4);color:var(--green);}
+.btn-big.rojo{background:linear-gradient(135deg,rgba(204,17,17,0.2),rgba(204,17,17,0.07));border-color:rgba(204,17,17,0.4);color:var(--spy2);}
+
+.abtn{width:100%;background:rgba(124,92,191,0.04);border:1px solid rgba(124,92,191,0.14);color:var(--cream);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;padding:13px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:11px;margin-bottom:7px;transition:all 0.12s;}
+.abtn:active{background:rgba(124,92,191,0.18);transform:scale(0.985);}
+.abtn .ico{font-size:18px;flex-shrink:0;}
+.abtn .info{flex:1;}
+.abtn .sub{display:block;font-size:9px;letter-spacing:2px;color:var(--cream2);font-family:'Share Tech Mono',monospace;margin-top:1px;}
+.abtn.danger{border-color:rgba(204,17,17,0.3);}
+.abtn.danger:active{background:rgba(204,17,17,0.12);}
+
+/* Info box */
+.info-box{background:rgba(0,0,0,0.2);border:1px solid rgba(124,92,191,0.08);padding:12px;margin-bottom:8px;font-size:10px;line-height:2;color:rgba(240,230,204,0.5);}
+.hl{color:var(--purple2);}
+.hl-spy{color:var(--spy2);}
+.hl-green{color:var(--green);}
+
+/* Palabras */
+.palabras-box{background:rgba(124,92,191,0.04);border:1px solid rgba(124,92,191,0.15);padding:14px;margin-bottom:8px;text-align:center;}
+.pal-lbl{font-size:9px;letter-spacing:5px;color:rgba(124,92,191,0.3);margin-bottom:4px;}
+.pal-word{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;}
+.pal-word.real{color:var(--cream);}
+.pal-word.spy-w{color:var(--spy2);margin-top:4px;}
+.pal-vs{font-size:10px;letter-spacing:4px;color:rgba(240,230,204,0.15);margin:4px 0;}
+
+/* Link jugador */
+.link-jugador{display:block;width:100%;background:rgba(0,200,83,0.06);border:1px solid rgba(0,200,83,0.25);color:var(--green);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:4px;padding:13px;text-align:center;text-decoration:none;margin-bottom:8px;transition:all 0.12s;}
+.link-jugador:active{background:rgba(0,200,83,0.15);}
+
+/* Votos cats */
+.cat-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(124,92,191,0.05);}
+.cat-name{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;flex:1;color:rgba(240,230,204,0.55);}
+.cat-v{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--purple2);min-width:24px;text-align:right;}
+.cat-row.win .cat-name{color:var(--cream);}
+
+/* Toast */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(4,5,13,0.97);border:1px solid rgba(124,92,191,0.25);color:var(--purple2);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;padding:9px 22px;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);z-index:999;white-space:nowrap;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="header-title">🕵️ UNDERCOVER</div>
+    <div class="header-fase" id="header-fase">LOBBY</div>
+  </div>
+
+  <!-- JUGADORES -->
+  <div class="slbl">JUGADORES CONECTADOS (<span id="jug-count">0</span>)</div>
+  <div class="jug-grid" id="jug-grid"></div>
+
+  <!-- INFO / ESTADO -->
+  <div class="info-box" id="info-box">Esperando jugadores...</div>
+
+  <!-- ACCIONES (cambian según la fase) -->
+  <div id="acciones"></div>
+
+  <!-- PALABRAS (visible tras generarlas) -->
+  <div id="palabras-wrap" style="display:none">
+    <div class="slbl">PALABRAS GENERADAS</div>
+    <div class="palabras-box">
+      <div class="pal-lbl">INOCENTES</div>
+      <div class="pal-word real" id="pal-real">—</div>
+      <div class="pal-vs">VS</div>
+      <div class="pal-lbl">SPIES</div>
+      <div class="pal-word spy-w" id="pal-spy">—</div>
+    </div>
+  </div>
+
+  <!-- SEPARADOR -->
+  <div class="slbl" style="margin-top:24px">CONFIGURACIÓN</div>
+  <div class="spy-row">
+    <div class="spy-lbl">🔴 NÚMERO DE SPIES</div>
+    <button class="spy-btn" onclick="chgSpy(-1)">−</button>
+    <div class="spy-num" id="spy-num">1</div>
+    <button class="spy-btn" onclick="chgSpy(1)">+</button>
+  </div>
+
+  <!-- LINK PARA JUGAR -->
+  <div class="slbl">UNIRME COMO JUGADOR</div>
+  <a class="link-jugador" href="undercover-movil.html">📱 IR A UNDERCOVER MÓVIL →</a>
+
+  <!-- RESET -->
+  <div class="slbl" style="margin-top:8px">CONTROL</div>
+  <button class="abtn danger" onclick="resetJuego()"><span class="ico">⚠️</span><div class="info">REINICIAR<span class="sub">Vuelve al lobby vacío</span></div></button>
+</div>
+<div id="toast">✓</div>
+
+<script>
+const FC={apiKey:"AIzaSyAib6PDnV_u8GuDp-PnJvop91qv9JHfffc",authDomain:"impostor-322cc.firebaseapp.com",databaseURL:"https://impostor-322cc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"impostor-322cc",storageBucket:"impostor-322cc.firebasestorage.app",messagingSenderId:"808449155212",appId:"1:808449155212:web:c32ca0565b083056f31ba9"};
+firebase.initializeApp(FC);
+const db=firebase.database(), GR=db.ref('undercover');
+
+const CATS=[{id:'trends',name:'Tendencias & Viral'},{id:'rrss',name:'Redes Sociales'},{id:'deporte',name:'Deporte'},{id:'musica',name:'Música'},{id:'pelis',name:'Pelis & Series'},{id:'comida',name:'Comida'},{id:'viajes',name:'Viajes'},{id:'random',name:'Random'}];
+
+let estado={}, spyCount=1;
+let tT=null;
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>e.classList.remove('show'),2200);}
+
+// ── SPY COUNT ──
+function chgSpy(d){
+  const jugs=Object.keys(estado.jugadores||{}).length;
+  const max=Math.max(1,Math.floor(jugs/2)||3);
+  spyCount=Math.max(1,Math.min(max,spyCount+d));
+  document.getElementById('spy-num').textContent=spyCount;
+  GR.update({spyCount});
+}
+
+// ── RENDER JUGADORES ──
+function renderJugadores(d){
+  const jugs=Object.entries(d.jugadores||{});
+  document.getElementById('jug-count').textContent=jugs.length;
+  const eli=d.eliminados||[];
+  document.getElementById('jug-grid').innerHTML=jugs.map(([id,j])=>{
+    const esSpy=d.roles&&d.roles[id]&&d.roles[id].rol==='spy';
+    const isEli=eli.includes(j.nombre);
+    return`<div class="jchip ${esSpy?'spy':''} ${isEli?'eli':''}">${j.nombre}${esSpy?' 🔴':''}</div>`;
+  }).join('')||'<span style="font-size:10px;color:rgba(124,92,191,0.25)">Sin jugadores aún</span>';
+}
+
+// ── RENDER INFO ──
+function renderInfo(d){
+  const fase=d.fase||'lobby';
+  const jugs=Object.values(d.jugadores||{});
+  const eli=d.eliminados||[];
+  const activos=jugs.filter(j=>!eli.includes(j.nombre));
+  let txt='';
+  if(fase==='lobby') txt=`<span class="hl">${jugs.length}</span> jugadores conectados`;
+  else if(fase==='cats'){
+    const cv=d.catVotos||{};
+    const totalV=Object.values(cv).reduce((a,b)=>a+b,0);
+    const top=Object.entries(cv).sort((a,b)=>b[1]-a[1])[0];
+    const catName=top?CATS.find(c=>c.id===top[0])?.name||top[0]:'—';
+    txt=`Votación de categorías: <span class="hl">${totalV}/${jugs.length}</span> votos<br>Ganando: <span class="hl">${catName}</span>`;
+    // Mostrar votos
+    document.getElementById('info-box').innerHTML=txt;
+    return;
+  }
+  else if(fase==='generando') txt='<span class="hl">IA generando palabras...</span>';
+  else if(fase==='roles') txt='Los jugadores están viendo sus roles';
+  else if(fase==='ronda') txt=`Ronda <span class="hl">${d.ronda||1}</span> · Turno: <span class="hl">${d.turnoNombre||'—'}</span><br>Activos: ${activos.length} · Eliminados: ${eli.length}`;
+  else if(fase==='votacion'){
+    const top=Object.entries(d.votos||{}).sort((a,b)=>b[1]-a[1])[0];
+    txt=`Votación · Más votado: <span class="hl-spy">${top?top[0]+' ('+top[1]+')':'nadie aún'}</span>`;
+  }
+  else if(fase==='reveal') txt=`<span class="hl-spy">${d.eliminadoNombre}</span> expulsado — era ${d.esSpy?'<span class="hl-spy">SPY 🔴</span>':'<span class="hl-green">INOCENTE ✅</span>'}`;
+  else if(fase==='fin') txt=`Ganador: <span class="${d.ganador==='spy'?'hl-spy':'hl-green'}">${d.ganador==='spy'?'EL SPY 🔴':'LOS INOCENTES ✅'}</span>`;
+  document.getElementById('info-box').innerHTML=txt;
+}
+
+// ── RENDER ACCIONES ──
+function renderAcciones(d){
+  const fase=d.fase||'lobby';
+  const jugs=Object.values(d.jugadores||{});
+  let html='';
+
+  if(fase==='lobby'){
+    html=`
+      <button class="btn-big" ${jugs.length<2?'disabled':''} onclick="iniciarJuego()">
+        ${jugs.length<2?'ESPERANDO JUGADORES...':'▶ INICIAR JUEGO'}
+      </button>
+      ${jugs.length<2?'<div style="font-size:9px;letter-spacing:3px;color:rgba(124,92,191,0.3);text-align:center">Mínimo 2 jugadores</div>':''}`;
+  }
+  else if(fase==='cats'){
+    const totalV=Object.values(d.catVotos||{}).reduce((a,b)=>a+b,0);
+    html=`
+      <button class="btn-big" onclick="forzarGeneracion()">🤖 GENERAR PALABRAS YA</button>
+      <div style="font-size:9px;letter-spacing:3px;color:rgba(124,92,191,0.3);text-align:center;margin-top:-4px;margin-bottom:8px">${totalV}/${jugs.length} votos · o espera a que voten todos</div>`;
+  }
+  else if(fase==='generando'){
+    html=`<div class="info-box" style="text-align:center">🤖 Generando con IA...</div>`;
+  }
+  else if(fase==='palabras_listas'||fase==='roles'){
+    html=`<div class="info-box" style="text-align:center">Los jugadores están viendo sus roles (15s)</div>`;
+  }
+  else if(fase==='ronda'){
+    html=`
+      <button class="abtn" onclick="forzarTurno()"><span class="ico">⏭️</span><div class="info">PASAR TURNO<span class="sub">Si el jugador no pulsa en el móvil</span></div></button>
+      <button class="abtn" onclick="irVotacion()"><span class="ico">🗳️</span><div class="info">IR A VOTACIÓN<span class="sub">Cuando acabe la ronda de pistas</span></div></button>`;
+  }
+  else if(fase==='votacion'){
+    const votos=d.votos||{};
+    const activos=jugs.filter(j=>!(d.eliminados||[]).includes(j.nombre));
+    const totalV=Object.values(votos).reduce((a,b)=>a+b,0);
+    html=`
+      <div class="info-box">${totalV}/${activos.length} votos recibidos</div>
+      <button class="btn-big" onclick="resolverVotacion()">⚡ RESOLVER VOTACIÓN</button>`;
+  }
+  else if(fase==='reveal'){
+    let extra='';
+    if(d.esSpy&&d.adivinanzaSpy&&!d.adivinanzaProcesada){
+      extra=`<button class="btn-big rojo" onclick="verificarAdivinanza()" style="margin-bottom:8px">🔴 VERIFICAR ADIVINANZA: "${d.adivinanzaSpy}"</button>`;
+    }
+    html=`${extra}<button class="btn-big" onclick="continuarPartida()">▶ CONTINUAR</button>`;
+  }
+  else if(fase==='fin'){
+    html=`<button class="btn-big verde" onclick="resetJuego()">🔄 NUEVA PARTIDA</button>`;
+  }
+
+  document.getElementById('acciones').innerHTML=html;
+}
+
+// ── ACCIONES ──
+function iniciarJuego(){
+  GR.update({fase:'cats',catVotos:{},catsTimerStarted:false,spyCount,timestamp:Date.now()});
+  toast('📱 ¡Votad la categoría!');
+}
+
+function forzarGeneracion(){
+  GR.update({catsTimerStarted:true,catsTimerAt:Date.now()-9500}); // fuerza el timer a casi 0
+  toast('🤖 Generando...');
+}
+
+function forzarTurno(){
+  GR.update({avanzarTurno:true,timestamp:Date.now()});
+  toast('⏭️ Turno pasado');
+}
+
+function irVotacion(){
+  GR.update({fase:'votacion',votos:{},votacionResuelta:false,timestamp:Date.now()});
+  toast('🗳️ Votación iniciada');
+}
+
+function resolverVotacion(){
+  const d=estado;
+  const votos=d.votos||{};
+  if(!Object.keys(votos).length){toast('Nadie ha votado aún');return;}
+  GR.update({votacionResuelta:true});
+  const top=Object.entries(votos).sort((a,b)=>b[1]-a[1])[0];
+  const nombre=top[0];
+  const jug=Object.entries(d.jugadores||{}).find(([,j])=>j.nombre===nombre);
+  const esSpy=!!(jug&&d.roles&&d.roles[jug[0]]&&d.roles[jug[0]].rol==='spy');
+  GR.update({fase:'reveal',eliminadoNombre:nombre,esSpy,eliminados:[...(d.eliminados||[]),nombre],revealStartedAt:Date.now()});
+  toast(nombre+' expulsado · '+(esSpy?'🔴 SPY':'✅ Inocente'));
+}
+
+function verificarAdivinanza(){
+  const d=estado;
+  const resp=(d.adivinanzaSpy||'').trim().toUpperCase();
+  const real=(d.palabraReal||'').toUpperCase();
+  const acerto=resp===real||real.includes(resp)||resp.includes(real);
+  GR.update({adivinanzaProcesada:true});
+  toast(acerto?'🔴 ¡Acertó! Ganan spies':'✅ Falló · Ganan inocentes');
+  setTimeout(()=>continuarConGanador(acerto?'spy':'inocentes'),1500);
+}
+
+function continuarPartida(){
+  const d=estado;
+  const eli=d.eliminados||[];
+  const jugs=Object.values(d.jugadores||{});
+  const spiesVivos=Object.entries(d.roles||{}).filter(([id,r])=>r.rol==='spy'&&!eli.includes(d.jugadores[id]?.nombre));
+  const activos=jugs.filter(j=>!eli.includes(j.nombre));
+  if(spiesVivos.length===0){continuarConGanador('inocentes');return;}
+  if(activos.length<=2){continuarConGanador('spy');return;}
+  const orden=(d.orden||[]).filter(n=>!eli.includes(n));
+  GR.update({fase:'ronda',turnoNombre:orden[0],turnoIdx:0,votos:{},votacionResuelta:false,avanzarTurno:null,turnoStartedAt:Date.now()});
+  toast('▶ Nueva ronda');
+}
+
+function continuarConGanador(ganador){
+  const d=estado;
+  const eli=d.eliminados||[];
+  const HR=firebase.database().ref('hub');
+  Object.entries(d.jugadores||{}).forEach(([id,j])=>{
+    const esSpy=d.roles&&d.roles[id]&&d.roles[id].rol==='spy';
+    const p=(ganador==='inocentes'&&!esSpy)?3:(ganador==='spy'&&esSpy)?5:0;
+    if(p>0) HR.child('jugadores/'+id+'/puntos').transaction(v=>(v||0)+p);
+  });
+  GR.update({fase:'fin',ganador,palabraReal:d.palabraReal,palabraSpy:d.palabraSpy});
+  toast('🏆 Ganador: '+(ganador==='spy'?'SPY':'INOCENTES'));
+}
+
+function resetJuego(){
+  if(!confirm('¿Reiniciar partida?'))return;
+  GR.set({fase:'lobby',jugadores:{},catVotos:{},spyCount});
+  toast('🔄 Reiniciado');
+}
+
+// ── PALABRAS ──
+function renderPalabras(d){
+  if(d.palabraReal||d.palabraSpy){
+    document.getElementById('palabras-wrap').style.display='block';
+    document.getElementById('pal-real').textContent=d.palabraReal||'—';
+    document.getElementById('pal-spy').textContent=d.palabraSpy||'—';
+  } else {
+    document.getElementById('palabras-wrap').style.display='none';
+  }
+}
+
+// ── FIREBASE ──
+GR.on('value',snap=>{
+  const d=snap.val()||{};
+  estado=d;
+  document.getElementById('header-fase').textContent=(d.fase||'lobby').toUpperCase();
+  if(d.spyCount){spyCount=d.spyCount;document.getElementById('spy-num').textContent=spyCount;}
+  renderJugadores(d);
+  renderInfo(d);
+  renderAcciones(d);
+  renderPalabras(d);
+});
+</script>
+</body>
+</html>
