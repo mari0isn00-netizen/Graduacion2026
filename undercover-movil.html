@@ -240,13 +240,15 @@ function unirse(){
   if(!v)return;
   document.getElementById('btn-join').disabled=true;
   miNombre=v;
-  // Generar ID único para este jugador
   miId=GR.child('jugadores').push().key;
-  // Registrar en undercover directamente (sin esperar a hub)
-  GR.child('jugadores').child(miId).set({nombre:miNombre,puntos:0})
+  const jugRef=GR.child('jugadores').child(miId);
+  const hubRef=HR.child('jugadores').child(miId);
+  jugRef.set({nombre:miNombre,puntos:0})
     .then(()=>{
-      // Intentar añadir al hub también (no bloquea si falla)
-      HR.child('jugadores').child(miId).set({nombre:miNombre,puntos:0}).catch(()=>{});
+      // Auto-eliminar al desconectarse
+      jugRef.onDisconnect().remove();
+      hubRef.set({nombre:miNombre,puntos:0}).catch(()=>{});
+      hubRef.onDisconnect().remove();
       document.getElementById('espera-name').textContent=miNombre;
       toast('✓ '+miNombre);
       GR.child('fase').get().then(fs=>{
