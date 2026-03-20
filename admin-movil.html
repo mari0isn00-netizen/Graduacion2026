@@ -543,11 +543,27 @@ function abrirModalParams(juego, onConfirm){
 function guardarParamsYAbrir(juegoId){
   db.ref('gameParams/'+juegoId).set({...modalParamVals,timestamp:Date.now()});
   if(juegoId==='undercover'){
-    db.ref('undercover').update({spyCount:modalParamVals.spyCount||1,fase:'lobby',jugadores:null,catVotos:null,roles:null,eliminados:null,votos:null});
+    // Reset solo el estado de partida, NO los jugadores (pueden haberse unido ya)
+    db.ref('undercover').update({
+      spyCount:modalParamVals.spyCount||1,
+      fase:'lobby',
+      catVotos:null,
+      catsTimerStarted:false,
+      roles:null,
+      eliminados:null,
+      votos:null,
+      palabraReal:null,
+      palabraSpy:null,
+      orden:null,
+      turnoNombre:null,
+      ronda:null,
+      adivinanzaSpy:null,
+      ganador:null
+    });
   }
-  const cb=modalOnConfirm; // guardar antes de que cerrarModal lo nullifique
+  const cb=modalOnConfirm;
   cerrarModal();
-  if(cb) cb(modalParamVals); // lanza ruleta_pick / instrucciones a la TV
+  if(cb) cb(modalParamVals);
 }
 
 function chgParam(key,d,min,max){
