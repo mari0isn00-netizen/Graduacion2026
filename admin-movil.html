@@ -367,8 +367,9 @@ function avanzarFlujo(){
 function lanzarBienvenida(){
   db.ref('hub/config/nombres').get().then(snap=>{
     const nombres=snap.val()||[];
-    cmd_data('bienvenida',{nombres});
-    toast('🎬 Bienvenida lanzada');
+    cmd_data('bienvenida',{nombres});          // interior
+    cmdExt_data('bienvenida',{nombres});       // exterior también
+    toast('🎬 Bienvenida en ambas TVs');
     avanzarFlujo();
   });
 }
@@ -377,9 +378,9 @@ function lanzarAlertaReunion(){
   // Si hay juego seleccionado, pasarlo para que la TV lo recuerde
   const extra=juegoSeleccionado!==null?{juegoIndex:juegoSeleccionado}:{};
   cmd_data('alerta_reunion',{donde:'SALA PRINCIPAL',subtext:'¡Preparaos! Juego inminente',...extra});
-  cmdExt_data('alerta_reunion',{donde:'EXTERIOR — PORCHE',subtext:'Si estáis fuera, ¡venid dentro!'});
+  cmdExt_data('alerta_reunion',{donde:'SALÓN PRINCIPAL',subtext:'¡Todos adentro! Juego inminente'});
   toast('🚨 Alerta en todas las TVs');
-  // NO avanza — esperamos que el admin pulse Continuar
+  avanzarFlujo(); // avanza al paso "Continuar" para que aparezca el botón
 }
 
 function lanzarRuleta(){

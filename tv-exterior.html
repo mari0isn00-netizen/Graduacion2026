@@ -729,48 +729,88 @@ function playS(type){
   }catch(e){}
 }
 
-// ── MÚSICA DE FONDO ──
+// ── MÚSICA DE FONDO (sintonía tipo programa de TV) ──
 let musicNode=null, musicGain=null, musicCtxStarted=false;
 function startMusic(){
   try{
     const c=gAC();
     if(musicNode){musicNode.stop();musicNode=null;}
-    musicGain=c.createGain();musicGain.gain.value=0.18;musicGain.connect(c.destination);
-    // Melodía tipo graduación: vals lento con armonías
-    const BPM=72, beat=60/BPM;
-    const melody=[
-      [523,0],[659,beat],[784,beat*2],[1047,beat*3],[784,beat*4],[659,beat*5],
-      [523,beat*6],[659,beat*7],[784,beat*8],[880,beat*9],[784,beat*10],[659,beat*11],
-      [523,beat*12],[587,beat*13],[659,beat*14],[698,beat*15],[659,beat*16],[587,beat*17],
-      [523,beat*18],[440,beat*19],[523,beat*20],[587,beat*21],[523,beat*22],[440,beat*23],
+    musicGain=c.createGain();
+    musicGain.connect(c.destination);
+
+    const BPM=118, beat=60/BPM, b=beat;
+    const mel=[
+      [784,0],[880,b*0.5],[1047,b*1],[880,b*1.5],[784,b*2],[698,b*2.5],[784,b*3],[0,b*3.5],
+      [784,b*4],[1047,b*4.5],[1175,b*5],[1047,b*5.5],[880,b*6],[784,b*6.5],[698,b*7],[0,b*7.5],
+      [659,b*8],[784,b*8.5],[880,b*9],[784,b*9.5],[698,b*10],[659,b*10.5],[587,b*11],[0,b*11.5],
+      [659,b*12],[698,b*12.5],[784,b*13],[880,b*13.5],[1047,b*14],[880,b*14.5],[784,b*15],[0,b*15.5],
+    ];
+    const harm=[
+      [523,0],[587,b*2],[659,b*4],[587,b*6],
+      [523,b*8],[494,b*10],[523,b*12],[587,b*14],
     ];
     const bass=[
-      [131,0],[165,beat*4],[196,beat*8],[131,beat*12],[165,beat*16],[131,beat*20],
+      [131,0],[131,b*0.75],[165,b*2],[131,b*2.75],[147,b*4],[131,b*4.75],[165,b*6],[0,b*6.5],
+      [131,b*8],[131,b*8.75],[165,b*10],[131,b*10.75],[147,b*12],[165,b*13],[196,b*14],[0,b*15.5],
     ];
-    function playMelody(startT){
-      melody.forEach(([f,d])=>{
+    const kick=[0,b*4,b*8,b*12];
+    const hihat=[b*1,b*2,b*3,b*5,b*6,b*7,b*9,b*10,b*11,b*13,b*14,b*15];
+    const loopDur=b*16;
+    function playLoop(startT){
+      mel.forEach(([f,d])=>{
+        if(!f)return;
         const o=c.createOscillator(),g=c.createGain();
-        o.connect(g);g.connect(musicGain);o.type='triangle';o.frequency.value=f;
+        o.connect(g);g.connect(musicGain);
+        o.type='square';o.frequency.value=f;
         const t=startT+d;
-        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.4,t+0.04);
-        g.gain.exponentialRampToValueAtTime(0.001,t+beat*0.85);
-        o.start(t);o.stop(t+beat);
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.22,t+0.02);
+        g.gain.exponentialRampToValueAtTime(0.001,t+b*0.42);
+        o.start(t);o.stop(t+b*0.5);
+      });
+      harm.forEach(([f,d])=>{
+        const o=c.createOscillator(),g=c.createGain();
+        o.connect(g);g.connect(musicGain);
+        o.type='triangle';o.frequency.value=f;
+        const t=startT+d;
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.12,t+0.04);
+        g.gain.exponentialRampToValueAtTime(0.001,t+b*1.8);
+        o.start(t);o.stop(t+b*2);
       });
       bass.forEach(([f,d])=>{
+        if(!f)return;
         const o=c.createOscillator(),g=c.createGain();
-        o.connect(g);g.connect(musicGain);o.type='sine';o.frequency.value=f;
+        o.connect(g);g.connect(musicGain);
+        o.type='sawtooth';o.frequency.value=f;
         const t=startT+d;
-        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.3,t+0.1);
-        g.gain.exponentialRampToValueAtTime(0.001,t+beat*3.8);
-        o.start(t);o.stop(t+beat*4);
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.18,t+0.03);
+        g.gain.exponentialRampToValueAtTime(0.001,t+b*0.7);
+        o.start(t);o.stop(t+b*0.75);
+      });
+      kick.forEach(d=>{
+        const o=c.createOscillator(),g=c.createGain();
+        o.connect(g);g.connect(musicGain);
+        o.type='sine';o.frequency.value=120;
+        const t=startT+d;
+        o.frequency.setValueAtTime(120,t);o.frequency.exponentialRampToValueAtTime(40,t+0.07);
+        g.gain.setValueAtTime(0.35,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.18);
+        o.start(t);o.stop(t+0.2);
+      });
+      hihat.forEach(d=>{
+        const buf=c.createBuffer(1,c.sampleRate*0.05,c.sampleRate);
+        const dt=buf.getChannelData(0);
+        for(let i=0;i<dt.length;i++) dt[i]=(Math.random()*2-1);
+        const src=c.createBufferSource(),g=c.createGain(),flt=c.createBiquadFilter();
+        flt.type='highpass';flt.frequency.value=8000;
+        src.buffer=buf;src.connect(flt);flt.connect(g);g.connect(musicGain);
+        const t=startT+d;
+        g.gain.setValueAtTime(0.06,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.04);
+        src.start(t);src.stop(t+0.05);
       });
     }
-    const loopDur=beat*24;
     const startT=c.currentTime+0.1;
-    // Fade in
     musicGain.gain.setValueAtTime(0,startT);
-    musicGain.gain.linearRampToValueAtTime(0.18,startT+3);
-    for(let i=0;i<30;i++) playMelody(startT+i*loopDur);
+    musicGain.gain.linearRampToValueAtTime(0.15,startT+2);
+    for(let i=0;i<60;i++) playLoop(startT+i*loopDur);
     musicCtxStarted=true;
   }catch(e){}
 }
@@ -871,8 +911,9 @@ HR.on('value',snap=>{
   const d=snap.val();if(!d)return;
   if(d.jugadores) nombresGuardados=Object.values(d.jugadores).map(j=>j.nombre||j).filter(Boolean);
   if(d.ranking){rankingCache=d.ranking;renderRank(d.ranking);}
-  // Solo escucha comandos globales que aplican a exterior también
-  if(d.comando&&['standby','ranking','premios','bienvenida','alerta_reunion','continuar'].includes(d.comando)){
+  // Solo escucha comandos que son realmente globales (van a AMBAS TVs)
+  // standby/ranking/premios solo llegan al exterior si se mandan por hub_exterior
+  if(d.comando&&['bienvenida','alerta_reunion','continuar'].includes(d.comando)){
     handleCmd(d.comando,d,HR);
   }
 });
