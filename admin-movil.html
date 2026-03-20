@@ -395,11 +395,17 @@ function _dispararAlerta(destino){
   const donde=ext?'PORCHE — EXTERIOR':'SALÓN PRINCIPAL';
   const subtext=ext?'¡Todos al porche! Juego de campo':'¡Todos al salón! Juego interior';
   const extra=juegoSeleccionado!==null?{juegoIndex:juegoSeleccionado}:{};
-  // Ambas TVs reciben la alerta — la exterior muestra a dónde ir
-  cmd_data('alerta_reunion',{donde,subtext,...extra});
-  cmdExt_data('alerta_reunion',{donde,subtext,...extra});
+  if(ext){
+    // Juego exterior: alerta solo en TV exterior, interior se queda en standby
+    cmdExt_data('alerta_reunion',{donde,subtext,destino,...extra});
+    cmd('standby');
+  } else {
+    // Juego interior: alerta solo en TV interior, exterior se queda en standby
+    cmd_data('alerta_reunion',{donde,subtext,destino,...extra});
+    cmdExt('standby');
+  }
   toast('🚨 Alerta → '+donde);
-  avanzarFlujo(); // avanza al paso "Continuar"
+  avanzarFlujo();
 }
 
 function lanzarRuleta(){

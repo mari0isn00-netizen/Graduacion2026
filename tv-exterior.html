@@ -863,8 +863,8 @@ HR.on('value',snap=>{
   const d=snap.val();if(!d)return;
   if(d.jugadores) nombresGuardados=Object.values(d.jugadores).map(j=>j.nombre||j).filter(Boolean);
   if(d.ranking){rankingCache=d.ranking;renderRank(d.ranking);}
-  // Solo escucha comandos globales que aplican a exterior también
-  if(d.comando&&['bienvenida','alerta_reunion','continuar'].includes(d.comando)){
+  // Solo sincroniza bienvenida desde hub (global). Nada más.
+  if(d.comando&&d.comando==='bienvenida'){
     handleCmd(d.comando,d,HR);
   }
 });

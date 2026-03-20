@@ -506,16 +506,24 @@ function showLowerThird(tag,text,sub,dur=5000){
 
 // ── RULETA ──
 const rC=document.getElementById('rc'), rX=rC.getContext('2d');
-const NARC=(Math.PI*2)/JUEGOS.length;
+let JUEGOS_RULETA=[...JUEGOS]; // subconjunto activo filtrado por destino
+let NARC=(Math.PI*2)/JUEGOS_RULETA.length;
 let rAng=0, spinning=false, selIdx=-1;
 const RC=['#0d0920','#0a1628','#0d1a0d','#1a0f00','#1a001a','#0a0a20','#1a0808','#080818','#150f00','#00100a'];
 const RA=['#7c5cbf','#cc1111','#00c853','#c9a84c','#9b59b6','#4a90e2','#e74c3c','#3498db','#d4a017','#27ae60'];
+
+function filtrarRuleta(destino){
+  JUEGOS_RULETA=JUEGOS.filter(j=>j.loc===destino);
+  NARC=(Math.PI*2)/JUEGOS_RULETA.length;
+  rAng=0;selIdx=-1;spinning=false;
+  drawR(rAng);
+}
 
 function drawR(a){
   const cx=rC.width/2,cy=rC.height/2,R=cx-8;
   rX.clearRect(0,0,rC.width,rC.height);
   [R+12,R+6].forEach((r,i)=>{rX.beginPath();rX.arc(cx,cy,r,0,Math.PI*2);rX.strokeStyle=`rgba(201,168,76,${0.12-i*0.05})`;rX.lineWidth=2;rX.stroke();});
-  JUEGOS.forEach((j,i)=>{
+  JUEGOS_RULETA.forEach((j,i)=>{
     const sa=a+i*NARC,ea=sa+NARC,isSel=i===selIdx&&!spinning;
     rX.beginPath();rX.moveTo(cx,cy);rX.arc(cx,cy,R,sa,ea);rX.closePath();
     const g=rX.createRadialGradient(cx,cy,0,cx,cy,R),c=RC[i%RC.length],ac=RA[i%RA.length];
@@ -562,9 +570,11 @@ function girar(tIdx){
     else{
       rAng=(sa+extra)%(Math.PI*2);spinning=false;
       const norm=(((-Math.PI/2)-rAng)%(Math.PI*2)+(Math.PI*2))%(Math.PI*2);
-      selIdx=Math.floor(norm/NARC)%JUEGOS.length;
+      selIdx=Math.floor(norm/NARC)%JUEGOS_RULETA.length;
       drawR(rAng);playS('fanfare');sparks();
-      const j=JUEGOS[selIdx];
+      const j=JUEGOS_RULETA[selIdx];
+      // Encontrar el índice global en JUEGOS para mostrarAlertaLoc/mostrarInstr
+      const globalIdx=JUEGOS.findIndex(g=>g.id===j.id);
       setTimeout(()=>{
         document.getElementById('rl-sel').textContent=j.e+' '+j.n;
         document.getElementById('rl-sel').classList.add('show');
@@ -572,7 +582,7 @@ function girar(tIdx){
         document.getElementById('rl-selsub').classList.add('show');
         showLowerThird('JUEGO','Seleccionado: '+j.n,j.t,4000);
       },300);
-      setTimeout(()=>mostrarAlertaLoc(selIdx),3000);
+      setTimeout(()=>mostrarAlertaLoc(globalIdx),3000);
     }
   }
   requestAnimationFrame(anim);
@@ -919,7 +929,8 @@ function setSbl(t){document.getElementById('sb-lbl').textContent=t;}
 
 let nombresGuardados=[];
 let rankingCache={};
-let pendingJuegoIdx=null; // juego pendiente tras reunión
+let pendingJuegoIdx=null;
+let pendingDestino='interior'; // 'interior' | 'exterior'
 
 // ── FIREBASE LISTENER ──
 HR.on('value',snap=>{
@@ -936,19 +947,24 @@ HR.on('value',snap=>{
     switch(cmd){
       case 'standby': show('scr-standby');setSbl('EN ESPERA');break;
       case 'continuar':
-        // El admin confirma que todos están — volver a standby si no hay juego pendiente
         if(pendingJuegoIdx!==null){
           show('scr-ruleta');setSbl('RULETA');
-          const pidx=pendingJuegoIdx;pendingJuegoIdx=null;
-          setTimeout(()=>girar(pidx),1200);
+          filtrarRuleta(pendingDestino);
+          const globalJ=JUEGOS[pendingJuegoIdx];
+          const localIdx=globalJ?JUEGOS_RULETA.findIndex(j=>j.id===globalJ.id):-1;
+          pendingJuegoIdx=null;
+          setTimeout(()=>girar(localIdx>=0?localIdx:undefined),1200);
         } else {
-          show('scr-standby');setSbl('EN ESPERA');
+          show('scr-ruleta');setSbl('RULETA');
+          filtrarRuleta(pendingDestino);
+          setTimeout(()=>girar(),1200);
         }
         break;
       case 'alerta_reunion':
-        pendingJuegoIdx = (d.juegoIndex !== undefined) ? d.juegoIndex : null;
+        pendingJuegoIdx=(d.juegoIndex!==undefined)?d.juegoIndex:null;
+        pendingDestino=d.destino||'interior';
         show('scr-alerta-reunion');setSbl('¡REUNÍOS!');
-        document.getElementById('ar-where').textContent=d.donde||'SALA PRINCIPAL';
+        document.getElementById('ar-where').textContent=d.donde||'SALÓN PRINCIPAL';
         document.getElementById('ar-sub').textContent=d.subtext||'Preparaos para el siguiente juego';
         playS('alarm');
         showLowerThird('🚨 ATENCIÓN','¡TODOS REUNÍOS! Juego inminente','¡AHORA!',30000);
@@ -958,11 +974,15 @@ HR.on('value',snap=>{
         break;
       case 'ruleta':
         show('scr-ruleta');setSbl('RULETA');
+        filtrarRuleta('interior');
         setTimeout(()=>girar(),1500);
         break;
       case 'ruleta_pick':
         show('scr-ruleta');setSbl('RULETA');
-        setTimeout(()=>girar(d.juegoIndex),1200);
+        filtrarRuleta('interior');
+        const gj=JUEGOS[d.juegoIndex];
+        const li=gj?JUEGOS_RULETA.findIndex(j=>j.id===gj.id):-1;
+        setTimeout(()=>girar(li>=0?li:undefined),1200);
         break;
       case 'ranking': show('scr-ranking');setSbl('CLASIFICACIÓN');break;
       case 'premios':
