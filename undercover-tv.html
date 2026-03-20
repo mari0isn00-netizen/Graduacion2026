@@ -226,8 +226,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:var(--cre
 <div class="screen" id="scr-generando">
   <div class="gen-wrap">
     <div class="gen-pre">— PREPARANDO LA MISIÓN —</div>
-    <div class="gen-icon">🤖</div>
-    <div class="gen-title">GENERANDO PALABRAS</div>
+    <div class="gen-icon">🎲</div>
+    <div class="gen-title">ELIGIENDO PALABRAS</div>
     <div class="gen-cat" id="gen-cat">Categoría: ...</div>
     <div class="gen-dots"><div class="gen-dot"></div><div class="gen-dot"></div><div class="gen-dot"></div></div>
   </div>
@@ -378,24 +378,36 @@ function iniciarCatsTimer(startAt){
   u();catsTimerIv=setInterval(u,1000);
 }
 
+// ── PAREJAS DE PALABRAS POR CATEGORÍA ──
+const WORD_PAIRS={
+  trends:[['VIRAL','TRENDING'],['MEME','REELS'],['INFLUENCER','YOUTUBER'],['CHALLENGE','TREND'],['SELFIE','FOTO'],['STORY','POST'],['STREAM','DIRECTO'],['LIKE','CORAZÓN'],['FOMO','HYPE'],['DROP','LANZAMIENTO']],
+  rrss:[['INSTAGRAM','TIKTOK'],['WHATSAPP','TELEGRAM'],['TWITTER','THREADS'],['YOUTUBE','TWITCH'],['STORIES','REELS'],['PERFIL','CUENTA'],['SEGUIDOR','SUSCRIPTOR'],['DM','MENSAJE'],['HASHTAG','ETIQUETA'],['DIRECTO','STREAM']],
+  deporte:[['MESSI','CRISTIANO'],['BARÇA','MADRID'],['GOL','TANTO'],['ÁRBITRO','JUEZ'],['PORTERO','GUARDAMETA'],['PENALTY','FALTA'],['CAMPEÓN','GANADOR'],['ENTRENADOR','TÉCNICO'],['ESTADIO','CAMPO'],['MUNDIAL','OLIMPIADAS']],
+  musica:[['REGGAETON','TRAP'],['CONCIERTO','FESTIVAL'],['LETRA','ESTRIBILLO'],['DJ','PRODUCTOR'],['ÁLBUM','DISCO'],['SPOTIFY','APPLE MUSIC'],['SOLISTA','BANDA'],['DIRECTO','ACÚSTICO'],['FAN','SEGUIDOR'],['REMIX','VERSIÓN']],
+  pelis:[['NETFLIX','HBO'],['SERIE','PELÍCULA'],['ACTOR','PERSONAJE'],['TRAILER','TEASEAR'],['SPOILER','FINAL'],['DIRECTOR','PRODUCTOR'],['COMEDIA','DRAMA'],['REMAKE','SECUELA'],['SUBTÍTULOS','DOBLAJE'],['ESTRENO','PREMIERE']],
+  comida:[['PIZZA','CALZONE'],['SUSHI','SASHIMI'],['HAMBURGESA','BOCADILLO'],['CAFÉ','ESPRESSO'],['TARTA','PASTEL'],['FRITO','A LA PLANCHA'],['VEGANO','VEGETARIANO'],['CENA','COMIDA'],['RESTAURANTE','BAR'],['POSTRE','DULCE']],
+  viajes:[['PLAYA','PISCINA'],['AVIÓN','TREN'],['HOTEL','AIRBNB'],['TURISTA','VIAJERO'],['MOCHILA','MALETA'],['MAPA','GPS'],['PASAPORTE','DNI'],['EXCURSIÓN','TOUR'],['SOUVENIRS','RECUERDOS'],['BRONCEADO','MORENO']],
+  random:[['TIJERAS','CUCHILLO'],['LUNA','SOL'],['FRÍO','FRESCO'],['RÁPIDO','VELOZ'],['LIBRO','REVISTA'],['PERRO','LOBO'],['CASTILLO','PALACIO'],['TESORO','PREMIO'],['ESPEJO','VENTANA'],['ROBOT','MÁQUINA']]
+};
+
 async function generarPalabras(){
   const snap=await GR.get();const d=snap.val()||{};
-  // Solo generar si estamos en lobby o cats (no si ya empezó)
   const faseOk=['lobby','cats',undefined,null,''].includes(d.fase);
   if(!faseOk)return;
   const cv=d.catVotos||{};
   const top=Object.entries(cv).sort((a,b)=>b[1]-a[1])[0];
   const catId=top?top[0]:'random';
-  const cat=CATS.find(c=>c.id===catId)||{name:'Random'};
+  const cat=CATS.find(c=>c.id===catId)||{name:'Random',id:'random'};
   GR.update({fase:'generando',categoria:cat.name});
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:150,messages:[{role:'user',content:`Genera una pareja de palabras para el juego Undercover en español. Categoría: "${cat.name}". La palabra real es para los inocentes, la spy es similar pero diferente. Responde SOLO JSON sin markdown: {"real":"PALABRA","spy":"PALABRA"}. Ejemplos: Instagram/TikTok, Messi/Cristiano, Pizza/Calzone, Playa/Piscina`}]})});
-    const data=await res.json();
-    const p=JSON.parse(data.content[0].text.trim());
-    GR.update({palabraReal:p.real.toUpperCase(),palabraSpy:p.spy.toUpperCase(),fase:'palabras_listas'});
-  }catch(e){
-    GR.update({palabraReal:'PLAYA',palabraSpy:'PISCINA',fase:'palabras_listas'});
-  }
+  // Elegir pareja aleatoria de la categoría
+  const pares=WORD_PAIRS[catId]||WORD_PAIRS.random;
+  const par=pares[Math.floor(Math.random()*pares.length)];
+  // Aleatorizar cuál es real y cuál es spy
+  const [palabraReal,palabraSpy]=Math.random()>0.5?par:[par[1],par[0]];
+  // Pequeña pausa para el efecto visual de "generando"
+  setTimeout(()=>{
+    GR.update({palabraReal,palabraSpy,fase:'palabras_listas'});
+  },1500);
 }
 
 function asignarRoles(d){
