@@ -946,20 +946,19 @@ HR.on('value',snap=>{
     HR.update({comando:null});
     switch(cmd){
       case 'standby': show('scr-standby');setSbl('EN ESPERA');break;
-      case 'continuar':
+      case 'continuar': {
+        show('scr-ruleta');setSbl('RULETA');
+        filtrarRuleta(pendingDestino);
         if(pendingJuegoIdx!==null){
-          show('scr-ruleta');setSbl('RULETA');
-          filtrarRuleta(pendingDestino);
           const globalJ=JUEGOS[pendingJuegoIdx];
           const localIdx=globalJ?JUEGOS_RULETA.findIndex(j=>j.id===globalJ.id):-1;
           pendingJuegoIdx=null;
           setTimeout(()=>girar(localIdx>=0?localIdx:undefined),1200);
         } else {
-          show('scr-ruleta');setSbl('RULETA');
-          filtrarRuleta(pendingDestino);
           setTimeout(()=>girar(),1200);
         }
         break;
+      }
       case 'alerta_reunion':
         pendingJuegoIdx=(d.juegoIndex!==undefined)?d.juegoIndex:null;
         pendingDestino=d.destino||'interior';
@@ -977,13 +976,15 @@ HR.on('value',snap=>{
         filtrarRuleta('interior');
         setTimeout(()=>girar(),1500);
         break;
-      case 'ruleta_pick':
+      case 'ruleta_pick': {
         show('scr-ruleta');setSbl('RULETA');
-        filtrarRuleta('interior');
-        const gj=JUEGOS[d.juegoIndex];
-        const li=gj?JUEGOS_RULETA.findIndex(j=>j.id===gj.id):-1;
-        setTimeout(()=>girar(li>=0?li:undefined),1200);
+        const gjPick=JUEGOS[d.juegoIndex];
+        const destPick=gjPick?gjPick.loc:'interior';
+        filtrarRuleta(destPick==='exterior'?'exterior':'interior');
+        const liPick=gjPick?JUEGOS_RULETA.findIndex(j=>j.id===gjPick.id):-1;
+        setTimeout(()=>girar(liPick>=0?liPick:undefined),1200);
         break;
+      }
       case 'ranking': show('scr-ranking');setSbl('CLASIFICACIÓN');break;
       case 'premios':
         mostrarPremios(d.rankingFinal||rankingCache);

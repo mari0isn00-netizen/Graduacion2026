@@ -524,16 +524,16 @@ function mostrarInstr(idx){
   showLowerThird(j.e+' '+j.n.toUpperCase(),j.t+' · Comenzando en breve','JUEGO SIGUIENTE',22000);
   if(insTimer)clearInterval(insTimer);
   insTimer=setInterval(()=>{insSec--;const n=document.getElementById('icdnum'),f=document.getElementById('icdfill');if(n)n.textContent=insSec;if(f)f.style.width=(insSec/20*100)+'%';if(insSec<=3)playS('tick');if(insSec<=0){clearInterval(insTimer);lanzar(idx);}},1000);
-  HR.update({juegoActual:j.id,fase:'instrucciones',timestamp:Date.now()});
+  HE.update({juegoActual:j.id,fase:'instrucciones',timestamp:Date.now()});
 }
 
 function lanzar(idx){
   const j=JUEGOS[idx];show('scr-launch');
   document.getElementById('la-emoji').textContent=j.e;
   document.getElementById('la-h').textContent=j.n.toUpperCase();
-  document.getElementById('la-s').textContent=j.loc==='exterior'?'¡MOVED AL EXTERIOR!':'PREPARAD LOS MÓVILES';
+  document.getElementById('la-s').textContent='¡MOVED AL EXTERIOR!';
   playS('launch');setSbl('¡LANZANDO!');
-  HR.update({juegoActual:j.id,fase:'jugando',timestamp:Date.now()});
+  HE.update({juegoActual:j.id,fase:'jugando',timestamp:Date.now()});
   setTimeout(()=>window.location.href=j.url,3500);
 }
 
