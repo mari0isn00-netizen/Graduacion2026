@@ -950,7 +950,7 @@ HR.on('value',snap=>{
         show('scr-ruleta');setSbl('RULETA');
         filtrarRuleta(pendingDestino);
         if(pendingJuegoIdx!==null){
-          const globalJ=JUEGOS[pendingJuegoIdx];
+          const globalJ=JUEGOS[parseInt(pendingJuegoIdx,10)];
           const localIdx=globalJ?JUEGOS_RULETA.findIndex(j=>j.id===globalJ.id):-1;
           pendingJuegoIdx=null;
           setTimeout(()=>girar(localIdx>=0?localIdx:undefined),1200);
@@ -978,7 +978,8 @@ HR.on('value',snap=>{
         break;
       case 'ruleta_pick': {
         show('scr-ruleta');setSbl('RULETA');
-        const gjPick=JUEGOS[d.juegoIndex];
+        const pickIdx=parseInt(d.juegoIndex,10);
+        const gjPick=JUEGOS[pickIdx];
         const destPick=gjPick?gjPick.loc:'interior';
         filtrarRuleta(destPick==='exterior'?'exterior':'interior');
         const liPick=gjPick?JUEGOS_RULETA.findIndex(j=>j.id===gjPick.id):-1;

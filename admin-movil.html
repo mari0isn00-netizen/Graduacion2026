@@ -195,8 +195,8 @@ html,body{background:var(--dark);color:var(--cream);font-family:'Share Tech Mono
   <!-- TAB DIRECTO -->
   <div class="tp" id="tab-directo">
     <div class="slbl">◆ ALARMA DE REUNIÓN 🚨</div>
-    <button class="abtn danger" onclick="_dispararAlerta('interior')"><span class="ico">🏠</span><div class="info">REUNIÓN — INTERIOR<span class="sub">Todos al salón · TV exterior en standby</span></div></button>
-    <button class="abtn green" onclick="_dispararAlerta('exterior')"><span class="ico">🌿</span><div class="info">REUNIÓN — EXTERIOR<span class="sub">Todos al porche · TV interior en standby</span></div></button>
+    <button class="abtn danger" onclick="_dispararAlerta('interior')"><span class="ico">🏠</span><div class="info">REUNIÓN — INTERIOR<span class="sub">Ambas TVs suenan · juego en salón</span></div></button>
+    <button class="abtn green" onclick="_dispararAlerta('exterior')"><span class="ico">🌿</span><div class="info">REUNIÓN — EXTERIOR<span class="sub">Ambas TVs suenan · juego en porche</span></div></button>
 
     <div class="slbl">◆ TV INTERIOR 🏠</div>
     <button class="abtn primary" onclick="cmd('standby')"><span class="ico">✨</span><div class="info">STANDBY<span class="sub">Pantalla de espera elegante</span></div></button>
@@ -429,19 +429,19 @@ function lanzarAlertaReunion(){
 
 function _dispararAlerta(destino){
   const ext=destino==='exterior';
-  const donde=ext?'PORCHE — EXTERIOR':'SALÓN PRINCIPAL';
-  const subtext=ext?'¡Todos al porche! Juego de campo':'¡Todos al salón! Juego interior';
-  const extra=juegoSeleccionado!==null?{juegoIndex:juegoSeleccionado}:{};
-  if(ext){
-    // Juego exterior: alerta solo en TV exterior, interior se queda en standby
-    cmdExt_data('alerta_reunion',{donde,subtext,destino,...extra});
-    cmd('standby');
-  } else {
-    // Juego interior: alerta solo en TV interior, exterior se queda en standby
-    cmd_data('alerta_reunion',{donde,subtext,destino,...extra});
-    cmdExt('standby');
-  }
-  toast('🚨 Alerta → '+donde);
+  const extra=juegoSeleccionado!==null?{juegoIndex:parseInt(juegoSeleccionado,10),destino}:{destino};
+  // Siempre suenan las dos TVs — el texto indica a dónde ir
+  cmd_data('alerta_reunion',{
+    donde: ext?'¡TODOS AL PORCHE!':'SALÓN PRINCIPAL',
+    subtext: ext?'El juego es en el exterior':'¡Preparaos! Juego interior',
+    ...extra
+  });
+  cmdExt_data('alerta_reunion',{
+    donde: ext?'PORCHE — EXTERIOR':'¡TODOS AL SALÓN!',
+    subtext: ext?'¡Moved todos aquí! Juego de campo':'El juego es en el interior — ¡venid!',
+    ...extra
+  });
+  toast('🚨 Alarma en ambas TVs → '+(ext?'EXTERIOR':'INTERIOR'));
   avanzarFlujo();
 }
 
@@ -454,11 +454,12 @@ function lanzarRuletaPick(){
   if(juegoSeleccionado===null){toast('Elige un juego primero');return;}
   lanzarConParams(juegoSeleccionado,()=>{
     const j=JUEGOS[juegoSeleccionado];
+    const idx=parseInt(juegoSeleccionado,10);
     if(j.loc==='exterior'){
-      HE.update({comando:'instrucciones',juegoIndex:juegoSeleccionado,timestamp:Date.now()});
+      HE.update({comando:'instrucciones',juegoIndex:idx,timestamp:Date.now()});
       toast('🌿 '+j.n+' → TV Exterior');
     } else {
-      cmd_data('ruleta_pick',{juegoIndex:juegoSeleccionado});
+      cmd_data('ruleta_pick',{juegoIndex:idx});
       toast('🎯 Lanzando: '+j.n);
     }
     avanzarFlujo();
@@ -490,12 +491,12 @@ function lanzarJuegoSeleccionado(){
   if(juegoSeleccionado===null){toast('Selecciona un juego');return;}
   lanzarConParams(juegoSeleccionado,()=>{
     const j=JUEGOS[juegoSeleccionado];
+    const idx=parseInt(juegoSeleccionado,10);
     if(j.loc==='exterior'){
-      // Juego exterior: instrucciones directamente a TV exterior
-      HE.update({comando:'instrucciones',juegoIndex:juegoSeleccionado,timestamp:Date.now()});
+      HE.update({comando:'instrucciones',juegoIndex:idx,timestamp:Date.now()});
       toast('🌿 '+j.n+' → TV Exterior');
     } else {
-      cmd_data('ruleta_pick',{juegoIndex:juegoSeleccionado});
+      cmd_data('ruleta_pick',{juegoIndex:idx});
       toast('🚀 '+j.n);
     }
   });
