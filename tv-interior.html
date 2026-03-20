@@ -153,7 +153,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:var(--cre
 @keyframes borderGold{from{border-color:rgba(201,168,76,0.4);box-shadow:none;}to{border-color:var(--gold);box-shadow:0 0 40px rgba(201,168,76,0.35),inset 0 0 30px rgba(201,168,76,0.04);}}
 .al-sub{font-family:'VT323',monospace;font-size:clamp(14px,2vw,24px);letter-spacing:5px;color:rgba(240,230,204,0.3);}
 .al-cd{font-family:'VT323',monospace;font-size:clamp(16px,2.2vw,28px);letter-spacing:8px;color:rgba(201,168,76,0.5);margin-top:4px;}
-.al-bar{width:300px;height:3px;background:rgba(201,168,76,0.1);overflow:hidden;}
+.al-bar{width:min(300px,70vw);height:3px;background:rgba(201,168,76,0.1);overflow:hidden;margin:0 auto;}
 .al-barf{height:100%;background:linear-gradient(90deg,var(--gold3),var(--gold2));transition:width 1s linear;}
 
 /* ════ RULETA ════ */
@@ -238,7 +238,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:var(--cre
 
 /* ════ PREMIOS ════ */
 #scr-premios{background:#000;z-index:210;}
-.pr-wrap{display:flex;flex-direction:column;align-items:center;gap:0;width:100%;height:100%;padding:14px 32px;justify-content:center;}
+.pr-wrap{display:flex;flex-direction:column;align-items:center;gap:0;width:100%;height:100%;padding:14px 32px;justify-content:center;overflow-y:auto;}
 .pr-sup{font-family:'VT323',monospace;font-size:clamp(14px,2vw,22px);letter-spacing:12px;color:rgba(201,168,76,0.35);margin-bottom:6px;text-align:center;}
 .pr-h{font-family:'Playfair Display',serif;font-size:clamp(36px,7vw,90px);font-weight:900;font-style:italic;color:var(--cream);text-align:center;line-height:0.88;margin-bottom:16px;}
 .pr-h .g{color:var(--gold);}
@@ -595,50 +595,96 @@ function lanzar(idx){
 }
 
 // ── BIENVENIDA ──
-function mostrarBienvenida(fotos){
+function mostrarBienvenida(nombresExtra){
   show('scr-bienvenida');setSbl('BIENVENIDA');
   playS('bienvenida_fanfare');
   const wrap=document.getElementById('bv-wrap');
+  const nombres=nombresGuardados.length>0?nombresGuardados:(nombresExtra||[]);
+
   const secuencia=[
-    // Pantalla negra TV — "Esta noche..."
-    {tipo:'tv_text',lines:['Esta noche...','todo cambia'],dur:3000},
-    // Foto + título grande
-    {tipo:'foto_titulo',foto:fotos[0],title:'Graduación',sub:'Promoción 2026',dur:4000},
-    // Nombres uno a uno
-    {tipo:'nombres',dur:6000},
-    // Foto + cita
-    {tipo:'foto_cita',foto:fotos[1],cita:'Una noche para recordar siempre',dur:3500},
-    // Título programa
-    {tipo:'tv_text',lines:['Bienvenidos a','LA NOCHE DE LOS JUEGOS'],dur:3500},
-    // Foto + nombres
-    {tipo:'foto_titulo',foto:fotos[2],title:'¡Que empiece',sub:'la fiesta!',dur:3500},
+    // 1. Apertura cinematográfica
+    {tipo:'tv_text',lines:['Promoción 2026','Una noche para','recordar siempre'],dur:4000},
+    // 2. Título grande
+    {tipo:'titulo_grande',dur:4500},
+    // 3. Nombres de todos
+    {tipo:'nombres',dur:Math.max(5000, nombres.length*220+2000)},
+    // 4. Explicación de la noche — qué va a pasar
+    {tipo:'tv_text',lines:['Esta noche...','habrá juegos,','risas y sorpresas'],dur:3500},
+    // 5. Explicación de la alarma
+    {tipo:'explicacion_alarma',dur:6000},
+    // 6. Cierre
+    {tipo:'tv_text',lines:['¡Bienvenidos a','la graduación!'],dur:3500},
   ];
+
   let i=0;
   function nextSlide(){
-    if(i>=secuencia.length){HR.update({comando:null,bienvenidaFin:true,timestamp:Date.now()});return;}
+    if(i>=secuencia.length){
+      show('scr-standby');setSbl('EN ESPERA');
+      return;
+    }
     const sl=secuencia[i++];
     wrap.innerHTML='';
+
     if(sl.tipo==='tv_text'){
       const d=document.createElement('div');d.className='bv-tv-text';
-      sl.lines.forEach((l,li)=>{const p=document.createElement('div');p.className='bv-tv-line';p.style.animationDelay=li*0.3+'s';p.innerHTML=l.includes('JUEGOS')?l.replace('JUEGOS','<span class="r">JUEGOS</span>'):l.includes('todo')?l.replace('todo','<span class="g">todo</span>'):l;d.appendChild(p);});
-      wrap.appendChild(d);playS('tv_sting');
-    } else if(sl.tipo==='foto_titulo'||sl.tipo==='foto_cita'){
-      const d=document.createElement('div');d.style.cssText='position:absolute;inset:0;';
-      if(sl.foto){const im=document.createElement('img');im.src=sl.foto;im.style.cssText='width:100%;height:100%;object-fit:cover;filter:brightness(0.5) sepia(0.3);';d.appendChild(im);}
-      else{const ph=document.createElement('div');ph.className='bv-photo-placeholder';ph.innerHTML='<div class="emoji">🎓</div>';d.appendChild(ph);}
-      const ov=document.createElement('div');ov.className='bv-slide-overlay';d.appendChild(ov);
-      const ct=document.createElement('div');ct.className='bv-content';
-      if(sl.title){const t=document.createElement('div');t.className='bv-title';t.innerHTML='<span class="g">'+sl.title+'</span>';ct.appendChild(t);}
-      if(sl.sub){const s=document.createElement('div');s.style.cssText='font-family:VT323,monospace;font-size:clamp(16px,2.5vw,32px);letter-spacing:8px;color:rgba(240,230,204,0.7);animation:bvFade 0.6s both 0.4s;';s.textContent=sl.sub;ct.appendChild(s);}
-      if(sl.cita){const c=document.createElement('div');c.style.cssText='font-family:"Playfair Display",serif;font-style:italic;font-size:clamp(18px,2.5vw,36px);color:rgba(240,230,204,0.8);max-width:700px;text-align:center;animation:bvFade 0.8s both 0.3s;';c.textContent='"'+sl.cita+'"';ct.appendChild(c);}
-      d.appendChild(ct);wrap.appendChild(d);
-    } else if(sl.tipo==='nombres'){
-      // Mostrar los nombres en Firebase o fallback
+      sl.lines.forEach((l,li)=>{
+        const p=document.createElement('div');p.className='bv-tv-line';
+        p.style.animationDelay=li*0.4+'s';
+        // Colorear palabras clave
+        const colored=l
+          .replace('2026','<span class="g">2026</span>')
+          .replace('siempre','<span class="g">siempre</span>')
+          .replace('juegos','<span class="r">juegos</span>')
+          .replace('graduación','<span class="g">graduación</span>');
+        p.innerHTML=colored;
+        d.appendChild(p);
+      });
+      wrap.appendChild(d);
+      playS('tv_sting');
+
+    } else if(sl.tipo==='titulo_grande'){
       const d=document.createElement('div');d.className='bv-tv-text';
-      const hdr=document.createElement('div');hdr.className='bv-tv-line';hdr.style.cssText='color:var(--gold);font-size:clamp(14px,2vw,24px);letter-spacing:12px;margin-bottom:10px;';hdr.textContent='PROMOCIÓN 2026';d.appendChild(hdr);
+      d.innerHTML=`
+        <div class="bv-tv-line" style="font-size:clamp(12px,1.5vw,18px);letter-spacing:16px;color:rgba(201,168,76,0.5);animation-delay:0s">PROMOCIÓN</div>
+        <div style="font-family:'Playfair Display',serif;font-size:clamp(70px,13vw,160px);font-weight:900;font-style:italic;line-height:0.82;color:#fff;animation:bvFade 1s both 0.3s;text-align:center">Gradu<span style="color:var(--gold)">ación</span></div>
+        <div class="bv-tv-line" style="font-size:clamp(24px,5vw,72px);color:var(--gold);letter-spacing:12px;animation-delay:0.6s">2026</div>`;
+      wrap.appendChild(d);
+      playS('fanfare');
+
+    } else if(sl.tipo==='nombres'){
+      const d=document.createElement('div');d.className='bv-tv-text';
+      const hdr=document.createElement('div');
+      hdr.className='bv-tv-line';
+      hdr.style.cssText='color:var(--gold);font-size:clamp(12px,1.6vw,22px);letter-spacing:12px;margin-bottom:14px;animation-delay:0s';
+      hdr.textContent='ESTA NOCHE, CON VOSOTROS';
+      d.appendChild(hdr);
       const nr=document.createElement('div');nr.className='bv-names-roll';
-      nombresGuardados.forEach((nm,ni)=>{const n=document.createElement('div');n.className='bv-name-item';n.style.animationDelay=(ni*0.18)+'s';n.textContent=nm.toUpperCase();nr.appendChild(n);});
-      d.appendChild(nr);wrap.appendChild(d);playS('tv_sting');
+      if(nombres.length===0){
+        const n=document.createElement('div');n.className='bv-name-item';n.style.animationDelay='0s';
+        n.textContent='¡TODA LA PROMO 2026!';nr.appendChild(n);
+      } else {
+        nombres.forEach((nm,ni)=>{
+          const n=document.createElement('div');n.className='bv-name-item';
+          n.style.animationDelay=(ni*0.2)+'s';
+          n.textContent=nm.toUpperCase();nr.appendChild(n);
+        });
+      }
+      d.appendChild(nr);wrap.appendChild(d);
+      playS('tv_sting');
+
+    } else if(sl.tipo==='explicacion_alarma'){
+      const d=document.createElement('div');d.className='bv-tv-text';
+      d.innerHTML=`
+        <div class="bv-tv-line" style="font-size:clamp(14px,2vw,26px);letter-spacing:10px;color:var(--red2);animation-delay:0s">⚠ IMPORTANTE ⚠</div>
+        <div class="bv-tv-line" style="font-size:clamp(18px,3vw,38px);color:var(--cream);animation-delay:0.4s;line-height:1.3">Durante la noche sonarán<br><span style="color:var(--gold)">alarmas</span></div>
+        <div class="bv-tv-line" style="font-size:clamp(13px,1.8vw,24px);color:rgba(240,230,204,0.6);animation-delay:1s;line-height:1.5;max-width:700px;text-align:center">Cuando escuches la alarma,<br>reúnete con todos — <span style="color:var(--gold)">¡es hora de jugar!</span></div>
+        <div style="margin-top:16px;display:flex;align-items:center;gap:12px;animation:bvFade 0.6s both 1.8s">
+          <div style="font-size:36px">🚨</div>
+          <div style="font-family:'VT323',monospace;font-size:clamp(14px,2vw,26px);letter-spacing:6px;color:var(--red2)">ALARMA = REUNÍOS TODOS</div>
+          <div style="font-size:36px">🚨</div>
+        </div>`;
+      wrap.appendChild(d);
+      playS('alarm');
     }
     setTimeout(nextSlide,sl.dur);
   }
@@ -764,11 +810,18 @@ function playS(type){
 }
 
 // ── NAV ──
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function show(id){
+  // Limpiar timers activos al cambiar pantalla
+  if(alTimer){clearInterval(alTimer);alTimer=null;}
+  if(insTimer){clearInterval(insTimer);insTimer=null;}
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
 function setSbl(t){document.getElementById('sb-lbl').textContent=t;}
 
 let nombresGuardados=[];
 let rankingCache={};
+let pendingJuegoIdx=null; // juego pendiente tras reunión
 
 // ── FIREBASE LISTENER ──
 HR.on('value',snap=>{
@@ -784,7 +837,18 @@ HR.on('value',snap=>{
     HR.update({comando:null});
     switch(cmd){
       case 'standby': show('scr-standby');setSbl('EN ESPERA');break;
+      case 'continuar':
+        // El admin confirma que todos están — volver a standby si no hay juego pendiente
+        if(pendingJuegoIdx!==null){
+          show('scr-ruleta');setSbl('RULETA');
+          const pidx=pendingJuegoIdx;pendingJuegoIdx=null;
+          setTimeout(()=>girar(pidx),1200);
+        } else {
+          show('scr-standby');setSbl('EN ESPERA');
+        }
+        break;
       case 'alerta_reunion':
+        pendingJuegoIdx = (d.juegoIndex !== undefined) ? d.juegoIndex : null;
         show('scr-alerta-reunion');setSbl('¡REUNÍOS!');
         document.getElementById('ar-where').textContent=d.donde||'SALA PRINCIPAL';
         document.getElementById('ar-sub').textContent=d.subtext||'Preparaos para el siguiente juego';
@@ -792,7 +856,7 @@ HR.on('value',snap=>{
         showLowerThird('🚨 ATENCIÓN','¡TODOS REUNÍOS! Juego inminente','¡AHORA!',30000);
         break;
       case 'bienvenida':
-        mostrarBienvenida(d.fotos||[null,null,null]);
+        mostrarBienvenida(d.nombres||[]);
         break;
       case 'ruleta':
         show('scr-ruleta');setSbl('RULETA');
