@@ -238,21 +238,27 @@ document.getElementById('inp-nombre').onkeydown=e=>{if(e.key==='Enter')unirse();
 function unirse(){
   const v=document.getElementById('inp-nombre').value.trim();
   if(!v)return;
+  document.getElementById('btn-join').disabled=true;
   miNombre=v;
-  // Buscar o crear en hub/jugadores
-  HR.child('jugadores').orderByChild('nombre').equalTo(miNombre).get().then(snap=>{
-    if(snap.exists()){miId=Object.keys(snap.val())[0];}
-    else{const r=HR.child('jugadores').push();miId=r.key;r.set({nombre:miNombre,puntos:0});}
-    // Registrar en undercover
-    GR.child('jugadores').child(miId).set({nombre:miNombre,puntos:0});
-    document.getElementById('espera-name').textContent=miNombre;
-    toast('✓ Conectado como '+miNombre);
-    // Si ya está en cats, mostrar cats directamente
-    GR.child('fase').get().then(fs=>{
-      if(fs.val()==='cats'&&!yaVoteCat){renderCats();show('scr-cats');}
-      else show('scr-espera');
+  // Generar ID único para este jugador
+  miId=GR.child('jugadores').push().key;
+  // Registrar en undercover directamente (sin esperar a hub)
+  GR.child('jugadores').child(miId).set({nombre:miNombre,puntos:0})
+    .then(()=>{
+      // Intentar añadir al hub también (no bloquea si falla)
+      HR.child('jugadores').child(miId).set({nombre:miNombre,puntos:0}).catch(()=>{});
+      document.getElementById('espera-name').textContent=miNombre;
+      toast('✓ '+miNombre);
+      GR.child('fase').get().then(fs=>{
+        const fase=fs.val();
+        if(fase==='cats'&&!yaVoteCat){renderCats();show('scr-cats');}
+        else show('scr-espera');
+      }).catch(()=>show('scr-espera'));
+    })
+    .catch(()=>{
+      document.getElementById('btn-join').disabled=false;
+      toast('Error de conexión — reintenta');
     });
-  });
 }
 
 // FLIP
