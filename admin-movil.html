@@ -367,20 +367,39 @@ function avanzarFlujo(){
 function lanzarBienvenida(){
   db.ref('hub/config/nombres').get().then(snap=>{
     const nombres=snap.val()||[];
-    cmd_data('bienvenida',{nombres});          // interior
-    cmdExt_data('bienvenida',{nombres});       // exterior también
+    cmd_data('bienvenida',{nombres});        // TV interior
+    cmdExt_data('bienvenida',{nombres});     // TV exterior también
     toast('🎬 Bienvenida en ambas TVs');
     avanzarFlujo();
   });
 }
 
 function lanzarAlertaReunion(){
-  // Si hay juego seleccionado, pasarlo para que la TV lo recuerde
+  // Mostrar selector de destino en el paso activo
+  const act=document.querySelector('.fstep.is-active .fstep-action');
+  if(!act){_dispararAlerta('interior');return;}
+  act.innerHTML=`
+    <div style="font-size:9px;letter-spacing:4px;color:rgba(201,168,76,0.35);margin-bottom:8px">¿DÓNDE SE REÚNEN?</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="abtn primary" style="flex:1;padding:12px 8px" onclick="_dispararAlerta('interior')">
+        <span class="ico">🏠</span><div class="info">INTERIOR<span class="sub">Salón principal</span></div>
+      </button>
+      <button class="abtn green" style="flex:1;padding:12px 8px" onclick="_dispararAlerta('exterior')">
+        <span class="ico">🌿</span><div class="info">EXTERIOR<span class="sub">Porche / campo</span></div>
+      </button>
+    </div>`;
+}
+
+function _dispararAlerta(destino){
+  const ext=destino==='exterior';
+  const donde=ext?'PORCHE — EXTERIOR':'SALÓN PRINCIPAL';
+  const subtext=ext?'¡Todos al porche! Juego de campo':'¡Todos al salón! Juego interior';
   const extra=juegoSeleccionado!==null?{juegoIndex:juegoSeleccionado}:{};
-  cmd_data('alerta_reunion',{donde:'SALA PRINCIPAL',subtext:'¡Preparaos! Juego inminente',...extra});
-  cmdExt_data('alerta_reunion',{donde:'SALÓN PRINCIPAL',subtext:'¡Todos adentro! Juego inminente'});
-  toast('🚨 Alerta en todas las TVs');
-  avanzarFlujo(); // avanza al paso "Continuar" para que aparezca el botón
+  // Ambas TVs reciben la alerta — la exterior muestra a dónde ir
+  cmd_data('alerta_reunion',{donde,subtext,...extra});
+  cmdExt_data('alerta_reunion',{donde,subtext,...extra});
+  toast('🚨 Alerta → '+donde);
+  avanzarFlujo(); // avanza al paso "Continuar"
 }
 
 function lanzarRuleta(){

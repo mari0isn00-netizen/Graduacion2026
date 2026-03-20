@@ -205,6 +205,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:var(--cre
 .ins-badges{display:flex;gap:6px;flex-wrap:wrap;}
 .ins-badge{font-family:'VT323',monospace;font-size:14px;letter-spacing:3px;padding:3px 10px;border:1px solid rgba(201,168,76,0.2);color:rgba(201,168,76,0.4);}
 .ins-badge.loc{border-color:rgba(74,144,226,0.25);color:rgba(74,144,226,0.45);}
+/* Ejemplo del juego */
+.ins-ejemplo{margin-top:6px;}
+.ins-ej-lbl{font-family:'VT323',monospace;font-size:12px;letter-spacing:6px;color:rgba(201,168,76,0.25);margin-bottom:3px;}
+.ins-ej-txt{font-family:'Share Tech Mono',monospace;font-size:clamp(9px,1.1vw,13px);color:rgba(240,230,204,0.4);line-height:1.7;padding:6px 10px;border-left:2px solid rgba(201,168,76,0.12);font-style:italic;}
 /* Countdown grande */
 .ins-cd-block{display:flex;flex-direction:column;gap:4px;margin-top:4px;}
 .ins-cd-lbl{font-family:'VT323',monospace;font-size:16px;letter-spacing:6px;color:rgba(201,168,76,0.28);}
@@ -412,16 +416,56 @@ const db=firebase.database(), HR=db.ref('hub');
 
 // ── JUEGOS ──
 const JUEGOS=[
-  {id:'undercover',n:'Undercover',e:'🕵️',t:'Espionaje',d:'Un infiltrado conoce una palabra diferente. ¡Descúbrelo antes de que pase inadvertido!',p:['Se reparten roles: inocentes y undercoveres','Por turnos cada uno dice una palabra relacionada','Debate y vota: ¿quién sabe algo distinto?'],loc:'interior',url:'undercover-tv.html'},
-  {id:'impostor',n:'El Impostor',e:'🔪',t:'Nave espacial',d:'Impostores entre la tripulación. Misiones nocturnas, médico secreto y votaciones.',p:['Roles secretos: inocentes, médico e impostores','El impostor actúa cada noche, el médico protege','¡Debate y vota para expulsar al impostor!'],loc:'interior',url:'movil.html'},
-  {id:'bomba',n:'Bomba',e:'💣',t:'Sala de hackeo',d:'La bomba activa. Forma palabras con las letras antes de que explote.',p:['Aparece una combinación de letras','Di una palabra que las contenga','¡Si fallas, pierdes una vida!'],loc:'interior',url:'bomba-tv.html'},
-  {id:'trivia',n:'Trivia',e:'🎓',t:'Anuario escolar',d:'¿Cuánto conoces a tus compas? Preguntas sobre los propios graduados.',p:['Aparece una pregunta sobre alguien del grupo','Responde en el móvil antes que el tiempo','¡Más rápido = más puntos!'],loc:'interior',url:'trivia-tv.html'},
-  {id:'adivina',n:'Adivina Quién',e:'💬',t:'Confesionario',d:'Frases reales de los graduados. ¿Puedes adivinar quién lo dijo?',p:['Se muestra una frase anónima real','Vota en tu móvil quién crees','¡Reveal dramático en pantalla!'],loc:'interior',url:'adivina-tv.html'},
-  {id:'votacion',n:'¿Quién Más?',e:'🗳️',t:'Tribunal secreto',d:'Votaciones anónimas sobre el grupo. ¿Quién es más probable que...?',p:['Aparece una pregunta del grupo','Vota en secreto desde el móvil','Se revela quién recibió más votos'],loc:'interior',url:'votacion-tv.html'},
-  {id:'karaoke',n:'Karaoke',e:'🎤',t:'Escenario de noche',d:'Canta con letra y vídeo en pantalla. El público puntúa desde el móvil.',p:['Se elige una canción','Letra + vídeo YouTube en TV','¡El público puntúa tu actuación!'],loc:'interior',url:'karaoke-tv.html'},
-  {id:'dibujar',n:'Dibuja y Adivina',e:'🎨',t:'Galería de arte',d:'Dibuja en el móvil, aparece en TV. Los demás adivinan qué es.',p:['Un jugador recibe una palabra secreta','Dibuja en el móvil, se ve en TV en directo','¡Los demás responden rápido!'],loc:'interior',url:'dibujar-tv.html'},
-  {id:'esconder',n:'Esconder Objeto',e:'🫙',t:'Indiana Jones',d:'Dos equipos. Uno esconde un objeto por el campo, el otro lo busca.',p:['Equipos formados (12 min)','Ruleta elige el objeto (10 min para esconder)','El otro equipo tiene 6 minutos para encontrarlo'],loc:'exterior',url:'esconder-tv.html'},
-  {id:'escondite',n:'Escondite Extremo',e:'🏃',t:'Supervivencia',d:'Un buscador, todo el campo, y un radar frío-caliente cuando queden pocos.',p:['La ruleta elige al buscador inicial','Todos se esconden por el campo','¡Al pillar ganas puntos y desbloqueas el radar!'],loc:'exterior',url:'escondite-tv.html'}
+  {id:'undercover',n:'Undercover',e:'🕵️',t:'Espionaje',
+    d:'Todos reciben la misma palabra secreta... excepto el espía. Por turnos, cada uno dice una pista — sin revelarla. El espía debe pasar desapercibido.',
+    p:['Cada jugador recibe su palabra en el móvil (los inocentes la misma, el spy una distinta)','Por turnos, di UNA palabra relacionada con la tuya — ni muy obvia ni muy rara','Debate: ¿quién dio una pista sospechosa? Vota para expulsar'],
+    ej:'Palabra real: PLAYA · Spy recibe: PISCINA. Los inocentes dicen "arena", "ola", "chiringuito"... el spy dice "agua" intentando pasar desapercibido.',
+    loc:'interior',url:'undercover-tv.html'},
+  {id:'impostor',n:'El Impostor',e:'🔪',t:'Nave espacial',
+    d:'Impostores entre la tripulación. Cada noche eliminan a alguien. De día, todos debaten quién es el asesino. El médico puede salvar a uno cada ronda.',
+    p:['Roles secretos: inocentes, médico(s) e impostores — solo tú sabes el tuyo','Noche: impostores eligen víctima, médico elige a quién salvar','Día: debate abierto y votación — ¡el más votado es expulsado!'],
+    ej:'Son 3 rondas. Carlos y María son impostores. Noches 1 y 2 eliminan jugadores. En el día, el grupo vota a Laura inocente. Si quedan los 2 impostores con 1 inocente, ¡ganan los impostores!',
+    loc:'interior',url:'movil.html'},
+  {id:'bomba',n:'Bomba',e:'💣',t:'Sala de hackeo',
+    d:'La bomba está activa. Aparece una combinación de letras y tienes solo segundos para decir una palabra que las contenga. Si fallas, ¡explotas!',
+    p:['Aparece una combinación de letras en pantalla (ej: "TR")','Cada jugador tiene ~5 segundos para decir una palabra que contenga esas letras','Si fallas o repites, pierdes una vida. El último en pie gana.'],
+    ej:'Letras: "TR" → puedes decir "TRen", "enTRada", "fesTRo"... pero NO "tierra" porque la combinación no aparece junta.',
+    loc:'interior',url:'bomba-tv.html'},
+  {id:'trivia',n:'Trivia',e:'🎓',t:'Anuario escolar',
+    d:'¿Cuánto conoces a tus compas? Preguntas creadas por vosotros sobre vosotros. El más rápido en acertar se lleva más puntos.',
+    p:['Aparece una pregunta sobre alguien del grupo en la TV','Pulsa el buzzer en el móvil antes que los demás','Responde en voz alta — si fallas, el siguiente puede robar'],
+    ej:'"¿Cuál es el mote de Carlos desde 1º de bachillerato?" · "¿Quién llegó tarde el primer día de clase?" · "¿Cuántos suspensos tuvo Laura en septiembre?"',
+    loc:'interior',url:'trivia-tv.html'},
+  {id:'adivina',n:'Adivina Quién',e:'💬',t:'Confesionario',
+    d:'Frases reales que habéis dicho (o podríais haber dicho). Se muestran anónimas en pantalla y todos votan quién lo dijo. ¡Revelación dramática al final!',
+    p:['Aparece una frase anónima real de alguien del grupo','Cada jugador vota en su móvil quién cree que lo dijo','Se revela al autor con animación — puntos al que acierta'],
+    ej:'"En el viaje de fin de curso dije: \'Yo conduzco, que soy el que menos ha bebido\'"... ¿Quién fue? ¡Vota ahora!',
+    loc:'interior',url:'adivina-tv.html'},
+  {id:'votacion',n:'¿Quién Más?',e:'🗳️',t:'Tribunal secreto',
+    d:'Votaciones anónimas sobre el grupo. Aparece una pregunta del tipo "¿quién es más probable que...?" y todos votan en secreto.',
+    p:['Aparece una pregunta en pantalla (ej: "¿Quién más probablemente olvidaría su propio cumpleaños?")','Cada jugador vota anónimamente en el móvil','Se revela quién recibió más votos — ¡con porcentajes!'],
+    ej:'"¿Quién es más probable que se haga famoso?" · "¿Quién se casará primero?" · "¿Quién va a vivir más aventuras este verano?"',
+    loc:'interior',url:'votacion-tv.html'},
+  {id:'karaoke',n:'Karaoke',e:'🎤',t:'Escenario de noche',
+    d:'Canta con la letra y el vídeo en pantalla grande. El público puntúa tu actuación desde el móvil. Cuanto más dramático, mejor.',
+    p:['Se elige o sortea una canción — letra + YouTube en la TV','El cantante actúa ante todos (¡puntos extra por baile!)','El público puntúa del 1 al 10 desde el móvil — media en directo'],
+    ej:'Sale Bohemian Rhapsody. Carlos la canta con todo el drama posible. El público le da notas mientras él actúa. Al acabar, media: 8.4/10 🎤',
+    loc:'interior',url:'karaoke-tv.html'},
+  {id:'dibujar',n:'Dibuja y Adivina',e:'🎨',t:'Galería de arte',
+    d:'Dibuja en tu móvil y tu trazo aparece en la TV en directo. Los demás tienen que adivinar qué estás dibujando antes de que acabe el tiempo.',
+    p:['Un jugador recibe una palabra secreta en su móvil','Dibuja con el dedo — aparece en la TV en tiempo real','Los demás gritan sus respuestas — primero en acertar gana puntos'],
+    ej:'Palabra: ELEFANTE. El dibujante hace algo que parece un globo con patas. Alguien grita "¡manatí!", otro "¡ballena!"... hasta que alguien lo acierta.',
+    loc:'interior',url:'dibujar-tv.html'},
+  {id:'esconder',n:'Esconder Objeto',e:'🫙',t:'Indiana Jones',
+    d:'Dos equipos. El equipo escondedor elige un objeto de una ruleta y lo oculta por todo el campo. El otro equipo tiene 6 minutos para encontrarlo.',
+    p:['Se forman los equipos (12 min) — la ruleta asigna roles','El equipo escondedor tiene 10 min para esconder el objeto','¡6 minutos para encontrarlo! Si no lo hallan, gana el equipo escondedor'],
+    ej:'La ruleta elige: BOTELLA DE AGUA. El equipo la esconde dentro de un árbol hueco. El otro equipo busca durante 6 minutos... ¡y la encuentran a 10 segundos del final!',
+    loc:'exterior',url:'esconder-tv.html'},
+  {id:'escondite',n:'Escondite Extremo',e:'🏃',t:'Supervivencia',
+    d:'Un buscador, todo el campo como escenario. Cuando quedan pocos jugadores libres, el buscador desbloquea un radar frío-caliente en su móvil.',
+    p:['La ruleta elige al buscador — cuenta hasta 30 mientras todos se esconden','Al pillar a alguien ganas puntos; los pillados ayudan a buscar','Cuando quedan 4 libres, el buscador ve un radar frío/caliente en el móvil'],
+    ej:'Quedan 3 personas libres. El buscador abre el radar: "MUY CALIENTE" apunta hacia los arbustos del fondo. ¡Pero era una trampa — el que se escondió allí ya se había movido!',
+    loc:'exterior',url:'escondite-tv.html'}
 ];
 
 // ── BACKGROUND ──
@@ -563,7 +607,18 @@ function mostrarAlertaLoc(idx){
 // ── INSTRUCCIONES ──
 let insTimer=null,insSec=20;
 function mostrarInstr(idx){
-  const j=JUEGOS[idx];show('scr-instrucciones');setSbl(j.n.toUpperCase());insSec=20;
+  const j=JUEGOS[idx];
+
+  // Si el juego es EXTERIOR: la interior muestra pantalla de movimiento y manda instrucciones al exterior
+  if(j.loc==='exterior'){
+    mostrarMovedExterior(idx);
+    // Mandar instrucciones a la TV exterior
+    db.ref('hub_exterior').update({comando:'instrucciones',juegoIndex:idx,timestamp:Date.now()});
+    return;
+  }
+
+  // Juego INTERIOR: instrucciones normales en esta TV
+  show('scr-instrucciones');setSbl(j.n.toUpperCase());insSec=20;
   playS('intro_jingle');
   document.getElementById('ins-layout').innerHTML=`
     <div class="ins-l">
@@ -573,8 +628,9 @@ function mostrarInstr(idx){
       <div class="ins-tema">✦ ${j.t}</div>
       <div class="ins-sep"></div>
       <div class="ins-desc">${j.d}</div>
+      <div class="ins-ejemplo">${j.ej?`<div class="ins-ej-lbl">EJEMPLO</div><div class="ins-ej-txt">${j.ej}</div>`:''}</div>
       <div class="ins-badges">
-        <div class="ins-badge loc">${j.loc==='exterior'?'🌿 EXTERIOR':'🏠 INTERIOR'}</div>
+        <div class="ins-badge loc">🏠 INTERIOR</div>
         <div class="ins-badge">📱 ESCANEA EL QR</div>
       </div>
     </div>
@@ -592,11 +648,22 @@ function mostrarInstr(idx){
   HR.update({juegoActual:j.id,fase:'instrucciones',timestamp:Date.now()});
 }
 
+// Pantalla interior cuando el juego es en el exterior
+function mostrarMovedExterior(idx){
+  const j=JUEGOS[idx];
+  show('scr-launch');
+  document.getElementById('la-emoji').textContent='🌿';
+  document.getElementById('la-h').textContent='¡AL PORCHE!';
+  document.getElementById('la-s').textContent=j.e+' '+j.n.toUpperCase()+' — EXTERIOR';
+  playS('attention');setSbl('EXTERIOR');
+  HR.update({juegoActual:j.id,fase:'exterior',timestamp:Date.now()});
+}
+
 function lanzar(idx){
   const j=JUEGOS[idx];show('scr-launch');
   document.getElementById('la-emoji').textContent=j.e;
   document.getElementById('la-h').textContent=j.n.toUpperCase();
-  document.getElementById('la-s').textContent=j.loc==='exterior'?'¡MOVED AL EXTERIOR!':'PREPARAD LOS MÓVILES';
+  document.getElementById('la-s').textContent='PREPARAD LOS MÓVILES';
   playS('launch');setSbl('¡LANZANDO!');
   HR.update({juegoActual:j.id,fase:'jugando',timestamp:Date.now()});
   setTimeout(()=>window.location.href=j.url,3500);
@@ -839,127 +906,14 @@ function playS(type){
   }catch(e){}
 }
 
-// ── MÚSICA DE FONDO (sintonía tipo programa de TV) ──
-let musicNode=null, musicGain=null, musicCtxStarted=false;
-function startMusic(){
-  try{
-    const c=gAC();
-    if(musicNode){musicNode.stop();musicNode=null;}
-    musicGain=c.createGain();
-    musicGain.connect(c.destination);
-
-    // Sintonía estilo programa de entretenimiento TV: BPM animado, percusión sintética
-    const BPM=118, beat=60/BPM, b=beat;
-
-    // Melodía principal pegadiza (estilo game show / talk show TV)
-    const mel=[
-      [784,0],[880,b*0.5],[1047,b*1],[880,b*1.5],[784,b*2],[698,b*2.5],[784,b*3],[0,b*3.5],
-      [784,b*4],[1047,b*4.5],[1175,b*5],[1047,b*5.5],[880,b*6],[784,b*6.5],[698,b*7],[0,b*7.5],
-      [659,b*8],[784,b*8.5],[880,b*9],[784,b*9.5],[698,b*10],[659,b*10.5],[587,b*11],[0,b*11.5],
-      [659,b*12],[698,b*12.5],[784,b*13],[880,b*13.5],[1047,b*14],[880,b*14.5],[784,b*15],[0,b*15.5],
-    ];
-    // Contrapunto / armónico
-    const harm=[
-      [523,0],[587,b*2],[659,b*4],[587,b*6],
-      [523,b*8],[494,b*10],[523,b*12],[587,b*14],
-    ];
-    // Bajo funky
-    const bass=[
-      [131,0],[131,b*0.75],[165,b*2],[131,b*2.75],[147,b*4],[131,b*4.75],[165,b*6],[0,b*6.5],
-      [131,b*8],[131,b*8.75],[165,b*10],[131,b*10.75],[147,b*12],[165,b*13],[196,b*14],[0,b*15.5],
-    ];
-    // Percusión sintética: kick + hihat
-    const kick=[0,b*4,b*8,b*12];
-    const hihat=[b*1,b*2,b*3,b*5,b*6,b*7,b*9,b*10,b*11,b*13,b*14,b*15];
-
-    const loopDur=b*16;
-
-    function playLoop(startT){
-      // Melodía
-      mel.forEach(([f,d])=>{
-        if(!f)return;
-        const o=c.createOscillator(),g=c.createGain();
-        o.connect(g);g.connect(musicGain);
-        o.type='square';o.frequency.value=f;
-        const t=startT+d;
-        g.gain.setValueAtTime(0,t);
-        g.gain.linearRampToValueAtTime(0.22,t+0.02);
-        g.gain.exponentialRampToValueAtTime(0.001,t+b*0.42);
-        o.start(t);o.stop(t+b*0.5);
-      });
-      // Armónico
-      harm.forEach(([f,d])=>{
-        const o=c.createOscillator(),g=c.createGain();
-        o.connect(g);g.connect(musicGain);
-        o.type='triangle';o.frequency.value=f;
-        const t=startT+d;
-        g.gain.setValueAtTime(0,t);
-        g.gain.linearRampToValueAtTime(0.12,t+0.04);
-        g.gain.exponentialRampToValueAtTime(0.001,t+b*1.8);
-        o.start(t);o.stop(t+b*2);
-      });
-      // Bajo
-      bass.forEach(([f,d])=>{
-        if(!f)return;
-        const o=c.createOscillator(),g=c.createGain();
-        o.connect(g);g.connect(musicGain);
-        o.type='sawtooth';o.frequency.value=f;
-        const t=startT+d;
-        g.gain.setValueAtTime(0,t);
-        g.gain.linearRampToValueAtTime(0.18,t+0.03);
-        g.gain.exponentialRampToValueAtTime(0.001,t+b*0.7);
-        o.start(t);o.stop(t+b*0.75);
-      });
-      // Kick (bombo sintético)
-      kick.forEach(d=>{
-        const o=c.createOscillator(),g=c.createGain();
-        o.connect(g);g.connect(musicGain);
-        o.type='sine';o.frequency.value=120;
-        const t=startT+d;
-        o.frequency.setValueAtTime(120,t);
-        o.frequency.exponentialRampToValueAtTime(40,t+0.07);
-        g.gain.setValueAtTime(0.35,t);
-        g.gain.exponentialRampToValueAtTime(0.001,t+0.18);
-        o.start(t);o.stop(t+0.2);
-      });
-      // Hi-hat
-      hihat.forEach(d=>{
-        const buf=c.createBuffer(1,c.sampleRate*0.05,c.sampleRate);
-        const dt=buf.getChannelData(0);
-        for(let i=0;i<dt.length;i++) dt[i]=(Math.random()*2-1);
-        const src=c.createBufferSource(),g=c.createGain(),flt=c.createBiquadFilter();
-        flt.type='highpass';flt.frequency.value=8000;
-        src.buffer=buf;src.connect(flt);flt.connect(g);g.connect(musicGain);
-        const t=startT+d;
-        g.gain.setValueAtTime(0.06,t);
-        g.gain.exponentialRampToValueAtTime(0.001,t+0.04);
-        src.start(t);src.stop(t+0.05);
-      });
-    }
-
-    const startT=c.currentTime+0.1;
-    musicGain.gain.setValueAtTime(0,startT);
-    musicGain.gain.linearRampToValueAtTime(0.15,startT+2);
-    for(let i=0;i<60;i++) playLoop(startT+i*loopDur);
-    musicCtxStarted=true;
-  }catch(e){}
-}
-function fadeOutMusic(){
-  if(!musicGain)return;
-  try{const c=gAC();musicGain.gain.linearRampToValueAtTime(0,c.currentTime+2);}catch(e){}
-}
-function setMusicVol(v){if(musicGain)try{const c=gAC();musicGain.gain.linearRampToValueAtTime(v,c.currentTime+1);}catch(e){}}
-// Iniciar música al primer click/interacción (autoplay policy)
-document.addEventListener('click',()=>{if(!musicCtxStarted)startMusic();},{once:true});
-document.addEventListener('keydown',()=>{if(!musicCtxStarted)startMusic();},{once:true});
+// ── SIN MÚSICA DE FONDO ──
+function setMusicVol(){}
+function fadeOutMusic(){}
 function show(id){
   if(alTimer){clearInterval(alTimer);alTimer=null;}
   if(insTimer){clearInterval(insTimer);insTimer=null;}
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  if(id==='scr-standby'||id==='scr-bienvenida') setMusicVol(0.18);
-  else if(id==='scr-instrucciones'||id==='scr-launch') setMusicVol(0.04);
-  else setMusicVol(0.09);
 }
 function setSbl(t){document.getElementById('sb-lbl').textContent=t;}
 
