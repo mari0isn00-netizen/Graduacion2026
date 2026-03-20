@@ -124,8 +124,28 @@ html,body{background:var(--dark);color:var(--cream);font-family:'Share Tech Mono
 .eq-lbl.rojo{color:rgba(204,17,17,0.5);}
 .eq-name{font-size:12px;color:var(--cream);padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
 
-/* Toast */
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(4,5,13,0.97);border:1px solid rgba(201,168,76,0.25);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;padding:9px 22px;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);z-index:999;white-space:nowrap;}
+/* ── MODAL PARÁMETROS ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:900;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--dark2);border:1px solid rgba(201,168,76,0.2);border-bottom:none;width:100%;max-width:420px;padding:24px 18px 36px;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1) both;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:5px;color:var(--gold);margin-bottom:4px;}
+.modal-sub{font-size:9px;letter-spacing:4px;color:rgba(201,168,76,0.3);margin-bottom:18px;}
+.modal-sep{width:100%;height:1px;background:linear-gradient(90deg,var(--gold),transparent);opacity:0.15;margin-bottom:16px;}
+.param-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(201,168,76,0.06);}
+.param-lbl{flex:1;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--cream);}
+.param-sub{font-size:8px;letter-spacing:2px;color:var(--cream2);display:block;margin-top:2px;font-family:'Share Tech Mono',monospace;}
+.param-ctrl{display:flex;align-items:center;gap:8px;}
+.p-btn{width:32px;height:32px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.18);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.p-btn:active{background:rgba(201,168,76,0.18);}
+.p-val{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold);min-width:28px;text-align:center;}
+.modal-confirm{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--dark);font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:5px;padding:16px;border:none;cursor:pointer;margin-top:18px;transition:all 0.15s;}
+.modal-confirm:active{transform:scale(0.97);}
+.modal-cancel{width:100%;background:none;border:none;color:rgba(240,230,204,0.2);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:4px;padding:10px;cursor:pointer;margin-top:6px;}
+
+/* ── JUGAR LINK (para que el admin juegue) ── */
+.jugar-link{display:block;width:100%;background:rgba(0,200,83,0.04);border:1px solid rgba(0,200,83,0.2);color:var(--green);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;padding:12px 16px;text-align:center;text-decoration:none;margin-top:8px;transition:all 0.12s;}
+.jugar-link:active{background:rgba(0,200,83,0.12);}position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(4,5,13,0.97);border:1px solid rgba(201,168,76,0.25);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;padding:9px 22px;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);z-index:999;white-space:nowrap;}
 #toast.show{transform:translateX(-50%) translateY(0);}
 </style>
 </head>
@@ -231,6 +251,18 @@ html,body{background:var(--dark);color:var(--cream);font-family:'Share Tech Mono
   </div>
 </div>
 
+<!-- MODAL PARÁMETROS DE JUEGO -->
+<div class="modal-overlay" id="modal-params">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">⚙️ PARÁMETROS</div>
+    <div class="modal-sub" id="modal-sub">Configura antes de lanzar</div>
+    <div class="modal-sep"></div>
+    <div id="modal-params-content"></div>
+    <button class="modal-confirm" id="modal-confirm-btn">🚀 LANZAR JUEGO</button>
+    <button class="modal-cancel" onclick="cerrarModal()">CANCELAR</button>
+  </div>
+</div>
+
 <div id="toast">✓</div>
 
 <script>
@@ -270,7 +302,8 @@ function checkPin(){
 
 // ── JUEGOS ──
 const JUEGOS=[
-  {id:'undercover',n:'Undercover',e:'🕵️',loc:'interior'},
+  {id:'undercover',n:'Undercover',e:'🕵️',loc:'interior',
+    params:[{key:'spyCount',label:'Número de spies',sub:'1 spy por cada 4-5 jugadores',min:1,max:4,default:1}]},
   {id:'impostor',n:'El Impostor',e:'🔪',loc:'interior'},
   {id:'bomba',n:'Bomba',e:'💣',loc:'interior'},
   {id:'trivia',n:'Trivia',e:'🎓',loc:'interior'},
@@ -415,9 +448,11 @@ function lanzarRuleta(){
 }
 function lanzarRuletaPick(){
   if(juegoSeleccionado===null){toast('Elige un juego primero');return;}
-  cmd_data('ruleta_pick',{juegoIndex:juegoSeleccionado});
-  toast('🎯 Lanzando: '+JUEGOS[juegoSeleccionado].n);
-  avanzarFlujo();
+  lanzarConParams(juegoSeleccionado,()=>{
+    cmd_data('ruleta_pick',{juegoIndex:juegoSeleccionado});
+    toast('🎯 Lanzando: '+JUEGOS[juegoSeleccionado].n);
+    avanzarFlujo();
+  });
 }
 
 function verRanking(){
@@ -443,8 +478,10 @@ function cmdExt_data(c,extra={}){HE.update({comando:c,...extra,timestamp:Date.no
 
 function lanzarJuegoSeleccionado(){
   if(juegoSeleccionado===null){toast('Selecciona un juego');return;}
-  cmd_data('ruleta_pick',{juegoIndex:juegoSeleccionado});
-  toast('🚀 '+JUEGOS[juegoSeleccionado].n);
+  lanzarConParams(juegoSeleccionado,()=>{
+    cmd_data('ruleta_pick',{juegoIndex:juegoSeleccionado});
+    toast('🚀 '+JUEGOS[juegoSeleccionado].n);
+  });
 }
 function lanzarExterior(idx){
   HE.update({comando:'instrucciones',juegoIndex:idx,timestamp:Date.now()});
@@ -455,7 +492,54 @@ function timerExt(s,lbl,fase){
   toast('⏱️ '+lbl);
 }
 
-// ── JUEGO PICKER ──
+// ── MODAL PARÁMETROS ──
+let modalParamVals={};
+let modalOnConfirm=null;
+
+function abrirModalParams(juego, onConfirm){
+  if(!juego.params||!juego.params.length){onConfirm({});return;}
+  modalParamVals={};
+  juego.params.forEach(p=>{modalParamVals[p.key]=p.default||p.min||1;});
+  document.getElementById('modal-title').textContent=juego.e+' '+juego.n;
+  document.getElementById('modal-sub').textContent='Configura los parámetros antes de lanzar';
+  document.getElementById('modal-params-content').innerHTML=juego.params.map(p=>`
+    <div class="param-row">
+      <div class="param-lbl">${p.label}<span class="param-sub">${p.sub||''}</span></div>
+      <div class="param-ctrl">
+        <button class="p-btn" onclick="chgParam('${p.key}',-1,${p.min},${p.max})">−</button>
+        <div class="p-val" id="pval-${p.key}">${modalParamVals[p.key]}</div>
+        <button class="p-btn" onclick="chgParam('${p.key}',1,${p.min},${p.max})">+</button>
+      </div>
+    </div>`).join('');
+  // Mostrar link para que el admin juegue
+  const url=juego.id+'-movil.html';
+  document.getElementById('modal-params-content').innerHTML+=`
+    <a class="jugar-link" href="${url}" target="_blank">📱 UNIRME COMO JUGADOR →</a>`;
+  modalOnConfirm=onConfirm;
+  document.getElementById('modal-confirm-btn').onclick=()=>{cerrarModal();onConfirm(modalParamVals);};
+  document.getElementById('modal-params').classList.add('open');
+}
+
+function chgParam(key,d,min,max){
+  modalParamVals[key]=Math.max(min,Math.min(max,modalParamVals[key]+d));
+  document.getElementById('pval-'+key).textContent=modalParamVals[key];
+}
+
+function cerrarModal(){
+  document.getElementById('modal-params').classList.remove('open');
+  modalOnConfirm=null;
+}
+
+function lanzarConParams(juegoIdx, cmdFn){
+  const j=JUEGOS[juegoIdx];
+  if(!j)return;
+  if(!j.params||!j.params.length){cmdFn({});return;}
+  abrirModalParams(j, params=>{
+    // Guardar parámetros en Firebase antes de lanzar
+    db.ref('gameParams/'+j.id).set({...params,timestamp:Date.now()});
+    cmdFn(params);
+  });
+}
 function renderJuegoPickerEn(containerId){
   const c=document.getElementById(containerId);if(!c)return;
   c.innerHTML=JUEGOS.map((j,i)=>`
