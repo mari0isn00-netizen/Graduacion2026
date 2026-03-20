@@ -235,6 +235,8 @@ function toast(msg){const el=document.getElementById('toast');el.textContent=msg
 // JOIN
 document.getElementById('btn-join').onclick=unirse;
 document.getElementById('inp-nombre').onkeydown=e=>{if(e.key==='Enter')unirse();};
+let heartbeatIv=null;
+
 function unirse(){
   const v=document.getElementById('inp-nombre').value.trim();
   if(!v)return;
@@ -243,12 +245,31 @@ function unirse(){
   miId=GR.child('jugadores').push().key;
   const jugRef=GR.child('jugadores').child(miId);
   const hubRef=HR.child('jugadores').child(miId);
-  jugRef.set({nombre:miNombre,puntos:0})
+  jugRef.set({nombre:miNombre,puntos:0,online:true})
     .then(()=>{
-      // Auto-eliminar al desconectarse
+      // Firebase onDisconnect — elimina al desconectarse (puede tardar ~60s)
       jugRef.onDisconnect().remove();
       hubRef.set({nombre:miNombre,puntos:0}).catch(()=>{});
       hubRef.onDisconnect().remove();
+      // Heartbeat cada 8s — si el tab se cierra/oculta, se detecta rápido
+      if(heartbeatIv) clearInterval(heartbeatIv);
+      heartbeatIv=setInterval(()=>{
+        jugRef.update({online:true,ts:Date.now()}).catch(()=>{});
+      },8000);
+      // Eliminar inmediatamente al cerrar/ocultar tab
+      document.addEventListener('visibilitychange',()=>{
+        if(document.visibilityState==='hidden'){
+          // Usar sendBeacon para eliminar aunque la página se esté cerrando
+          const url=`https://impostor-322cc-default-rtdb.europe-west1.firebasedatabase.app/undercover/jugadores/${miId}.json`;
+          navigator.sendBeacon&&navigator.sendBeacon(url+'?method=DELETE','');
+          jugRef.remove().catch(()=>{});
+        }
+      });
+      window.addEventListener('beforeunload',()=>{
+        jugRef.remove().catch(()=>{});
+        hubRef.remove().catch(()=>{});
+        if(heartbeatIv)clearInterval(heartbeatIv);
+      });
       document.getElementById('espera-name').textContent=miNombre;
       toast('✓ '+miNombre);
       GR.child('fase').get().then(fs=>{

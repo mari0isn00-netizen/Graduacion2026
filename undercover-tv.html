@@ -380,7 +380,9 @@ function iniciarCatsTimer(startAt){
 
 async function generarPalabras(){
   const snap=await GR.get();const d=snap.val()||{};
-  if(d.fase&&d.fase!=='lobby')return;
+  // Solo generar si estamos en lobby o cats (no si ya empezó)
+  const faseOk=['lobby','cats',undefined,null,''].includes(d.fase);
+  if(!faseOk)return;
   const cv=d.catVotos||{};
   const top=Object.entries(cv).sort((a,b)=>b[1]-a[1])[0];
   const catId=top?top[0]:'random';
