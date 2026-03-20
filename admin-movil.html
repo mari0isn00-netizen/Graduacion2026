@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Admin 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{--gold:#c9a84c;--gold2:#e8c97a;--dark:#04050d;--dark2:#080a14;--cream:#f0e6cc;--cream2:#6a5a3a;--green:#00c853;--red:#cc1111;--blue:#3a7bd5;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{background:var(--dark);color:var(--cream);font-family:'Share Tech Mono',monospace;min-height:100%;overflow-x:hidden;}
+
+/* ── LOGIN ── */
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;padding:28px 18px 40px;}
+.screen.active{display:flex;}
+#scr-login{justify-content:center;gap:20px;text-align:center;}
+.login-logo{font-family:'Playfair Display',serif;font-style:italic;font-size:44px;font-weight:900;color:var(--gold);text-shadow:0 0 30px rgba(201,168,76,0.4);line-height:1;}
+.login-sub{font-size:9px;letter-spacing:6px;color:rgba(201,168,76,0.3);}
+.login-sep{width:180px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.25;}
+.pin-lbl{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:6px;color:var(--cream2);}
+.pin-dots{display:flex;gap:14px;justify-content:center;}
+.pin-dot{width:13px;height:13px;border-radius:50%;border:1px solid rgba(201,168,76,0.25);background:transparent;transition:all 0.15s;}
+.pin-dot.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 8px rgba(201,168,76,0.5);}
+.pin-dot.err{background:var(--red);border-color:var(--red);animation:shake 0.4s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:270px;}
+.nb{background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.1);color:var(--cream);font-family:'Bebas Neue',sans-serif;font-size:28px;padding:17px 0;cursor:pointer;transition:all 0.1s;border-radius:2px;letter-spacing:1px;}
+.nb:active{background:rgba(201,168,76,0.13);transform:scale(0.96);}
+.nb.del{font-size:18px;color:var(--cream2);}
+.nb.ok{background:linear-gradient(135deg,rgba(201,168,76,0.14),rgba(201,168,76,0.06));border-color:rgba(201,168,76,0.28);color:var(--gold);}
+
+/* ── ADMIN ── */
+#scr-admin{padding:16px 14px 40px;gap:0;}
+
+.admin-topbar{width:100%;display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid rgba(201,168,76,0.1);margin-bottom:14px;}
+.atb-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:6px;color:var(--gold);}
+.atb-live{display:flex;align-items:center;gap:5px;font-size:9px;letter-spacing:2px;color:var(--green);}
+.atb-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 1.5s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.atb-phase{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:3px;color:rgba(201,168,76,0.35);background:rgba(201,168,76,0.06);padding:3px 8px;border:1px solid rgba(201,168,76,0.1);}
+
+/* Tabs */
+.tabs{display:flex;width:100%;gap:0;margin-bottom:14px;border-bottom:1px solid rgba(201,168,76,0.08);}
+.tab{flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--cream2);font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;padding:9px 2px;cursor:pointer;transition:all 0.15s;margin-bottom:-1px;}
+.tab.on{color:var(--gold);border-bottom-color:var(--gold);}
+.tp{display:none;width:100%;}
+.tp.on{display:block;}
+
+/* Sección label */
+.slbl{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:6px;color:rgba(201,168,76,0.25);margin-bottom:8px;margin-top:16px;}
+.slbl:first-child{margin-top:0;}
+
+/* Botones de acción principales */
+.abtn{width:100%;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.14);color:var(--cream);font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:11px;margin-bottom:7px;transition:all 0.12s;border-radius:1px;}
+.abtn:active{background:rgba(201,168,76,0.11);transform:scale(0.985);}
+.abtn .ico{font-size:20px;flex-shrink:0;}
+.abtn .info{flex:1;}
+.abtn .info .sub{display:block;font-size:9px;letter-spacing:2px;color:var(--cream2);font-family:'Share Tech Mono',monospace;margin-top:1px;}
+.abtn.primary{background:linear-gradient(135deg,rgba(201,168,76,0.12),rgba(201,168,76,0.05));border-color:rgba(201,168,76,0.3);}
+.abtn.danger{border-color:rgba(204,17,17,0.25);}
+.abtn.danger:active{background:rgba(204,17,17,0.09);}
+.abtn.green{border-color:rgba(0,200,83,0.22);}
+.abtn.green:active{background:rgba(0,200,83,0.08);}
+
+/* ── FLUJO AUTOMÁTICO (tab principal) ── */
+.flujo-steps{display:flex;flex-direction:column;gap:0;width:100%;}
+.fstep{display:flex;align-items:stretch;gap:0;}
+.fstep-line{display:flex;flex-direction:column;align-items:center;width:28px;flex-shrink:0;}
+.fstep-circle{width:22px;height:22px;border-radius:50%;border:1px solid rgba(201,168,76,0.2);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:11px;color:rgba(201,168,76,0.3);background:var(--dark);flex-shrink:0;margin-top:14px;}
+.fstep-circle.done{background:rgba(201,168,76,0.15);border-color:rgba(201,168,76,0.5);color:var(--gold);}
+.fstep-circle.active-step{background:rgba(201,168,76,0.2);border-color:var(--gold);color:var(--gold);animation:stepPulse 1.5s ease-in-out infinite;}
+@keyframes stepPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0.3);}50%{box-shadow:0 0 0 6px rgba(201,168,76,0);}}
+.fstep-connector{width:1px;flex:1;background:rgba(201,168,76,0.1);margin:2px 0;}
+.fstep-content{flex:1;padding:10px 0 10px 10px;}
+.fstep-title{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:rgba(201,168,76,0.5);}
+.fstep-title.active-step{color:var(--cream);}
+.fstep-sub{font-size:10px;color:rgba(201,168,76,0.3);margin-top:2px;}
+.fstep-action{margin-top:8px;}
+
+/* Botón CONTINUAR grande */
+.btn-continuar{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--dark);font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:6px;padding:18px;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% -8px) 100%,0% 100%);transition:all 0.15s;box-shadow:0 0 20px rgba(201,168,76,0.25);}
+.btn-continuar:active{transform:scale(0.97);}
+.btn-continuar:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
+
+/* Selector de juego (discreto) */
+.juego-picker{display:flex;flex-direction:column;gap:5px;width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(201,168,76,0.1);padding:10px;border-radius:1px;}
+.jp-option{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid rgba(201,168,76,0.08);background:rgba(255,255,255,0.015);cursor:pointer;transition:all 0.12s;}
+.jp-option:active,.jp-option.selected{background:rgba(201,168,76,0.08);border-color:rgba(201,168,76,0.3);}
+.jp-option.selected .jp-name{color:var(--gold);}
+.jp-emoji{font-size:18px;flex-shrink:0;}
+.jp-name{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:var(--cream);flex:1;}
+.jp-loc{font-size:8px;letter-spacing:2px;color:rgba(201,168,76,0.3);}
+.jp-option.ext .jp-loc{color:rgba(0,200,83,0.35);}
+
+/* Jugadores */
+.jugadores-box{display:flex;flex-wrap:wrap;gap:5px;background:rgba(0,0,0,0.2);border:1px solid rgba(201,168,76,0.08);padding:10px;min-height:50px;}
+.jchip{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.16);padding:4px 9px;font-size:10px;color:rgba(201,168,76,0.75);display:flex;align-items:center;gap:5px;}
+.jchip-del{color:rgba(204,17,17,0.5);cursor:pointer;font-size:13px;line-height:1;}
+.add-row{display:flex;gap:7px;margin-top:7px;}
+.inp{flex:1;background:rgba(201,168,76,0.03);border:none;border-bottom:1px solid rgba(201,168,76,0.2);color:var(--cream);font-family:'Share Tech Mono',monospace;font-size:14px;padding:9px 10px;outline:none;}
+.inp::placeholder{color:rgba(240,230,204,0.15);}
+.btn-add{background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:20px;padding:0 16px;cursor:pointer;}
+.btn-add:active{background:rgba(201,168,76,0.18);}
+
+/* Puntos */
+.pts-item{display:flex;align-items:center;gap:8px;padding:9px 10px;background:rgba(255,255,255,0.01);border:1px solid rgba(201,168,76,0.06);margin-bottom:5px;}
+.pts-name{flex:1;font-size:13px;}
+.pts-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);min-width:44px;text-align:right;}
+.pts-btns{display:flex;gap:3px;}
+.pbtn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:rgba(201,168,76,0.05);border:1px solid rgba(201,168,76,0.12);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:18px;cursor:pointer;}
+.pbtn:active{background:rgba(201,168,76,0.18);transform:scale(0.9);}
+.pbtn.m{color:var(--cream2);}
+
+/* Fotos */
+.fotos-grid{display:flex;flex-direction:column;gap:8px;}
+.foto-slot{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(201,168,76,0.1);}
+.foto-slot img{width:60px;height:45px;object-fit:cover;opacity:0.7;}
+.foto-slot-ph{width:60px;height:45px;background:rgba(201,168,76,0.06);display:flex;align-items:center;justify-content:center;font-size:20px;color:rgba(201,168,76,0.3);flex-shrink:0;}
+.foto-info{flex:1;}
+.foto-lbl{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:rgba(201,168,76,0.4);}
+.foto-name{font-size:11px;color:rgba(240,230,204,0.5);margin-top:2px;}
+.foto-input{display:none;}
+.foto-btn{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:2px;padding:4px 10px;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.15);color:rgba(201,168,76,0.6);cursor:pointer;white-space:nowrap;}
+
+/* Equipos */
+.equipos-result{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.eq-col{padding:10px;background:rgba(0,0,0,0.2);border:1px solid rgba(201,168,76,0.08);}
+.eq-lbl{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:4px;margin-bottom:6px;}
+.eq-lbl.azul{color:rgba(74,144,226,0.5);}
+.eq-lbl.rojo{color:rgba(204,17,17,0.5);}
+.eq-name{font-size:12px;color:var(--cream);padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+
+/* Toast */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(4,5,13,0.97);border:1px solid rgba(201,168,76,0.25);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;padding:9px 22px;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);z-index:999;white-space:nowrap;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="screen active" id="scr-login">
+  <div class="login-logo">Admin</div>
+  <div class="login-sub">GRADUACIÓN 2026 · PANEL SECRETO</div>
+  <div class="login-sep"></div>
+  <div class="pin-lbl">CÓDIGO DE ACCESO</div>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot"></div><div class="pin-dot"></div>
+    <div class="pin-dot"></div><div class="pin-dot"></div>
+  </div>
+  <div class="numpad">
+    <button class="nb" data-n="1">1</button><button class="nb" data-n="2">2</button><button class="nb" data-n="3">3</button>
+    <button class="nb" data-n="4">4</button><button class="nb" data-n="5">5</button><button class="nb" data-n="6">6</button>
+    <button class="nb" data-n="7">7</button><button class="nb" data-n="8">8</button><button class="nb" data-n="9">9</button>
+    <button class="nb del" data-n="del">⌫</button><button class="nb" data-n="0">0</button><button class="nb ok" data-n="ok">OK</button>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="screen" id="scr-admin">
+  <div class="admin-topbar">
+    <div class="atb-title">◆ CONTROL</div>
+    <div class="atb-live"><div class="atb-dot"></div>LIVE</div>
+    <div class="atb-phase" id="atb-phase">EN ESPERA</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="flujo">🎬 Flujo</button>
+    <button class="tab" data-tab="directo">⚡ Directo</button>
+    <button class="tab" data-tab="gente">👥 Gente</button>
+    <button class="tab" data-tab="puntos">🏆 Puntos</button>
+    <button class="tab" data-tab="config">⚙️ Config</button>
+  </div>
+
+  <!-- TAB FLUJO (automático) -->
+  <div class="tp on" id="tab-flujo">
+    <div class="flujo-steps" id="flujo-steps">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- TAB DIRECTO -->
+  <div class="tp" id="tab-directo">
+    <div class="slbl">◆ TV INTERIOR 🏠</div>
+    <button class="abtn primary" onclick="cmd('standby')"><span class="ico">✨</span><div class="info">STANDBY<span class="sub">Pantalla de espera elegante</span></div></button>
+    <button class="abtn primary" onclick="cmd('ruleta')"><span class="ico">🎡</span><div class="info">RULETA AUTOMÁTICA<span class="sub">Gira sola y elige juego</span></div></button>
+    <button class="abtn" onclick="cmd('ranking')"><span class="ico">🏆</span><div class="info">RANKING<span class="sub">Muestra clasificación</span></div></button>
+    <button class="abtn" onclick="cmd('premios')"><span class="ico">🎖️</span><div class="info">PREMIOS<span class="sub">Ceremonia de clausura</span></div></button>
+
+    <div class="slbl">◆ ELEGIR JUEGO MANUAL</div>
+    <div class="juego-picker" id="jp-directo"></div>
+    <button class="abtn primary" style="margin-top:8px" onclick="lanzarJuegoSeleccionado()"><span class="ico">🎯</span><div class="info">LANZAR JUEGO ELEGIDO<span class="sub">Ruleta va al juego seleccionado</span></div></button>
+
+    <div class="slbl">◆ TV EXTERIOR 🌿</div>
+    <button class="abtn green" onclick="cmdExt('standby')"><span class="ico">🌿</span><div class="info">STANDBY EXTERIOR<span class="sub">Pantalla porche</span></div></button>
+    <button class="abtn green" onclick="cmdExt('ranking')"><span class="ico">🏆</span><div class="info">RANKING EXTERIOR<span class="sub">Clasificación en porche</span></div></button>
+    <button class="abtn green" onclick="lanzarExterior(0)"><span class="ico">🫙</span><div class="info">ESCONDER OBJETO<span class="sub">Instrucciones en TV exterior</span></div></button>
+    <button class="abtn green" onclick="lanzarExterior(1)"><span class="ico">🏃</span><div class="info">ESCONDITE EXTREMO<span class="sub">Instrucciones en TV exterior</span></div></button>
+
+    <div class="slbl">◆ TIMERS CAMPO ⏱️</div>
+    <button class="abtn green" onclick="timerExt(720,'Formar equipos','ELIGE TU EQUIPO')"><span class="ico">👥</span><div class="info">12 MIN — Equipos<span class="sub">Esconder objeto · fase inicial</span></div></button>
+    <button class="abtn green" onclick="timerExt(600,'Tiempo de esconder','ESCONDE EL OBJETO')"><span class="ico">🫙</span><div class="info">10 MIN — Esconder<span class="sub">A esconder por el campo</span></div></button>
+    <button class="abtn green" onclick="timerExt(360,'Tiempo de buscar','¡A BUSCAR!')"><span class="ico">🔍</span><div class="info">6 MIN — Buscar<span class="sub">A encontrarlo</span></div></button>
+    <button class="abtn green" onclick="timerExt(300,'Escondite Extremo','EN JUEGO')"><span class="ico">🏃</span><div class="info">5 MIN — Escondite<span class="sub">Tiempo del escondite</span></div></button>
+  </div>
+
+  <!-- TAB GENTE -->
+  <div class="tp" id="tab-gente">
+    <div class="slbl">◆ JUGADORES (<span id="pcount">0</span>)</div>
+    <div class="jugadores-box" id="jugadores-box"></div>
+    <div class="add-row">
+      <input class="inp" id="inp-nombre" type="text" placeholder="Nombre..." maxlength="16" autocapitalize="words" autocomplete="off"/>
+      <button class="btn-add" id="btn-add">+</button>
+    </div>
+
+    <div class="slbl" style="margin-top:16px">◆ EQUIPOS</div>
+    <button class="abtn" onclick="hacerEquipos()"><span class="ico">🎲</span><div class="info">EQUIPOS RANDOM<span class="sub">Divide en dos al azar</span></div></button>
+    <div class="equipos-result" id="equipos-result" style="display:none"></div>
+  </div>
+
+  <!-- TAB PUNTOS -->
+  <div class="tp" id="tab-puntos">
+    <div class="slbl">◆ PUNTUACIÓN MANUAL</div>
+    <div id="pts-list"></div>
+    <button class="abtn danger" style="margin-top:8px" onclick="resetPuntos()"><span class="ico">🗑️</span><div class="info">REINICIAR PUNTOS<span class="sub">Todos a 0</span></div></button>
+  </div>
+
+  <!-- TAB CONFIG -->
+  <div class="tp" id="tab-config">
+    <div class="slbl">◆ FOTOS BIENVENIDA</div>
+    <div class="fotos-grid" id="fotos-grid"></div>
+
+    <div class="slbl">◆ NOMBRES (para bienvenida)</div>
+    <textarea class="inp" id="inp-nombres-bv" placeholder="Un nombre por línea..." rows="5" style="width:100%;resize:none;font-size:12px;line-height:1.6;border:1px solid rgba(201,168,76,0.15);padding:10px;"></textarea>
+    <button class="abtn" style="margin-top:6px" onclick="guardarNombresBv()"><span class="ico">💾</span><div class="info">GUARDAR NOMBRES<span class="sub">Para la secuencia de bienvenida</span></div></button>
+
+    <div class="slbl">◆ SESIÓN</div>
+    <button class="abtn danger" onclick="if(confirm('¿Cerrar sesión?'))location.reload()"><span class="ico">🔒</span><div class="info">CERRAR SESIÓN<span class="sub">Volver al login</span></div></button>
+    <button class="abtn danger" onclick="resetTodo()"><span class="ico">⚠️</span><div class="info">RESET TOTAL<span class="sub">Borra todo de Firebase</span></div></button>
+  </div>
+</div>
+
+<div id="toast">✓</div>
+
+<script>
+// ── FIREBASE ──
+const FC={apiKey:"AIzaSyAib6PDnV_u8GuDp-PnJvop91qv9JHfffc",authDomain:"impostor-322cc.firebaseapp.com",databaseURL:"https://impostor-322cc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"impostor-322cc",storageBucket:"impostor-322cc.firebasestorage.app",messagingSenderId:"808449155212",appId:"1:808449155212:web:c32ca0565b083056f31ba9"};
+firebase.initializeApp(FC);
+const db=firebase.database();
+const HR=db.ref('hub'), HE=db.ref('hub_exterior');
+const JR=db.ref('hub/jugadores'), RR=db.ref('hub/ranking');
+
+// ── PIN ──
+const PIN='2026';
+let pinVal='';
+document.querySelector('.numpad').addEventListener('click',e=>{
+  const n=e.target.dataset.n;if(!n)return;
+  if(n==='del'){pinVal=pinVal.slice(0,-1);}
+  else if(n==='ok'){checkPin();return;}
+  else if(pinVal.length<4){pinVal+=n;}
+  renderDots();
+  if(pinVal.length===4) setTimeout(checkPin,120);
+});
+function renderDots(err=false){
+  document.querySelectorAll('.pin-dot').forEach((d,i)=>{
+    d.className='pin-dot'+(i<pinVal.length?(err?' err':' on'):'');
+  });
+}
+function checkPin(){
+  if(pinVal===PIN){
+    document.getElementById('scr-login').classList.remove('active');
+    document.getElementById('scr-admin').classList.add('active');
+    initAdmin();
+  } else {
+    renderDots(true);
+    setTimeout(()=>{pinVal='';renderDots();},800);
+  }
+}
+
+// ── JUEGOS ──
+const JUEGOS=[
+  {id:'undercover',n:'Undercover',e:'🕵️',loc:'interior'},
+  {id:'impostor',n:'El Impostor',e:'🔪',loc:'interior'},
+  {id:'bomba',n:'Bomba',e:'💣',loc:'interior'},
+  {id:'trivia',n:'Trivia',e:'🎓',loc:'interior'},
+  {id:'adivina',n:'Adivina Quién',e:'💬',loc:'interior'},
+  {id:'votacion',n:'¿Quién Más?',e:'🗳️',loc:'interior'},
+  {id:'karaoke',n:'Karaoke',e:'🎤',loc:'interior'},
+  {id:'dibujar',n:'Dibuja y Adivina',e:'🎨',loc:'interior'},
+  {id:'esconder',n:'Esconder Objeto',e:'🫙',loc:'exterior'},
+  {id:'escondite',n:'Escondite Extremo',e:'🏃',loc:'exterior'},
+];
+const JUEGOS_EXT=[
+  {id:'esconder',n:'Esconder Objeto',e:'🫙'},
+  {id:'escondite',n:'Escondite Extremo',e:'🏃'},
+];
+
+let jugadores={};
+let juegoSeleccionado=null; // para selección manual discreta
+
+// ── FLUJO AUTOMÁTICO ──
+// Paso actual del flujo
+let flujoPaso=0;
+const FLUJO=[
+  {id:'bienvenida',label:'Bienvenida',sub:'Secuencia de apertura con fotos',action:'lanzarBienvenida'},
+  {id:'reunion',label:'Alerta de reunión',sub:'Sirena — todos se reúnen',action:'lanzarAlertaReunion'},
+  {id:'continuar',label:'Continuar',sub:'Confirmar que todos están listos',action:'continuar',esConfirmar:true},
+  {id:'ruleta',label:'Ruleta o elige juego',sub:'Gira automática o selección manual',action:'lanzarRuleta',tienePick:true},
+  {id:'ranking',label:'Ver clasificación',sub:'Mostrar ranking tras el juego',action:'verRanking'},
+  {id:'premios',label:'Ceremonia de premios',sub:'Solo al final de la fiesta',action:'lanzarPremios'},
+];
+
+function renderFlujo(){
+  const cont=document.getElementById('flujo-steps');
+  cont.innerHTML='';
+  FLUJO.forEach((paso,i)=>{
+    const div=document.createElement('div');div.className='fstep';
+    const isActive=i===flujoPaso, isDone=i<flujoPaso;
+    div.innerHTML=`
+      <div class="fstep-line">
+        <div class="fstep-circle ${isActive?'active-step':isDone?'done':''}">${isDone?'✓':i+1}</div>
+        ${i<FLUJO.length-1?'<div class="fstep-connector"></div>':''}
+      </div>
+      <div class="fstep-content">
+        <div class="fstep-title ${isActive?'active-step':''}">${paso.label}</div>
+        <div class="fstep-sub">${paso.sub}</div>
+        ${isActive?`<div class="fstep-action" id="fstep-action-${i}"></div>`:''}
+      </div>`;
+    cont.appendChild(div);
+    if(isActive){
+      const act=document.getElementById('fstep-action-'+i);
+      if(paso.tienePick){
+        // Selector de juego + botón
+        act.innerHTML=`
+          <div style="margin-bottom:8px">
+            <div style="font-size:9px;letter-spacing:4px;color:rgba(201,168,76,0.3);margin-bottom:4px">ALEATORIO O ELIGE:</div>
+            <div class="juego-picker" id="jp-flujo" style="max-height:200px;overflow-y:auto"></div>
+          </div>
+          <button class="btn-continuar" onclick="ejecutarPaso(${i})">🎡 GIRAR RULETA</button>
+          <button class="abtn" style="margin-top:8px" onclick="ejecutarPasoPick(${i})"><span class="ico">🎯</span><div class="info">LANZAR ELEGIDO<span class="sub">Va directo al juego marcado</span></div></button>`;
+        renderJuegoPickerEn('jp-flujo');
+      } else if(paso.esConfirmar){
+        act.innerHTML=`<button class="btn-continuar" onclick="ejecutarPaso(${i})">✓ TODOS LISTOS — CONTINUAR</button>`;
+      } else {
+        act.innerHTML=`<button class="btn-continuar" onclick="ejecutarPaso(${i})">${paso.label.toUpperCase()}</button>`;
+      }
+    }
+  });
+}
+
+function ejecutarPaso(i){
+  const paso=FLUJO[i];
+  window[paso.action]&&window[paso.action]();
+  if(!paso.esConfirmar&&paso.action!=='continuar'){
+    // Solo avanzar en los pasos que no necesitan confirmación manual
+  }
+}
+function ejecutarPasoPick(i){
+  lanzarRuletaPick();
+}
+function continuar(){
+  flujoPaso=Math.min(flujoPaso+1,FLUJO.length-1);
+  renderFlujo();
+  toast('Avanzando...');
+}
+function avanzarFlujo(){
+  flujoPaso=Math.min(flujoPaso+1,FLUJO.length-1);
+  renderFlujo();
+}
+
+// ── ACCIONES DEL FLUJO ──
+function lanzarBienvenida(){
+  // Recuperar fotos guardadas
+  db.ref('hub/config').get().then(snap=>{
+    const cfg=snap.val()||{};
+    const fotos=cfg.fotos||[null,null,null];
+    cmd_data('bienvenida',{fotos});
+    toast('🎬 Bienvenida lanzada');
+    avanzarFlujo();
+  });
+}
+
+function lanzarAlertaReunion(){
+  // Lanza alerta en todas las TVs
+  const donde='SALA PRINCIPAL';
+  cmd_data('alerta_reunion',{donde,subtext:'¡Preparaos! Juego inminente'});
+  cmdExt_data('alerta_reunion',{donde:'EXTERIOR — PORCHE',subtext:'Si estáis fuera, ¡venid dentro!'});
+  toast('🚨 Alerta lanzada en todas las TVs');
+  // NO avanza solo — esperamos confirmación
+}
+
+function lanzarRuleta(){
+  cmd('ruleta');
+  toast('🎡 Ruleta girando...');
+  avanzarFlujo();
+}
+function lanzarRuletaPick(){
+  if(juegoSeleccionado===null){toast('Elige un juego primero');return;}
+  cmd_data('ruleta_pick',{juegoIndex:juegoSeleccionado});
+  toast('🎯 Lanzando: '+JUEGOS[juegoSeleccionado].n);
+  avanzarFlujo();
+}
+
+function verRanking(){
+  cmd('ranking');
+  toast('🏆 Ranking en TV');
+  avanzarFlujo();
+}
+
+function lanzarPremios(){
+  RR.get().then(snap=>{
+    const ranking=snap.val()||{};
+    cmd_data('premios',{rankingFinal:ranking});
+    toast('🏆 Ceremonia de premios');
+    avanzarFlujo();
+  });
+}
+
+// ── COMANDOS FIREBASE ──
+function cmd(c,extra={}){HR.update({comando:c,...extra,timestamp:Date.now()});}
+function cmd_data(c,extra={}){HR.update({comando:c,...extra,timestamp:Date.now()});}
+function cmdExt(c,extra={}){HE.update({comando:c,...extra,timestamp:Date.now()});}
+function cmdExt_data(c,extra={}){HE.update({comando:c,...extra,timestamp:Date.now()});}
+
+function lanzarJuegoSeleccionado(){
+  if(juegoSeleccionado===null){toast('Selecciona un juego');return;}
+  cmd_data('ruleta_pick',{juegoIndex:juegoSeleccionado});
+  toast('🚀 '+JUEGOS[juegoSeleccionado].n);
+}
+function lanzarExterior(idx){
+  HE.update({comando:'instrucciones',juegoIndex:idx,timestamp:Date.now()});
+  toast('🌿 Exterior: '+JUEGOS_EXT[idx].n);
+}
+function timerExt(s,lbl,fase){
+  HE.update({comando:'timer',timerConfig:{secs:s,label:lbl,fase},timestamp:Date.now()});
+  toast('⏱️ '+lbl);
+}
+
+// ── JUEGO PICKER ──
+function renderJuegoPickerEn(containerId){
+  const c=document.getElementById(containerId);if(!c)return;
+  c.innerHTML=JUEGOS.map((j,i)=>`
+    <div class="jp-option ${j.loc} ${juegoSeleccionado===i?'selected':''}" onclick="selectJuego(${i},'${containerId}')">
+      <div class="jp-emoji">${j.e}</div>
+      <div class="jp-name">${j.n}</div>
+      <div class="jp-loc">${j.loc==='exterior'?'🌿 EXT':'🏠 INT'}</div>
+    </div>`).join('');
+}
+function selectJuego(i,cId){
+  juegoSeleccionado=i;
+  document.querySelectorAll('.jp-option').forEach(el=>el.classList.remove('selected'));
+  document.querySelectorAll(`#${cId} .jp-option`).forEach((el,idx)=>{if(idx===i)el.classList.add('selected');});
+  toast(JUEGOS[i].e+' '+JUEGOS[i].n);
+}
+
+// ── JUGADORES ──
+JR.on('value',snap=>{
+  jugadores=snap.val()||{};
+  renderJugadores();renderPuntos();
+});
+function renderJugadores(){
+  const box=document.getElementById('jugadores-box');
+  const arr=Object.keys(jugadores);
+  document.getElementById('pcount').textContent=arr.length;
+  if(!arr.length){box.innerHTML='<span style="font-size:10px;color:rgba(201,168,76,0.25)">Sin jugadores aún</span>';return;}
+  box.innerHTML=arr.map(id=>`<div class="jchip">${jugadores[id].nombre||id}<span class="jchip-del" onclick="delJug('${id}')">×</span></div>`).join('');
+}
+function renderPuntos(){
+  const list=document.getElementById('pts-list');
+  const arr=Object.keys(jugadores);
+  if(!arr.length){list.innerHTML='<div style="font-size:10px;color:rgba(201,168,76,0.25);padding:10px">Añade jugadores primero</div>';return;}
+  list.innerHTML=arr.map(id=>{const j=jugadores[id];const p=j.puntos||0;return`<div class="pts-item"><div class="pts-name">${j.nombre||id}</div><div class="pts-val">${p}</div><div class="pts-btns"><button class="pbtn m" onclick="chgPts('${id}',-10)">−</button><button class="pbtn" onclick="chgPts('${id}',10)">+</button></div></div>`;}).join('');
+}
+document.getElementById('btn-add').onclick=addJug;
+document.getElementById('inp-nombre').onkeydown=e=>{if(e.key==='Enter')addJug();};
+function addJug(){const v=document.getElementById('inp-nombre').value.trim();if(!v)return;JR.push({nombre:v,puntos:0});document.getElementById('inp-nombre').value='';toast('✓ '+v);}
+function delJug(id){JR.child(id).remove();}
+function chgPts(id,d){const cur=(jugadores[id]?.puntos||0);const nv=Math.max(0,cur+d);JR.child(id).update({puntos:nv});updateRanking();}
+function updateRanking(){
+  const upd={};Object.keys(jugadores).forEach(id=>{const j=jugadores[id];if(j.nombre)upd[j.nombre]=j.puntos||0;});
+  RR.set(upd);
+}
+function resetPuntos(){if(!confirm('¿Reiniciar puntos?'))return;const u={};Object.keys(jugadores).forEach(id=>{u[id+'/puntos']=0;});JR.update(u);RR.set({});toast('Puntos a 0');}
+function resetTodo(){if(!confirm('¿Borrar TODO?'))return;HR.set(null);HE.set(null);toast('Reset total');}
+
+function hacerEquipos(){
+  const arr=Object.values(jugadores).map(j=>j.nombre||'?');
+  if(arr.length<2){toast('Pocos jugadores');return;}
+  const sh=arr.sort(()=>Math.random()-0.5);
+  const mid=Math.ceil(sh.length/2);
+  const az=sh.slice(0,mid),ro=sh.slice(mid);
+  HR.update({equipoAzul:az,equipoRojo:ro});
+  const res=document.getElementById('equipos-result');
+  res.style.display='grid';
+  res.innerHTML=`<div class="eq-col"><div class="eq-lbl azul">◆ AZUL</div>${az.map(n=>`<div class="eq-name">${n}</div>`).join('')}</div><div class="eq-col"><div class="eq-lbl rojo">◆ ROJO</div>${ro.map(n=>`<div class="eq-name">${n}</div>`).join('')}</div>`;
+  toast('¡Equipos creados!');
+}
+
+// ── FOTOS CONFIG ──
+const fotoSlots=['Foto 1 — Apertura','Foto 2 — Nombres','Foto 3 — Cierre'];
+let fotosData=[null,null,null];
+
+function renderFotosGrid(){
+  const grid=document.getElementById('fotos-grid');
+  grid.innerHTML=fotoSlots.map((lbl,i)=>`
+    <div class="foto-slot" id="fslot-${i}">
+      ${fotosData[i]?`<img src="${fotosData[i]}" id="fimg-${i}"/>`:`<div class="foto-slot-ph" id="fimg-${i}">📷</div>`}
+      <div class="foto-info">
+        <div class="foto-lbl">${lbl}</div>
+        <div class="foto-name" id="fname-${i}">${fotosData[i]?'Foto cargada':'Sin foto (se usa placeholder)'}</div>
+      </div>
+      <label class="foto-btn" for="finput-${i}">SUBIR</label>
+      <input class="foto-input" type="file" id="finput-${i}" accept="image/*" onchange="loadFoto(${i},this)"/>
+    </div>`).join('');
+}
+function loadFoto(i,inp){
+  const file=inp.files[0];if(!file)return;
+  const r=new FileReader();r.onload=e=>{
+    fotosData[i]=e.target.result;
+    db.ref('hub/config/fotos/'+i).set(e.target.result);
+    renderFotosGrid();toast('Foto '+(i+1)+' guardada');
+  };r.readAsDataURL(file);
+}
+
+function guardarNombresBv(){
+  const val=document.getElementById('inp-nombres-bv').value;
+  const names=val.split('\n').map(n=>n.trim()).filter(Boolean);
+  db.ref('hub/config/nombres').set(names);
+  // También añadir como jugadores si se quiere
+  toast('✓ '+names.length+' nombres guardados');
+}
+
+// ── FIREBASE LISTENER ──
+HR.on('value',snap=>{
+  const d=snap.val();if(!d)return;
+  if(d.juegoActual) document.getElementById('atb-phase').textContent=(d.fase||d.juegoActual).toUpperCase();
+  if(d.config?.fotos){fotosData=d.config.fotos;renderFotosGrid();}
+  if(d.config?.nombres){document.getElementById('inp-nombres-bv').value=(d.config.nombres||[]).join('\n');}
+});
+
+// ── TABS ──
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.onclick=()=>{
+    const t=btn.dataset.tab;
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('.tp').forEach(p=>p.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('tab-'+t).classList.add('on');
+    if(t==='directo') renderJuegoPickerEn('jp-directo');
+  };
+});
+
+// ── TOAST ──
+let tT=null;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>el.classList.remove('show'),2200);}
+
+// ── INIT ──
+function initAdmin(){
+  renderFlujo();
+  renderFotosGrid();
+  renderJuegoPickerEn('jp-directo');
+}
+</script>
+</body>
+</html>
