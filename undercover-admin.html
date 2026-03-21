@@ -217,11 +217,6 @@ function terminar(ganador){
 
 function reset(){if(!confirm('¿Reiniciar?'))return;GR.update({fase:'lobby',catVotos:null,roles:null,eliminados:null,votos:null,palabraReal:null,palabraSpy:null,orden:null,turnoNombre:null,ronda:null,ganador:null,catsTimerStarted:false,spyCount});toast('🔄 Reiniciado');}
 
-// Al cargar, asegurar que existe el nodo con fase lobby
-GR.child('fase').get().then(snap=>{
-  if(!snap.val()) GR.update({fase:'lobby',spyCount:1});
-});
-
 GR.on('value',snap=>{
   const d=snap.val()||{fase:'lobby'};
   est=d;
@@ -233,6 +228,15 @@ GR.on('value',snap=>{
     document.getElementById('pw-s').textContent=d.palabraSpy||'—';
   } else {
     document.getElementById('pals-wrap').style.display='none';
+  }
+  // El admin es quien avanza el turno cuando el jugador pulsa en el móvil
+  if(d.avanzarTurno&&d.fase==='ronda'){
+    const eli=d.eliminados||[];
+    const orden=(d.orden||[]).filter(n=>!eli.includes(n));
+    const cur=orden.indexOf(d.turnoNombre);
+    const next=(cur+1)%orden.length;
+    GR.update({turnoNombre:orden[next],turnoIdx:next,avanzarTurno:null,turnoStartedAt:Date.now()});
+    return; // no renderizar hasta que llegue el snapshot limpio
   }
   renderJugs(d);renderInfo(d);renderAcc(d);
 },err=>{

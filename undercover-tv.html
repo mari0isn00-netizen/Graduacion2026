@@ -621,12 +621,13 @@ GR.on('value',snap=>{
     if(lastFase!=='roles') iniciarRolesCD(d);
   }
   else if(fase==='ronda'){
-    if(lastFase!=='ronda'||turnoKey!==lastTurnoKey){
+    const tk2=(d.turnoNombre||'')+(d.ronda||1)+(d.turnoIdx||0);
+    if(lastTurnoKey!==tk2){
       renderRonda(d);
       showLT('🎙️ TURNO',d.turnoNombre||'—','Di una palabra relacionada con la tuya',12000);
-      lastTurnoKey=turnoKey;
+      lastTurnoKey=tk2;
     }
-    if(d.avanzarTurno){if(turnoIv){clearInterval(turnoIv);turnoIv=null;}avanzarTurno(d);}
+    // avanzarTurno lo gestiona el admin — la TV solo renderiza
   }
   else if(fase==='votacion'){
     if(lastFase!=='votacion'){show('scr-votacion');setSbl('VOTACIÓN');showLT('🗳️ VOTACIÓN','¿Quién es el espía? Vota en el móvil','ANÓNIMO',15000);votAutoIv=null;}
