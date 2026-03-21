@@ -402,8 +402,10 @@ GR.on('value',snap=>{
     const turnoKey=d.turnoNombre+(d.ronda||1);
     if(esMiTurno){
       tm.innerHTML=`<div class="es-tu-turno"><div class="big">¡ES TU TURNO!</div><div class="sm">Di UNA palabra relacionada con la tuya</div></div>`;
-      document.getElementById('btn-hice').style.display='block';
-      document.getElementById('btn-hice').disabled=false;
+      const btn=document.getElementById('btn-hice');
+      btn.style.display='block';
+      btn.disabled=false;
+      btn.textContent='✓ YA DIJE MI PALABRA';
     } else {
       tm.innerHTML=`<div class="turno-otro"><div class="quien">${d.turnoNombre||'—'}</div><div class="sub">DICIENDO SU PALABRA...</div></div>`;
       document.getElementById('btn-hice').style.display='none';

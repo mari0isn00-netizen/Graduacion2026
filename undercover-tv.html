@@ -349,7 +349,7 @@ function playS(t){try{const c=gAC();
 
 // State
 let catsTimerIv=null,rolesIv=null,turnoIv=null,revIv=null,votAutoIv=null;
-let lastFase='',lastTurnoKey='';
+let lastFase='',lastTurnoKey='',procesandoTurno=false;
 
 // ── RENDER LOBBY ──
 function renderLobby(d){
@@ -455,12 +455,28 @@ function renderRonda(d){
   const startAt=d.turnoStartedAt||Date.now();
   document.getElementById('ronda-alarm').classList.remove('show');
   function u(){
-    const rem=Math.max(0,10-Math.floor((Date.now()-startAt)/1000));
+    const rem=Math.max(0,15-Math.floor((Date.now()-startAt)/1000));
     document.getElementById('ronda-timer').textContent=rem;
-    document.getElementById('ronda-timer-fill').style.width=(rem/10*100)+'%';
+    document.getElementById('ronda-timer-fill').style.width=(rem/15*100)+'%';
     document.getElementById('ronda-timer').style.color=rem<=3?'var(--spy2)':'var(--purple2)';
     if(rem<=3)playS('tick');
-    if(rem<=0){clearInterval(turnoIv);turnoIv=null;playS('alarm');document.getElementById('ronda-alarm').classList.add('show');}
+    if(rem<=0){
+      clearInterval(turnoIv);turnoIv=null;
+      playS('alarm');
+      document.getElementById('ronda-alarm').classList.add('show');
+      // Auto-avanzar tras 3s de alarma
+      setTimeout(()=>{
+        if(!procesandoTurno){
+          procesandoTurno=true;
+          const eli2=d.eliminados||[];
+          const orden2=(d.orden||[]).filter(n=>!eli2.includes(n));
+          const cur=orden2.indexOf(d.turnoNombre);
+          const next=(cur+1)%orden2.length;
+          GR.update({turnoNombre:orden2[next],turnoIdx:next,avanzarTurno:null,turnoStartedAt:Date.now()})
+            .then(()=>{procesandoTurno=false;});
+        }
+      },3000);
+    }
   }
   u();turnoIv=setInterval(u,1000);
 }
@@ -624,10 +640,19 @@ GR.on('value',snap=>{
     const tk2=(d.turnoNombre||'')+(d.ronda||1)+(d.turnoIdx||0);
     if(lastTurnoKey!==tk2){
       renderRonda(d);
-      showLT('🎙️ TURNO',d.turnoNombre||'—','Di una palabra relacionada con la tuya',12000);
+      showLT('🎙️ TURNO',d.turnoNombre||'—','Di una palabra relacionada',12000);
       lastTurnoKey=tk2;
     }
-    // avanzarTurno lo gestiona el admin — la TV solo renderiza
+    if(d.avanzarTurno&&!procesandoTurno){
+      procesandoTurno=true;
+      if(turnoIv){clearInterval(turnoIv);turnoIv=null;}
+      const eli=d.eliminados||[];
+      const orden=(d.orden||[]).filter(n=>!eli.includes(n));
+      const cur=orden.indexOf(d.turnoNombre);
+      const next=(cur+1)%orden.length;
+      GR.update({turnoNombre:orden[next],turnoIdx:next,avanzarTurno:null,turnoStartedAt:Date.now()})
+        .then(()=>{procesandoTurno=false;});
+    }
   }
   else if(fase==='votacion'){
     if(lastFase!=='votacion'){show('scr-votacion');setSbl('VOTACIÓN');showLT('🗳️ VOTACIÓN','¿Quién es el espía? Vota en el móvil','ANÓNIMO',15000);votAutoIv=null;}
