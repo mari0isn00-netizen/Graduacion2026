@@ -483,11 +483,27 @@ function renderRonda(d){
 
 function avanzarTurno(d){
   const eli=d.eliminados||[];
-  const orden=d.orden||[];
-  const activos=orden.filter(n=>!eli.includes(n));
-  const cur=activos.indexOf(d.turnoNombre);
-  const next=(cur+1)%activos.length;
-  GR.update({turnoNombre:activos[next],turnoIdx:next,avanzarTurno:null,turnoStartedAt:Date.now(),fase:'ronda'});
+  const orden=(d.orden||[]).filter(n=>!eli.includes(n));
+  const cur=orden.indexOf(d.turnoNombre);
+  const next=(cur+1)%orden.length;
+
+  // Registrar que este jugador ya dijo su palabra esta ronda
+  const dichas={...(d.palabrasDichas||{}),[d.turnoNombre]:true};
+
+  // ¿Han hablado todos los activos esta ronda?
+  const todosHablaron=orden.every(n=>dichas[n]);
+
+  if(todosHablaron){
+    // Auto-votación
+    showLT('🗳️ TODOS HAN HABLADO','¡A votar! ¿Quién es el espía?','VOTACIÓN',8000);
+    playS('fanfare');
+    setTimeout(()=>{
+      GR.update({fase:'votacion',votos:{},votacionResuelta:false,avanzarTurno:null,palabrasDichas:null,timestamp:Date.now()});
+    },2000);
+  } else {
+    GR.update({turnoNombre:orden[next],turnoIdx:next,avanzarTurno:null,turnoStartedAt:Date.now(),palabrasDichas:dichas,fase:'ronda'});
+  }
+  procesandoTurno=false;
 }
 
 function renderVotacion(d){
@@ -563,7 +579,7 @@ function continuarTrasReveal(d){
   if(spiesVivos.length===0){finalizarCon('inocentes',d);return;}
   if(activos.length<=2){finalizarCon('spy',d);return;}
   const orden=(d.orden||[]).filter(n=>!eli.includes(n));
-  GR.update({fase:'ronda',turnoNombre:orden[0],turnoIdx:0,votos:{},votacionResuelta:false,avanzarTurno:null,turnoStartedAt:Date.now()});
+  GR.update({fase:'ronda',turnoNombre:orden[0],turnoIdx:0,votos:{},votacionResuelta:false,avanzarTurno:null,palabrasDichas:null,turnoStartedAt:Date.now()});
 }
 
 function procesarAdivinanza(resp,d){
@@ -592,7 +608,50 @@ function mostrarFin(d){
   el.textContent=g==='spy'?'🔴 EL ESPÍA':'✅ LOS INOCENTES';
   el.className='fin-ganador '+(g==='spy'?'spy':'inocentes');
   document.getElementById('fin-desc').textContent=g==='spy'?'El espía pasó desapercibido':'Los inocentes descubrieron al espía';
-  document.getElementById('fin-palabras').innerHTML=`<div class="fin-pal"><div class="fin-pal-lbl">PALABRA REAL</div><div class="fin-pal-word real">${d.palabraReal||'?'}</div></div><div class="fin-vs">VS</div><div class="fin-pal"><div class="fin-pal-lbl">PALABRA SPY</div><div class="fin-pal-word spy-w">${d.palabraSpy||'?'}</div></div>`;
+  document.getElementById('fin-palabras').innerHTML=`
+    <div class="fin-pal"><div class="fin-pal-lbl">PALABRA REAL</div><div class="fin-pal-word real">${d.palabraReal||'?'}</div></div>
+    <div class="fin-vs">VS</div>
+    <div class="fin-pal"><div class="fin-pal-lbl">PALABRA SPY</div><div class="fin-pal-word spy-w">${d.palabraSpy||'?'}</div></div>`;
+
+  // Puntos ganados esta partida
+  const pts=d.puntos||{};
+  const ptsHtml=Object.entries(pts).filter(([,v])=>v>0).map(([n,v])=>`<span style="color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:clamp(14px,2vw,22px);letter-spacing:3px">${n} <span style="color:var(--green)">+${v}</span></span>`).join('  ·  ');
+  if(ptsHtml){
+    const pEl=document.createElement('div');
+    pEl.style.cssText='font-family:VT323,monospace;font-size:clamp(13px,1.6vw,20px);letter-spacing:4px;color:rgba(240,230,204,.5);animation:up .5s both 2s;margin-top:4px';
+    pEl.innerHTML=ptsHtml;
+    document.getElementById('fin-palabras').insertAdjacentElement('afterend',pEl);
+  }
+
+  // Ranking global del hub
+  HR.child('ranking').get().then(snap=>{
+    const rk=snap.val()||{};
+    const sorted=Object.entries(rk).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    if(sorted.length){
+      const rkEl=document.createElement('div');
+      rkEl.style.cssText='display:flex;flex-direction:column;gap:4px;margin-top:8px;width:100%;max-width:500px;animation:up .5s both 2.5s';
+      rkEl.innerHTML=`<div style="font-family:VT323,monospace;font-size:12px;letter-spacing:6px;color:rgba(201,168,76,.3);text-align:center;margin-bottom:4px">CLASIFICACIÓN GENERAL</div>`+
+        sorted.map(([n,p],i)=>`<div style="display:flex;align-items:center;gap:10px;padding:5px 10px;border:1px solid rgba(201,168,76,.${i===0?'3':'1'});background:rgba(201,168,76,.0${i===0?'4':'2'})">
+          <span style="font-family:VT323,monospace;font-size:20px;color:rgba(201,168,76,.4);width:20px">${['🥇','🥈','🥉'][i]||i+1}</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;flex:1">${n}</span>
+          <span style="font-family:VT323,monospace;font-size:20px;color:var(--gold)">${p}</span>
+        </div>`).join('');
+      document.getElementById('fin-palabras').insertAdjacentElement('afterend',rkEl);
+    }
+  });
+
+  // Botón volver a TV normal
+  setTimeout(()=>{
+    const btnEl=document.createElement('button');
+    btnEl.style.cssText='margin-top:16px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-family:"Bebas Neue",sans-serif;font-size:16px;letter-spacing:4px;padding:12px 28px;cursor:pointer;animation:up .5s both';
+    btnEl.textContent='← VOLVER A TV PRINCIPAL';
+    btnEl.onclick=()=>{
+      HR.update({comando:'standby',timestamp:Date.now()});
+      window.location.href='tv-interior.html';
+    };
+    document.getElementById('scr-fin').querySelector('.fin-wrap').appendChild(btnEl);
+  },3000);
+
   if(g==='spy')playS('spy');else{playS('fanfare');confetti();}
   showLT(g==='spy'?'🔴 ¡GANA EL SPY!':'✅ INOCENTES',g==='spy'?'El espía sobrevivió':'Los inocentes ganaron','UNDERCOVER',12000);
 }
@@ -608,13 +667,37 @@ function confetti(){
 // ── LISTENER JUGADORES (tiempo real, independiente de la fase) ──
 GR.child('jugadores').on('value', snap => {
   const jugs = Object.values(snap.val() || {});
-  // Actualizar chips y contador directamente, sin importar la fase
   const el = document.getElementById('lp-grid');
   const cnt = document.getElementById('pcount');
   const ctTot = document.getElementById('cats-total');
   if(el) el.innerHTML = jugs.map(j=>`<div class="player-chip">${j.nombre}</div>`).join('') || '<span style="font-size:10px;color:rgba(124,92,191,.25)">Esperando jugadores...</span>';
   if(cnt) cnt.textContent = jugs.length;
   if(ctTot) ctTot.textContent = jugs.length;
+
+  // Detectar desconexiones durante partida
+  GR.get().then(gs=>{
+    const d=gs.val()||{};
+    const fase=d.fase||'lobby';
+    if(!['ronda','votacion','reveal'].includes(fase)) return;
+    const jugIds=Object.keys(snap.val()||{});
+    const roles=d.roles||{};
+    const eli=d.eliminados||[];
+    // Comprobar si algún jugador con rol se fue
+    Object.entries(roles).forEach(([id,r])=>{
+      if(!jugIds.includes(id)&&!eli.includes(d.jugadores?.[id]?.nombre)){
+        const nombre=d.jugadores?.[id]?.nombre||'Alguien';
+        showLT('⚠ DESCONEXIÓN',`${nombre} ha abandonado la partida`,'',5000);
+        playS('buzz');
+        if(r.rol==='spy'){
+          // El spy se fue — ganan los inocentes automáticamente
+          setTimeout(()=>{
+            showLT('✅ SPY ABANDONÓ','¡Los inocentes ganan por abandono!','',8000);
+            finalizarCon('inocentes',d);
+          },3000);
+        }
+      }
+    });
+  });
 });
 
 // ── MAIN LISTENER ──
