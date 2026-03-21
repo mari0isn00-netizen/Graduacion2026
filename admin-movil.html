@@ -200,9 +200,10 @@ html,body{background:var(--dark);color:var(--cream);font-family:'Share Tech Mono
 
     <div class="slbl">◆ TV INTERIOR 🏠</div>
     <button class="abtn primary" onclick="cmd('standby')"><span class="ico">✨</span><div class="info">STANDBY<span class="sub">Pantalla de espera elegante</span></div></button>
-    <button class="abtn primary" onclick="cmd('ruleta')"><span class="ico">🎡</span><div class="info">RULETA AUTOMÁTICA<span class="sub">Gira sola y elige juego</span></div></button>
+    <button class="abtn primary" onclick="ruletaInterior()"><span class="ico">🎡</span><div class="info">RULETA INTERIOR<span class="sub">Solo juegos de interior</span></div></button>
     <button class="abtn" onclick="cmd('ranking')"><span class="ico">🏆</span><div class="info">RANKING<span class="sub">Muestra clasificación</span></div></button>
     <button class="abtn" onclick="cmd('premios')"><span class="ico">🎖️</span><div class="info">PREMIOS<span class="sub">Ceremonia de clausura</span></div></button>
+    <button class="abtn" onclick="lanzarRetroDirecto()"><span class="ico">🕹️</span><div class="info">DUELOS RETRO<span class="sub">Abre panel de admin Retro</span></div></button>
 
     <div class="slbl">◆ ELEGIR JUEGO MANUAL</div>
     <div class="juego-picker" id="jp-directo"></div>
@@ -210,6 +211,7 @@ html,body{background:var(--dark);color:var(--cream);font-family:'Share Tech Mono
 
     <div class="slbl">◆ TV EXTERIOR 🌿</div>
     <button class="abtn green" onclick="cmdExt('standby')"><span class="ico">🌿</span><div class="info">STANDBY EXTERIOR<span class="sub">Pantalla porche</span></div></button>
+    <button class="abtn green" onclick="ruletaExterior()"><span class="ico">🎡</span><div class="info">RULETA EXTERIOR<span class="sub">Solo juegos de exterior</span></div></button>
     <button class="abtn green" onclick="cmdExt('ranking')"><span class="ico">🏆</span><div class="info">RANKING EXTERIOR<span class="sub">Clasificación en porche</span></div></button>
     <button class="abtn green" onclick="lanzarExterior(0)"><span class="ico">🫙</span><div class="info">ESCONDER OBJETO<span class="sub">Instrucciones en TV exterior</span></div></button>
     <button class="abtn green" onclick="lanzarExterior(1)"><span class="ico">🏃</span><div class="info">ESCONDITE EXTREMO<span class="sub">Instrucciones en TV exterior</span></div></button>
@@ -317,6 +319,7 @@ const JUEGOS=[
   {id:'dibujar',n:'Dibuja y Adivina',e:'🎨',loc:'interior'},
   {id:'esconder',n:'Esconder Objeto',e:'🫙',loc:'exterior'},
   {id:'escondite',n:'Escondite Extremo',e:'🏃',loc:'exterior'},
+  {id:'retro',n:'Duelos Retro',e:'🕹️',loc:'interior'},
 ];
 const JUEGOS_EXT=[
   {id:'esconder',n:'Esconder Objeto',e:'🫙'},
@@ -325,6 +328,7 @@ const JUEGOS_EXT=[
 
 let jugadores={};
 let juegoSeleccionado=null; // para selección manual discreta
+let _ultimoDestino='interior'; // rastrea el último destino de reunión
 
 // ── FLUJO AUTOMÁTICO ──
 // Paso actual del flujo
@@ -428,6 +432,7 @@ function lanzarAlertaReunion(){
 }
 
 function _dispararAlerta(destino){
+  _ultimoDestino=destino;
   const ext=destino==='exterior';
   const extra=juegoSeleccionado!==null?{juegoIndex:parseInt(juegoSeleccionado,10),destino}:{destino};
   // Siempre suenan las dos TVs — el texto indica a dónde ir
@@ -446,9 +451,26 @@ function _dispararAlerta(destino){
 }
 
 function lanzarRuleta(){
-  cmd('ruleta');
-  toast('🎡 Ruleta girando...');
+  // Usa el destino de la alerta de reunión previa
+  const destino=_ultimoDestino||'interior';
+  cmd_data('ruleta',{destino});
+  toast('🎡 Ruleta '+(destino==='exterior'?'exterior':'interior')+'...');
   avanzarFlujo();
+}
+function ruletaInterior(){
+  _ultimoDestino='interior';
+  cmd_data('ruleta',{destino:'interior'});
+  toast('🎡 Ruleta interior');
+}
+function ruletaExterior(){
+  _ultimoDestino='exterior';
+  // La TV interior muestra "al porche" y manda instrucciones al exterior
+  cmd_data('ruleta',{destino:'exterior'});
+  toast('🎡 Ruleta exterior');
+}
+function lanzarRetroDirecto(){
+  window.open('retro-admin.html','_blank');
+  toast('🕹️ Abriendo admin Retro...');
 }
 function lanzarRuletaPick(){
   if(juegoSeleccionado===null){toast('Elige un juego primero');return;}
