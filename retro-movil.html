@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Juegos Retro — Móvil</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Press+Start+2P&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+:root{
+  --pixel:#39ff14;--pixel2:#ff00ff;--pixel3:#00ffff;--pixel4:#ffff00;
+  --gold:#c9a84c;--dark:#04050d;--cream:#f0e6cc;
+  --blue:#4a90e2;--red:#ff3333;--green:#00c853;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
+html,body{width:100%;height:100%;background:var(--dark);color:var(--cream);font-family:'Share Tech Mono',monospace;overflow:hidden;touch-action:manipulation;}
+
+.screen{display:none;position:fixed;inset:0;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.screen.active{display:flex;}
+
+/* ── REGISTRO ── */
+#scr-registro{background:var(--dark);}
+.reg-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;max-width:320px;}
+.reg-title{font-family:'Press Start 2P',monospace;font-size:clamp(14px,4vw,20px);color:var(--pixel);text-align:center;line-height:1.5;text-shadow:0 0 20px rgba(57,255,20,0.5);}
+.reg-sub{font-family:'VT323',monospace;font-size:20px;letter-spacing:8px;color:rgba(57,255,20,0.4);}
+.reg-input{width:100%;background:rgba(57,255,20,0.06);border:1px solid rgba(57,255,20,0.3);color:var(--pixel);font-family:'Share Tech Mono',monospace;font-size:20px;padding:14px 18px;text-align:center;letter-spacing:3px;outline:none;}
+.reg-input::placeholder{color:rgba(57,255,20,0.2);}
+.reg-team{display:flex;gap:10px;width:100%;}
+.reg-team-btn{flex:1;padding:14px;font-family:'Press Start 2P',monospace;font-size:11px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.3);cursor:pointer;transition:all 0.2s;}
+.reg-team-btn.selected.a{background:rgba(74,144,226,0.2);border-color:var(--blue);color:var(--blue);}
+.reg-team-btn.selected.b{background:rgba(255,51,51,0.2);border-color:var(--red);color:var(--red);}
+.reg-btn{width:100%;background:var(--pixel);color:#000;font-family:'Press Start 2P',monospace;font-size:13px;padding:16px;border:none;cursor:pointer;letter-spacing:2px;}
+.reg-btn:active{opacity:0.8;}
+
+/* ── ESPERA ── */
+#scr-espera{background:var(--dark);}
+.esp-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;}
+.esp-icon{font-size:clamp(50px,15vw,80px);animation:float 2s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+.esp-name{font-family:'Press Start 2P',monospace;font-size:clamp(14px,4vw,20px);line-height:1.4;}
+.esp-name.a{color:var(--blue);}
+.esp-name.b{color:var(--red);}
+.esp-team{font-family:'VT323',monospace;font-size:20px;letter-spacing:8px;margin-top:4px;}
+.esp-team.a{color:rgba(74,144,226,0.5);}
+.esp-team.b{color:rgba(255,51,51,0.5);}
+.esp-status{font-family:'VT323',monospace;font-size:clamp(16px,5vw,22px);letter-spacing:6px;color:rgba(57,255,20,0.5);margin-top:8px;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:0.4;}50%{opacity:1;}}
+.esp-scores{display:flex;gap:24px;margin-top:16px;padding:12px 24px;border:1px solid rgba(255,255,255,0.08);}
+.esp-sc{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.esp-sc-label{font-family:'VT323',monospace;font-size:14px;letter-spacing:4px;}
+.esp-sc-label.a{color:var(--blue);}
+.esp-sc-label.b{color:var(--red);}
+.esp-sc-num{font-family:'Press Start 2P',monospace;font-size:26px;}
+.esp-sc-num.a{color:var(--blue);}
+.esp-sc-num.b{color:var(--red);}
+
+/* ── DUELO ── */
+#scr-duelo{background:var(--dark);}
+.duelo-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;width:100%;}
+.duelo-convocado{font-family:'VT323',monospace;font-size:22px;letter-spacing:8px;color:var(--pixel);animation:pulse 0.5s step-end infinite;}
+.duelo-rival{font-family:'Press Start 2P',monospace;font-size:clamp(14px,4vw,20px);line-height:1.4;color:var(--cream);}
+.duelo-rival .hl{color:var(--pixel);}
+.duelo-minigame-box{padding:16px 24px;border:2px solid rgba(57,255,20,0.3);background:rgba(57,255,20,0.04);width:100%;}
+.dmb-emoji{font-size:40px;margin-bottom:8px;}
+.dmb-name{font-family:'Press Start 2P',monospace;font-size:clamp(11px,3vw,16px);color:var(--pixel);line-height:1.4;}
+.dmb-instruccion{font-family:'VT323',monospace;font-size:clamp(16px,5vw,22px);color:rgba(240,230,204,0.6);margin-top:8px;letter-spacing:2px;}
+.duelo-waiting{font-family:'VT323',monospace;font-size:18px;letter-spacing:6px;color:rgba(57,255,20,0.3);margin-top:8px;animation:pulse 1.5s ease-in-out infinite;}
+
+/* ── MINIJUEGO ACTIVO ── */
+#scr-minijuego{background:#000;}
+.mj-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;width:100%;height:100%;padding:20px;}
+
+/* Botón grande de acción */
+.big-btn{width:min(260px,80vw);height:min(260px,80vw);border-radius:50%;font-family:'Press Start 2P',monospace;font-size:clamp(12px,4vw,18px);border:4px solid;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.4;transition:transform 0.1s;letter-spacing:1px;}
+.big-btn:active{transform:scale(0.92);}
+.big-btn.green{background:rgba(57,255,20,0.15);border-color:var(--pixel);color:var(--pixel);box-shadow:0 0 40px rgba(57,255,20,0.3);}
+.big-btn.blue{background:rgba(74,144,226,0.15);border-color:var(--blue);color:var(--blue);box-shadow:0 0 40px rgba(74,144,226,0.3);}
+.big-btn.red{background:rgba(255,51,51,0.15);border-color:var(--red);color:var(--red);box-shadow:0 0 40px rgba(255,51,51,0.3);}
+.big-btn.gold{background:rgba(201,168,76,0.15);border-color:var(--gold);color:var(--gold);box-shadow:0 0 40px rgba(201,168,76,0.3);}
+.big-btn.flashing{animation:flashBtn 0.3s step-end infinite;}
+@keyframes flashBtn{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+.mj-label{font-family:'VT323',monospace;font-size:clamp(16px,5vw,22px);letter-spacing:6px;color:rgba(57,255,20,0.5);text-align:center;}
+.mj-result{font-family:'Press Start 2P',monospace;font-size:clamp(20px,6vw,30px);text-align:center;animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{transform:scale(0);}to{transform:scale(1);}}
+.mj-result.win{color:var(--pixel);}
+.mj-result.lose{color:var(--red);}
+.mj-result.tie{color:var(--gold);}
+.mj-counter{font-family:'Press Start 2P',monospace;font-size:clamp(40px,14vw,80px);color:var(--pixel);text-shadow:0 0 30px rgba(57,255,20,0.7);}
+.mj-timer{font-family:'VT323',monospace;font-size:clamp(50px,16vw,90px);color:var(--pixel);font-variant-numeric:tabular-nums;}
+.mj-dado{font-size:clamp(80px,25vw,140px);animation:diceRoll 0.6s ease-in-out;}
+@keyframes diceRoll{0%{transform:rotate(0deg);}25%{transform:rotate(20deg);}75%{transform:rotate(-20deg);}100%{transform:rotate(0deg);}}
+
+/* Secuencia de colores */
+.seq-display{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:min(280px,80vw);}
+.seq-box{height:80px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all 0.1s;display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:12px;opacity:0.3;}
+.seq-box.active{opacity:1;transform:scale(1.05);}
+.seq-box.red-c{background:rgba(255,51,51,0.3);border-color:var(--red);color:var(--red);}
+.seq-box.blue-c{background:rgba(74,144,226,0.3);border-color:var(--blue);color:var(--blue);}
+.seq-box.green-c{background:rgba(57,255,20,0.3);border-color:var(--pixel);color:var(--pixel);}
+.seq-box.yellow-c{background:rgba(255,255,0,0.3);border-color:var(--pixel4);color:var(--pixel4);}
+.seq-box.lit.red-c{background:rgba(255,51,51,0.8);opacity:1;}
+.seq-box.lit.blue-c{background:rgba(74,144,226,0.8);opacity:1;}
+.seq-box.lit.green-c{background:rgba(57,255,20,0.8);opacity:1;}
+.seq-box.lit.yellow-c{background:rgba(255,255,0,0.8);opacity:1;}
+
+/* Opciones PPT */
+.ppt-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:100%;}
+.ppt-btn{padding:20px 10px;font-size:clamp(24px,8vw,40px);background:rgba(57,255,20,0.08);border:2px solid rgba(57,255,20,0.2);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.ppt-btn:active{background:rgba(57,255,20,0.2);transform:scale(0.95);}
+.ppt-label{font-family:'VT323',monospace;font-size:14px;letter-spacing:3px;color:rgba(255,255,255,0.4);}
+.ppt-btn.selected{border-color:var(--pixel);background:rgba(57,255,20,0.15);}
+
+/* Pregunta tipo test */
+.preg-text{font-family:'VT323',monospace;font-size:clamp(20px,6vw,28px);text-align:center;color:var(--cream);line-height:1.4;margin-bottom:10px;}
+.preg-opts{display:flex;flex-direction:column;gap:8px;width:100%;}
+.preg-opt{padding:14px;background:rgba(57,255,20,0.06);border:1px solid rgba(57,255,20,0.2);font-family:'Share Tech Mono',monospace;font-size:clamp(14px,4vw,18px);cursor:pointer;text-align:center;}
+.preg-opt:active{background:rgba(57,255,20,0.2);}
+.preg-opt.selected{border-color:var(--gold);background:rgba(201,168,76,0.1);color:var(--gold);}
+.preg-opt.correct{border-color:var(--pixel);background:rgba(57,255,20,0.2);color:var(--pixel);}
+.preg-opt.wrong{border-color:var(--red);background:rgba(255,51,51,0.1);color:var(--red);}
+
+/* GANADOR / LOBBY info en móvil */
+#scr-resultado{background:var(--dark);}
+.res-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;}
+.res-icon{font-size:60px;animation:float 2s ease-in-out infinite;}
+.res-title{font-family:'Press Start 2P',monospace;font-size:clamp(14px,4vw,22px);line-height:1.4;}
+.res-title.win{color:var(--pixel);}
+.res-title.lose{color:var(--red);}
+.res-sub{font-family:'VT323',monospace;font-size:20px;letter-spacing:6px;color:rgba(255,255,255,0.4);}
+</style>
+</head>
+<body>
+
+<!-- REGISTRO -->
+<div class="screen active" id="scr-registro">
+  <div class="reg-wrap">
+    <div class="reg-title">🕹️<br>RETRO<br>ARENA</div>
+    <div class="reg-sub">— GRADUACIÓN 2026 —</div>
+    <input type="text" class="reg-input" id="reg-name" placeholder="TU NOMBRE" maxlength="20">
+    <div class="reg-team">
+      <button class="reg-team-btn a" id="btn-team-a" onclick="selectTeam('A')">EQUIPO A</button>
+      <button class="reg-team-btn b" id="btn-team-b" onclick="selectTeam('B')">EQUIPO B</button>
+    </div>
+    <button class="reg-btn" onclick="registrarse()">UNIRSE ▶</button>
+  </div>
+</div>
+
+<!-- ESPERA -->
+<div class="screen" id="scr-espera">
+  <div class="esp-wrap">
+    <div class="esp-icon" id="esp-icon">🎮</div>
+    <div class="esp-name" id="esp-name">—</div>
+    <div class="esp-team" id="esp-team">EQUIPO —</div>
+    <div class="esp-status" id="esp-status">ESPERANDO AL ADMIN...</div>
+    <div class="esp-scores">
+      <div class="esp-sc">
+        <div class="esp-sc-label a">EQ. A</div>
+        <div class="esp-sc-num a" id="mob-score-a">0</div>
+      </div>
+      <div class="esp-sc">
+        <div class="esp-sc-label b">EQ. B</div>
+        <div class="esp-sc-num b" id="mob-score-b">0</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DUELO ANUNCIADO -->
+<div class="screen" id="scr-duelo">
+  <div class="duelo-wrap">
+    <div class="duelo-convocado">⚡ ¡DUELO! ⚡</div>
+    <div class="duelo-rival" id="duelo-rival">Cargando...</div>
+    <div class="duelo-minigame-box">
+      <div class="dmb-emoji" id="dmb-emoji">🎮</div>
+      <div class="dmb-name" id="dmb-name">—</div>
+      <div class="dmb-instruccion" id="dmb-instruccion">—</div>
+    </div>
+    <div class="duelo-waiting" id="duelo-waiting">Esperando al admin...</div>
+  </div>
+</div>
+
+<!-- MINIJUEGO ACTIVO -->
+<div class="screen" id="scr-minijuego">
+  <div class="mj-wrap" id="mj-content">
+    <!-- Contenido dinámico -->
+  </div>
+</div>
+
+<!-- RESULTADO -->
+<div class="screen" id="scr-resultado">
+  <div class="res-wrap">
+    <div class="res-icon" id="res-icon">🏆</div>
+    <div class="res-title" id="res-title">—</div>
+    <div class="res-sub" id="res-sub">—</div>
+  </div>
+</div>
+
+<script>
+// ── FIREBASE ──
+const FC={apiKey:"AIzaSyAib6PDnV_u8GuDp-PnJvop91qv9JHfffc",authDomain:"impostor-322cc.firebaseapp.com",databaseURL:"https://impostor-322cc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"impostor-322cc",storageBucket:"impostor-322cc.firebasestorage.app",messagingSenderId:"808449155212",appId:"1:808449155212:web:c32ca0565b083056f31ba9"};
+firebase.initializeApp(FC);
+const db=firebase.database();
+const RR=db.ref('retro');
+
+const MINIJUEGOS_DATA={
+  reflejos:{e:'⚡',n:'REFLEJOS DE ACERO',instruccion:'¡Pulsa el botón cuando se ponga VERDE!'},
+  piedra:{e:'✂️',n:'PIEDRA PAPEL TIJERA',instruccion:'Elige en secreto — se revela a la vez'},
+  memoria:{e:'🧠',n:'MEMORIA FLASH',instruccion:'Memoriza y repite la secuencia'},
+  pregunta:{e:'❓',n:'PREGUNTA RELÁMPAGO',instruccion:'El primero en pulsar y acertar gana'},
+  click:{e:'🖱️',n:'CLICK LOCO',instruccion:'¡Pulsa tan rápido como puedas en 10s!'},
+  dado:{e:'🎲',n:'EL DADO MALDITO',instruccion:'Pulsa para tirar — el mayor gana'},
+  adivinanza:{e:'🔤',n:'ADIVINANZA RETRO',instruccion:'Pulsa cuando sepas la respuesta'},
+  escalera:{e:'🪜',n:'ESCALERA DE BOTONES',instruccion:'Sigue la secuencia sin fallar'},
+};
+
+// Estado local
+let myName='', myTeam='', isDuelista=false, currentMini='', dueloJugadorA='', dueloJugadorB='';
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+// REGISTRO
+function selectTeam(t){
+  myTeam=t;
+  document.getElementById('btn-team-a').className='reg-team-btn a'+(t==='A'?' selected':'');
+  document.getElementById('btn-team-b').className='reg-team-btn b'+(t==='B'?' selected':'');
+}
+
+function registrarse(){
+  const n=document.getElementById('reg-name').value.trim();
+  if(!n){alert('Escribe tu nombre');return;}
+  if(!myTeam){alert('Elige un equipo');return;}
+  myName=n.toUpperCase();
+  document.getElementById('esp-name').textContent=myName;
+  document.getElementById('esp-name').className='esp-name '+(myTeam==='A'?'a':'b');
+  document.getElementById('esp-team').textContent='EQUIPO '+myTeam;
+  document.getElementById('esp-team').className='esp-team '+(myTeam==='A'?'a':'b');
+  document.getElementById('esp-icon').textContent=myTeam==='A'?'🎮':'👾';
+  show('scr-espera');
+  initListener();
+}
+
+function initListener(){
+  RR.on('value',snap=>{
+    const d=snap.val();if(!d)return;
+    // Scores
+    if(d.scoreA!==undefined) document.getElementById('mob-score-a').textContent=d.scoreA;
+    if(d.scoreB!==undefined) document.getElementById('mob-score-b').textContent=d.scoreB;
+
+    const cmd=d.cmd;if(!cmd)return;
+
+    if(cmd==='lobby'){
+      show('scr-espera');
+      document.getElementById('esp-status').textContent='LOBBY ABIERTO — ESPERA';
+    } else if(cmd==='duelo'){
+      currentMini=d.minijuego||'reflejos';
+      dueloJugadorA=(d.jugadorA||'').toUpperCase();
+      dueloJugadorB=(d.jugadorB||'').toUpperCase();
+      isDuelista=(myName===dueloJugadorA||myName===dueloJugadorB);
+      const mj=MINIJUEGOS_DATA[currentMini]||MINIJUEGOS_DATA.reflejos;
+      document.getElementById('dmb-emoji').textContent=mj.e;
+      document.getElementById('dmb-name').textContent=mj.n;
+      document.getElementById('dmb-instruccion').textContent=mj.instruccion;
+      if(isDuelista){
+        const rival=myName===dueloJugadorA?dueloJugadorB:dueloJugadorA;
+        document.getElementById('duelo-rival').innerHTML='¡<span class="hl">'+myName+'</span>!<br>DUELAS CONTRA<br><span class="hl">'+rival+'</span>';
+        document.getElementById('duelo-waiting').textContent='Preparado — espera el conteo...';
+      } else {
+        document.getElementById('duelo-rival').innerHTML='<span class="hl">'+dueloJugadorA+'</span> VS <span class="hl">'+dueloJugadorB+'</span>';
+        document.getElementById('duelo-waiting').textContent='Mira la TV — eres espectador';
+      }
+      show('scr-duelo');
+
+    } else if(cmd==='conteo'||cmd==='jugando'){
+      if(isDuelista){
+        lanzarMinijuego(currentMini);
+      } else {
+        document.getElementById('esp-status').textContent='DUELO EN CURSO — MIRA LA TV';
+        show('scr-espera');
+      }
+    } else if(cmd==='ganador'){
+      const ganador=d.ganadorEquipo;
+      const ganadorNombre=(d.ganadorNombre||'').toUpperCase();
+      const yoGane=(ganadorNombre===myName);
+      const miEquipoGano=(ganador===myTeam);
+      document.getElementById('res-icon').textContent=miEquipoGano?'🏆':'😤';
+      document.getElementById('res-title').textContent=yoGane?'¡HAS GANADO!':(miEquipoGano?'¡TU EQUIPO GANA!':'Ganó el otro equipo');
+      document.getElementById('res-title').className='res-title '+(miEquipoGano?'win':'lose');
+      document.getElementById('res-sub').textContent=ganadorNombre+' • EQUIPO '+ganador;
+      show('scr-resultado');
+      setTimeout(()=>show('scr-espera'),4000);
+
+    } else if(cmd==='campeones'){
+      const campeon=d.campeonEquipo;
+      const miEquipo=myTeam===campeon;
+      document.getElementById('res-icon').textContent=miEquipo?'🏆':'🎖️';
+      document.getElementById('res-title').textContent=miEquipo?'¡CAMPEONES!':'Buena batalla';
+      document.getElementById('res-title').className='res-title '+(miEquipo?'win':'lose');
+      document.getElementById('res-sub').textContent='TORNEO FINALIZADO — EQ. '+campeon;
+      show('scr-resultado');
+    }
+  });
+}
+
+// ── MINIJUEGOS ──
+function lanzarMinijuego(id){
+  show('scr-minijuego');
+  const c=document.getElementById('mj-content');
+  c.innerHTML='';
+
+  if(id==='reflejos') miniReflejos(c);
+  else if(id==='piedra') miniPiedra(c);
+  else if(id==='click') miniClick(c);
+  else if(id==='dado') miniDado(c);
+  else if(id==='memoria') miniMemoria(c);
+  else if(id==='pregunta') miniPregunta(c);
+  else if(id==='adivinanza') miniAdivinanza(c);
+  else if(id==='escalera') miniEscalera(c);
+}
+
+// ── REFLEJOS ──
+function miniReflejos(c){
+  c.innerHTML=`<div class="mj-label">¡PULSA CUANDO SEA VERDE!</div><div class="big-btn red" id="rfl-btn" onclick="rflPulsar()">ESPERA...</div><div class="mj-label" id="rfl-msg" style="min-height:30px"></div>`;
+  let fase='rojo';let timer=null;
+  const btn=document.getElementById('rfl-btn');
+  const msg=document.getElementById('rfl-msg');
+  const delay=1500+Math.random()*3000;
+  timer=setTimeout(()=>{
+    fase='verde';
+    btn.className='big-btn green';
+    btn.textContent='¡PULSA!';
+    btn.classList.add('flashing');
+  },delay);
+  window.rflPulsar=()=>{
+    if(fase==='rojo'){
+      btn.textContent='⛔ DEMASIADO PRONTO';
+      btn.className='big-btn red';
+      msg.textContent='';clearTimeout(timer);
+    } else if(fase==='verde'){
+      btn.classList.remove('flashing');
+      btn.textContent='✅ ¡PULSADO!';
+      btn.className='big-btn green';
+      msg.textContent='¡Informa al admin!';
+      fase='done';
+    }
+  };
+}
+
+// ── PIEDRA PAPEL TIJERA ──
+function miniPiedra(c){
+  c.innerHTML=`
+    <div class="mj-label">ELIGE TU MOVIMIENTO</div>
+    <div class="ppt-grid">
+      <button class="ppt-btn" id="ppt-p" onclick="pptElegir('p')"><span>🪨</span><div class="ppt-label">PIEDRA</div></button>
+      <button class="ppt-btn" id="ppt-pa" onclick="pptElegir('pa')"><span>📄</span><div class="ppt-label">PAPEL</div></button>
+      <button class="ppt-btn" id="ppt-t" onclick="pptElegir('t')"><span>✂️</span><div class="ppt-label">TIJERA</div></button>
+    </div>
+    <div class="mj-label" id="ppt-msg" style="min-height:30px;color:var(--gold)">Espera al admin para revelar</div>`;
+  let chosen=null;
+  window.pptElegir=(e)=>{
+    if(chosen)return;
+    chosen=e;
+    document.querySelectorAll('.ppt-btn').forEach(b=>b.classList.remove('selected'));
+    document.getElementById('ppt-'+e).classList.add('selected');
+    document.getElementById('ppt-msg').textContent='Elegido ✅ — No cambies';
+  };
+}
+
+// ── CLICK LOCO ──
+function miniClick(c){
+  c.innerHTML=`<div class="mj-label">¡PULSA LO MÁS RÁPIDO POSIBLE!</div><div class="big-btn green" id="clk-btn" onclick="clkPulsar()">0<br><span style="font-size:12px">CLICKS</span></div><div class="mj-timer" id="clk-timer">10</div>`;
+  let count=0,running=true;
+  const btn=document.getElementById('clk-btn');
+  const timerEl=document.getElementById('clk-timer');
+  let t=10;
+  const iv=setInterval(()=>{t--;timerEl.textContent=t;if(t<=0){clearInterval(iv);running=false;btn.textContent=count+'\nCLICKS!';btn.style.background='rgba(57,255,20,0.3)';}},1000);
+  window.clkPulsar=()=>{if(!running)return;count++;btn.querySelector?btn.innerHTML=count+'<br><span style="font-size:12px">CLICKS</span>':null;btn.textContent=count+'\nCLICKS';};
+}
+
+// ── DADO ──
+function miniDado(c){
+  const DADOS=['⚀','⚁','⚂','⚃','⚄','⚅'];
+  c.innerHTML=`<div class="mj-label">TIRA EL DADO</div><div class="mj-dado" id="dado-emoji">🎲</div><div class="big-btn gold" id="dado-btn" onclick="dadoTirar()">TIRAR</div><div class="mj-label" id="dado-msg" style="min-height:30px"></div>`;
+  let tirado=false;
+  window.dadoTirar=()=>{
+    if(tirado)return;
+    tirado=true;
+    let i=0;const d=document.getElementById('dado-emoji');const btn=document.getElementById('dado-btn');
+    btn.style.opacity='0.4';
+    const roll=setInterval(()=>{d.textContent=DADOS[Math.floor(Math.random()*6)];i++;},80);
+    setTimeout(()=>{
+      clearInterval(roll);
+      const r=Math.floor(Math.random()*6);
+      d.textContent=DADOS[r];
+      document.getElementById('dado-msg').textContent='¡Sacaste '+(r+1)+'!';
+    },1200);
+  };
+}
+
+// ── MEMORIA FLASH ──
+function miniMemoria(c){
+  const COLS=['red-c','blue-c','green-c','yellow-c'];
+  const SEQ=[...Array(4)].map(()=>COLS[Math.floor(Math.random()*4)]);
+  let fase='mostrando',playerSeq=[],step=0;
+
+  c.innerHTML=`
+    <div class="mj-label" id="mem-msg">Observa la secuencia...</div>
+    <div class="seq-display" id="seq-grid">
+      ${COLS.map((col,i)=>`<div class="seq-box ${col}" id="sb-${i}" onclick="memPulsar(${i})"></div>`).join('')}
+    </div>`;
+
+  function iluminar(idx,cb){
+    const el=document.getElementById('sb-'+COLS.indexOf(SEQ[idx]));
+    el.classList.add('lit');
+    setTimeout(()=>{el.classList.remove('lit');setTimeout(cb,300);},600);
+  }
+  function mostrar(i){if(i>=SEQ.length){fase='jugando';document.getElementById('mem-msg').textContent='¡Repítela tú!';return;}iluminar(i,()=>mostrar(i+1));}
+  setTimeout(()=>mostrar(0),800);
+
+  window.memPulsar=(i)=>{
+    if(fase!=='jugando')return;
+    const el=document.getElementById('sb-'+i);
+    el.classList.add('lit');setTimeout(()=>el.classList.remove('lit'),300);
+    playerSeq.push(COLS[i]);
+    if(COLS[i]!==SEQ[playerSeq.length-1]){
+      document.getElementById('mem-msg').textContent='❌ Error — informa al admin';
+      fase='done';return;
+    }
+    if(playerSeq.length===SEQ.length){
+      document.getElementById('mem-msg').textContent='✅ ¡Completada! — informa al admin';
+      fase='done';
+    }
+  };
+}
+
+// ── PREGUNTA RELÁMPAGO ──
+const PREGUNTAS=[
+  {q:'¿Cuántos planetas tiene el Sistema Solar?',opts:['7','8','9','10'],ans:1},
+  {q:'¿Cuál es la capital de Francia?',opts:['Berlín','Madrid','París','Roma'],ans:2},
+  {q:'¿En qué año llegó el hombre a la Luna?',opts:['1965','1967','1969','1972'],ans:2},
+  {q:'¿Cuántos lados tiene un hexágono?',opts:['5','6','7','8'],ans:1},
+  {q:'¿Quién escribió El Quijote?',opts:['Lope de Vega','Quevedo','Cervantes','Calderón'],ans:2},
+  {q:'¿Cuál es el océano más grande?',opts:['Atlántico','Índico','Ártico','Pacífico'],ans:3},
+  {q:'¿Cuántos colores tiene el arcoíris?',opts:['5','6','7','8'],ans:2},
+  {q:'¿Cuál es el metal más abundante en la Tierra?',opts:['Hierro','Aluminio','Cobre','Oro'],ans:0},
+  {q:'¿En qué año terminó la II Guerra Mundial?',opts:['1943','1944','1945','1946'],ans:2},
+  {q:'¿Cuántos huesos tiene el cuerpo humano adulto?',opts:['186','206','226','246'],ans:1},
+];
+
+function miniPregunta(c){
+  const q=PREGUNTAS[Math.floor(Math.random()*PREGUNTAS.length)];
+  let answered=false;
+  c.innerHTML=`
+    <div class="preg-text">${q.q}</div>
+    <div class="preg-opts">
+      ${q.opts.map((o,i)=>`<button class="preg-opt" id="po-${i}" onclick="pregRes(${i})">${o}</button>`).join('')}
+    </div>
+    <div class="mj-label" id="preg-msg" style="min-height:24px"></div>`;
+  window.pregRes=(i)=>{
+    if(answered)return;answered=true;
+    document.querySelectorAll('.preg-opt').forEach((b,idx)=>{
+      if(idx===q.ans) b.classList.add('correct');
+      else if(idx===i&&i!==q.ans) b.classList.add('wrong');
+    });
+    const ok=i===q.ans;
+    document.getElementById('preg-msg').textContent=ok?'✅ ¡CORRECTO!':'❌ Fallaste';
+  };
+}
+
+// ── ADIVINANZA ──
+const ADIVINANZAS=[
+  {q:'Tengo ciudades, pero no casas; montañas, pero no árboles; agua, pero no peces. ¿Qué soy?',r:'Un mapa'},
+  {q:'Cuanto más seco, más mojo. ¿Qué soy?',r:'Una toalla'},
+  {q:'Habla sin boca y escucha sin orejas. ¿Qué soy?',r:'Un eco'},
+  {q:'Tengo manos pero no puedo aplaudir. ¿Qué soy?',r:'Un reloj'},
+  {q:'Vivo en invierno, muero en verano y crezco con las raíces hacia arriba. ¿Qué soy?',r:'Un carámbano'},
+  {q:'¿Qué invento permite ver a través de las paredes?',r:'Una ventana'},
+];
+
+function miniAdivinanza(c){
+  const a=ADIVINANZAS[Math.floor(Math.random()*ADIVINANZAS.length)];
+  let revealed=false;
+  c.innerHTML=`
+    <div class="preg-text" style="font-size:clamp(16px,5vw,22px)">${a.q}</div>
+    <div class="big-btn green" id="adiv-btn" onclick="adivPulsar()">¡SÉ LA RESPUESTA!</div>
+    <div class="mj-label" id="adiv-msg" style="min-height:30px"></div>`;
+  window.adivPulsar=()=>{
+    if(revealed)return;revealed=true;
+    document.getElementById('adiv-btn').style.display='none';
+    document.getElementById('adiv-msg').innerHTML='Respuesta: <span style="color:var(--pixel)">'+a.r+'</span><br>Dila en voz alta';
+  };
+}
+
+// ── ESCALERA DE BOTONES ──
+function miniEscalera(c){
+  const BTNS=[
+    {id:'e0',label:'🔴',col:'red'},
+    {id:'e1',label:'🔵',col:'blue'},
+    {id:'e2',label:'🟢',col:'green'},
+    {id:'e3',label:'🟡',col:'gold'},
+  ];
+  const SEQ=[...Array(5)].map(()=>Math.floor(Math.random()*4));
+  let step=0,fail=false;
+  c.innerHTML=`
+    <div class="mj-label">Sigue la secuencia: ${SEQ.map(i=>BTNS[i].label).join(' → ')}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:min(260px,80vw)">
+      ${BTNS.map(b=>`<div class="big-btn ${b.col}" style="width:100%;height:80px;border-radius:8px" onclick="escPulsar(${BTNS.indexOf(b)})">${b.label}</div>`).join('')}
+    </div>
+    <div class="mj-label" id="esc-msg">${step+1}/${SEQ.length}</div>`;
+  window.escPulsar=(i)=>{
+    if(fail||step>=SEQ.length)return;
+    const msg=document.getElementById('esc-msg');
+    if(i===SEQ[step]){
+      step++;
+      if(step>=SEQ.length){msg.textContent='✅ ¡Completada! Informa al admin';}
+      else{msg.textContent=(step+1)+'/'+SEQ.length;}
+    } else {
+      fail=true;msg.textContent='❌ Error en paso '+(step+1)+' — informa al admin';
+    }
+  };
+}
+</script>
+</body>
+</html>
