@@ -290,7 +290,16 @@ const db=firebase.database(), GR=db.ref('undercover'), HR=db.ref('hub');
 
 const CATS=[{id:'trends',n:'Tendencias & Viral',e:'🔥'},{id:'rrss',n:'Redes Sociales',e:'📱'},{id:'deporte',n:'Deporte',e:'⚽'},{id:'musica',n:'Música',e:'🎵'},{id:'pelis',n:'Pelis & Series',e:'🎬'},{id:'comida',n:'Comida',e:'🍕'},{id:'viajes',n:'Viajes',e:'🌍'},{id:'random',n:'Random',e:'🎲'}];
 
-const PAIRS={trends:[['VIRAL','TRENDING'],['MEME','REELS'],['INFLUENCER','YOUTUBER'],['CHALLENGE','TREND'],['SELFIE','FOTO'],['STORY','POST'],['LIKE','CORAZÓN'],['FOMO','HYPE']],rrss:[['INSTAGRAM','TIKTOK'],['WHATSAPP','TELEGRAM'],['TWITTER','THREADS'],['YOUTUBE','TWITCH'],['STORIES','REELS'],['SEGUIDOR','SUSCRIPTOR'],['DM','MENSAJE'],['HASHTAG','ETIQUETA']],deporte:[['MESSI','CRISTIANO'],['BARÇA','MADRID'],['GOL','TANTO'],['ÁRBITRO','JUEZ'],['PORTERO','GUARDAMETA'],['PENALTY','FALTA'],['ENTRENADOR','TÉCNICO'],['ESTADIO','CAMPO']],musica:[['REGGAETON','TRAP'],['CONCIERTO','FESTIVAL'],['DJ','PRODUCTOR'],['ÁLBUM','DISCO'],['SPOTIFY','APPLE MUSIC'],['SOLISTA','BANDA'],['DIRECTO','ACÚSTICO'],['REMIX','VERSIÓN']],pelis:[['NETFLIX','HBO'],['SERIE','PELÍCULA'],['ACTOR','PERSONAJE'],['TRAILER','TEASER'],['SPOILER','FINAL'],['COMEDIA','DRAMA'],['REMAKE','SECUELA'],['ESTRENO','PREMIERE']],comida:[['PIZZA','CALZONE'],['SUSHI','SASHIMI'],['HAMBURGUESA','BOCADILLO'],['CAFÉ','ESPRESSO'],['TARTA','PASTEL'],['VEGANO','VEGETARIANO'],['RESTAURANTE','BAR'],['POSTRE','DULCE']],viajes:[['PLAYA','PISCINA'],['AVIÓN','TREN'],['HOTEL','AIRBNB'],['TURISTA','VIAJERO'],['MOCHILA','MALETA'],['PASAPORTE','DNI'],['EXCURSIÓN','TOUR'],['BRONCEADO','MORENO']],random:[['TIJERAS','CUCHILLO'],['LUNA','SOL'],['FRÍO','FRESCO'],['LIBRO','REVISTA'],['PERRO','LOBO'],['CASTILLO','PALACIO'],['ESPEJO','VENTANA'],['ROBOT','MÁQUINA']]};
+const PAIRS={
+  trends:[['CANCELAR','BLOQUEAR'],['GHOSTEAR','IGNORAR'],['BURNOUT','ESTRÉS'],['MINIMALISMO','AUSTERIDAD'],['NOMOFOBIA','ADICCIÓN'],['POSTUREO','APARENTAR'],['FINSTAGRAM','PERFIL FALSO'],['DETOX DIGITAL','DESCONECTAR'],['PHUBBING','IGNORAR CON MÓVIL'],['DOOMSCROLLING','SCROLLEAR']],
+  rrss:[['LIKE','REACCIÓN'],['STORY','ESTADO'],['MUTE','SILENCIAR'],['SHADOWBAN','RESTRICCIÓN'],['RATIO','CONTESTAR'],['ALGORITMO','FEED'],['TRENDING','VIRAL'],['FINSTA','CUENTA PRIVADA'],['UNFOLLOW','DEJAR DE SEGUIR'],['THREAD','HILO']],
+  deporte:[['FUERA DE JUEGO','OFFSIDE'],['TARJETA AMARILLA','AMONESTACIÓN'],['PRÓRROGA','TIEMPO EXTRA'],['CORNER','SAQUE DE ESQUINA'],['BANQUILLO','SUPLENTE'],['DOPAJE','TRAMPA'],['FICHAJE','CONTRATACIÓN'],['DELANTERA','ATACANTE'],['DERBI','CLÁSICO'],['RÉCORD','MARCA']],
+  musica:[['FEAT','COLABORACIÓN'],['ACÚSTICO','UNPLUGGED'],['GIRA','TOUR'],['SINGLE','SENCILLO'],['LOOP','REPETICIÓN'],['FLOW','RITMO'],['SAMPLE','MUESTRA'],['DIRECTO','EN VIVO'],['LETRA','LÍRICA'],['BEATBOX','PERCUSIÓN VOCAL']],
+  pelis:[['CAMEO','APARICIÓN'],['CLIFFHANGER','GIRO FINAL'],['BIOPIC','DOCUDRAMA'],['SPIN-OFF','DERIVADO'],['CROSSOVER','UNIVERSO COMPARTIDO'],['REMAKE','VERSIÓN NUEVA'],['ANTIHÉROE','VILLANO SIMPÁTICO'],['MCGUFFIN','OBJETO CLAVE'],['JUMPSCARE','SUSTO REPENTINO'],['PLOT TWIST','GIRO ARGUMENTAL']],
+  comida:[['UMAMI','SABROSO'],['AL DENTE','POCO HECHO'],['BLANQUEAR','ESCALDAR'],['MARINAR','MACERAR'],['GRATINAR','DORAR'],['MISE EN PLACE','PREPARACIÓN'],['REDUCCIÓN','SALSA ESPESA'],['EMULSIONAR','MEZCLAR'],['CARAMELIZAR','DORAR CON AZÚCAR'],['FERMENTAR','MADURAR']],
+  viajes:[['LAYOVER','ESCALA'],['OVERBOOKING','SOBREVENTA'],['HOSTEL','ALBERGUE'],['MOCHILERO','VIAJERO BARATO'],['GENTRIFICACIÓN','TURISTIFICACIÓN'],['VISA','PERMISO'],['JETLAG','DESFASE HORARIO'],['TRANSFER','TRASLADO'],['ALL INCLUSIVE','TODO INCLUIDO'],['COUCHSURFING','HOSPEDAJE GRATIS']],
+  random:[['AMNESIA','DESMEMORIA'],['PARADOJA','CONTRADICCIÓN'],['SARCASMO','IRONÍA'],['DÉJÀ VU','SENSACIÓN FAMILIAR'],['EMPATÍA','COMPASIÓN'],['DILEMA','ENCRUCIJADA'],['EFÍMERO','PASAJERO'],['NOSTALGIA','AÑORANZA'],['CAOS','DESORDEN'],['RESILIENCIA','FORTALEZA']]
+};
 
 // BG
 const bg=document.getElementById('bg'),bx=bg.getContext('2d');
@@ -304,8 +313,9 @@ function nP(){return{x:Math.random()*bg.width,y:Math.random()*bg.height,s:Math.r
 setInterval(()=>{const n=new Date();document.getElementById('clk').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');},10000);
 document.getElementById('clk').textContent=(()=>{const n=new Date();return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');})();
 
-// QR
-(()=>{const base=location.href.replace(/undercover-tv\.html.*/,'');const url=base+'undercover-movil.html';try{new QRCode(document.getElementById('qr'),{text:url,width:120,height:120,colorDark:'#1a0a2e',colorLight:'#f5f5f5'});}catch(e){}})();
+// QR — URL hardcodeada con el dominio real
+const MOVIL_URL='https://mari0isn00-netizen.github.io/el-impostor/undercover-movil.html';
+(()=>{try{new QRCode(document.getElementById('qr'),{text:MOVIL_URL,width:120,height:120,colorDark:'#1a0a2e',colorLight:'#f5f5f5'});}catch(e){document.getElementById('qr').innerHTML=`<div style="font-size:9px;color:rgba(124,92,191,.5);padding:10px;text-align:center">${MOVIL_URL}</div>`;}})();
 
 // Lower third
 let ltT=null;
@@ -522,7 +532,17 @@ function confetti(){
   setTimeout(()=>c.remove(),8000);
 }
 
-// MAIN LISTENER
+// LISTENER JUGADORES — actualiza chips en tiempo real sin GET extra
+GR.child('jugadores').on('value',snap=>{
+  const jugs=snap.val()||{};
+  const arr=Object.values(jugs);
+  // Actualizar chips directamente
+  document.getElementById('pcount').textContent=arr.length;
+  document.getElementById('chips').innerHTML=arr.map(j=>`<div class="chip">${j.nombre}</div>`).join('')||'<span style="font-size:10px;color:rgba(124,92,191,.25)">Esperando jugadores...</span>';
+  document.getElementById('ct').textContent=arr.length;
+});
+
+// MAIN LISTENER — cambios de fase y estado
 GR.on('value',snap=>{
   const d=snap.val();if(!d)return;
   const fase=d.fase||'lobby';
