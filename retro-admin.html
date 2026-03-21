@@ -3,353 +3,355 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>ADMIN — Juegos Retro</title>
+<title>ADMIN — Duelos Retro</title>
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Press+Start+2P&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-:root{
-  --pixel:#39ff14;--pixel2:#ff00ff;--pixel3:#00ffff;--pixel4:#ffff00;
-  --gold:#c9a84c;--dark:#04050d;--cream:#f0e6cc;
-  --blue:#4a90e2;--red:#ff3333;--green:#00c853;
-}
+:root{--pixel:#39ff14;--gold:#c9a84c;--dark:#04050d;--cream:#f0e6cc;--teamA:#4a90e2;--teamB:#ff3333;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{width:100%;min-height:100%;background:var(--dark);color:var(--cream);font-family:'Share Tech Mono',monospace;overflow-x:hidden;}
 
 /* LOGIN */
-#login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:20px;padding:24px;}
-.login-title{font-family:'Press Start 2P',monospace;font-size:clamp(14px,4vw,22px);color:var(--pixel);text-align:center;text-shadow:0 0 20px rgba(57,255,20,0.5);line-height:1.5;}
-.login-sub{font-family:'VT323',monospace;font-size:clamp(16px,5vw,24px);letter-spacing:8px;color:rgba(57,255,20,0.4);}
-.login-input{width:100%;max-width:300px;background:rgba(57,255,20,0.06);border:1px solid rgba(57,255,20,0.3);color:var(--pixel);font-family:'Share Tech Mono',monospace;font-size:20px;padding:14px 18px;text-align:center;letter-spacing:4px;outline:none;}
-.login-input::placeholder{color:rgba(57,255,20,0.2);}
-.login-btn{width:100%;max-width:300px;background:var(--pixel);color:#000;font-family:'Press Start 2P',monospace;font-size:14px;padding:14px;border:none;cursor:pointer;letter-spacing:2px;}
-.login-btn:active{opacity:0.8;}
-.login-err{color:var(--red);font-family:'VT323',monospace;font-size:20px;letter-spacing:4px;display:none;}
+#login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:18px;padding:24px;}
+.login-title{font-family:'Press Start 2P',monospace;font-size:clamp(14px,4vw,20px);color:var(--pixel);text-align:center;text-shadow:0 0 20px rgba(57,255,20,.5);line-height:1.5;}
+.login-sub{font-family:'VT323',monospace;font-size:clamp(16px,5vw,22px);letter-spacing:8px;color:rgba(57,255,20,.35);}
+.login-input{width:100%;max-width:280px;background:rgba(57,255,20,.06);border:1px solid rgba(57,255,20,.25);color:var(--pixel);font-family:'Share Tech Mono',monospace;font-size:18px;padding:13px 16px;text-align:center;letter-spacing:4px;outline:none;}
+.login-btn{width:100%;max-width:280px;background:var(--pixel);color:#000;font-family:'Press Start 2P',monospace;font-size:13px;padding:14px;border:none;cursor:pointer;letter-spacing:2px;}
+.login-btn:active{opacity:.8;}
+.login-err{color:var(--teamB);font-family:'VT323',monospace;font-size:18px;letter-spacing:4px;display:none;text-align:center;}
 
-/* ADMIN PANEL */
-#panel{display:none;padding:16px;max-width:480px;margin:0 auto;}
-.panel-header{text-align:center;padding:16px 0 20px;border-bottom:1px solid rgba(57,255,20,0.15);margin-bottom:20px;}
-.ph-title{font-family:'Press Start 2P',monospace;font-size:clamp(12px,3.5vw,18px);color:var(--pixel);text-shadow:0 0 15px rgba(57,255,20,0.4);line-height:1.4;}
-.ph-sub{font-family:'VT323',monospace;font-size:18px;letter-spacing:6px;color:rgba(57,255,20,0.4);margin-top:6px;}
+/* PANEL */
+#panel{display:none;padding:14px;max-width:480px;margin:0 auto;}
+.ph{text-align:center;padding:14px 0 18px;border-bottom:1px solid rgba(57,255,20,.12);margin-bottom:16px;}
+.ph-title{font-family:'Press Start 2P',monospace;font-size:clamp(11px,3.5vw,16px);color:var(--pixel);text-shadow:0 0 12px rgba(57,255,20,.4);line-height:1.4;}
+.ph-sub{font-family:'VT323',monospace;font-size:16px;letter-spacing:6px;color:rgba(57,255,20,.35);margin-top:5px;}
 
-/* SECCIÓN */
-.sec{margin-bottom:22px;padding:14px;border:1px solid rgba(57,255,20,0.12);background:rgba(57,255,20,0.03);}
-.sec-title{font-family:'VT323',monospace;font-size:18px;letter-spacing:8px;color:var(--pixel);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid rgba(57,255,20,0.1);}
-
-/* SCORES DISPLAY */
-.scores-row{display:flex;align-items:center;justify-content:space-around;padding:10px 0;}
-.score-box{display:flex;flex-direction:column;align-items:center;gap:4px;}
-.sb-label{font-family:'VT323',monospace;font-size:16px;letter-spacing:6px;}
-.sb-label.a{color:var(--blue);}
-.sb-label.b{color:var(--red);}
-.sb-num{font-family:'Press Start 2P',monospace;font-size:clamp(28px,8vw,44px);}
-.sb-num.a{color:var(--blue);text-shadow:0 0 15px rgba(74,144,226,0.5);}
-.sb-num.b{color:var(--red);text-shadow:0 0 15px rgba(255,51,51,0.5);}
-.score-vs{font-family:'VT323',monospace;font-size:30px;color:rgba(255,255,255,0.2);}
-.ronda-label{text-align:center;font-family:'VT323',monospace;font-size:16px;letter-spacing:6px;color:rgba(255,255,255,0.3);margin-top:6px;}
-
-/* INPUTS */
-.field{margin-bottom:12px;}
-.field-label{font-family:'VT323',monospace;font-size:16px;letter-spacing:4px;color:rgba(57,255,20,0.5);margin-bottom:6px;display:block;}
-.field-input{width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(57,255,20,0.25);color:var(--cream);font-family:'Share Tech Mono',monospace;font-size:16px;padding:10px 12px;outline:none;}
-.field-input:focus{border-color:var(--pixel);box-shadow:0 0 8px rgba(57,255,20,0.2);}
-
-/* EQUIPO INPUTS */
-.teams-wrap{display:flex;gap:10px;}
-.team-col{flex:1;}
-.team-col-label{font-family:'VT323',monospace;font-size:16px;letter-spacing:4px;margin-bottom:8px;}
-.team-col-label.a{color:var(--blue);}
-.team-col-label.b{color:var(--red);}
-.team-textarea{width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(57,255,20,0.2);color:var(--cream);font-family:'Share Tech Mono',monospace;font-size:13px;padding:8px;min-height:100px;resize:vertical;outline:none;line-height:1.6;}
-.team-textarea:focus{border-color:var(--pixel);}
-
-/* MINIJUEGOS SELECTOR */
-.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.mini-btn{background:rgba(0,0,0,0.5);border:1px solid rgba(57,255,20,0.2);color:rgba(240,230,204,0.6);font-family:'Share Tech Mono',monospace;font-size:11px;padding:10px 8px;cursor:pointer;text-align:center;line-height:1.4;transition:all 0.15s;}
-.mini-btn:active{transform:scale(0.96);}
-.mini-btn.selected{border-color:var(--pixel);background:rgba(57,255,20,0.1);color:var(--pixel);box-shadow:0 0 10px rgba(57,255,20,0.2);}
-.mini-emoji{font-size:18px;display:block;margin-bottom:4px;}
-.mini-name{font-size:10px;letter-spacing:1px;}
-
-/* BOTONES DE ACCIÓN */
-.btn{width:100%;padding:14px;font-family:'Press Start 2P',monospace;font-size:11px;letter-spacing:1px;border:none;cursor:pointer;margin-bottom:8px;transition:all 0.15s;}
-.btn:active{transform:scale(0.97);}
-.btn-green{background:var(--pixel);color:#000;}
-.btn-blue{background:var(--blue);color:#fff;}
-.btn-red{background:var(--red);color:#fff;}
-.btn-gold{background:var(--gold);color:#000;}
-.btn-gray{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1);}
-.btn-outline{background:transparent;border:1px solid var(--pixel);color:var(--pixel);}
-.btn-sm{padding:10px;font-size:10px;margin-bottom:6px;}
-
-/* GANADOR SELECTOR */
-.ganador-row{display:flex;gap:10px;margin-bottom:8px;}
-.btn-winner{flex:1;padding:16px;font-family:'Press Start 2P',monospace;font-size:11px;border:none;cursor:pointer;}
-.btn-winner.a{background:var(--blue);color:#fff;}
-.btn-winner.b{background:var(--red);color:#fff;}
-.btn-winner:active{opacity:0.85;}
-
-/* HISTORIAL */
-.hist-list{display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;}
-.hist-item{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);font-family:'VT323',monospace;font-size:14px;}
-.hi-rnd{color:rgba(255,255,255,0.3);width:60px;}
-.hi-winner{font-weight:bold;flex:1;text-align:center;}
-.hi-winner.a{color:var(--blue);}
-.hi-winner.b{color:var(--red);}
-.hi-game{color:rgba(255,255,255,0.3);font-size:12px;}
-
-/* STATUS INDICATOR */
-.status-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(57,255,20,0.05);border:1px solid rgba(57,255,20,0.15);margin-bottom:16px;font-family:'VT323',monospace;font-size:16px;letter-spacing:4px;}
-.status-dot{width:8px;height:8px;border-radius:50%;background:var(--pixel);animation:blink 1s step-end infinite;}
+/* STATUS */
+.status-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(57,255,20,.04);border:1px solid rgba(57,255,20,.12);margin-bottom:14px;font-family:'VT323',monospace;font-size:15px;letter-spacing:4px;}
+.s-dot{width:7px;height:7px;border-radius:50%;background:var(--pixel);animation:blink 1s step-end infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
 
 /* TABS */
-.tabs{display:flex;gap:0;margin-bottom:16px;}
-.tab{flex:1;padding:10px;font-family:'VT323',monospace;font-size:16px;letter-spacing:4px;text-align:center;cursor:pointer;border:1px solid rgba(57,255,20,0.15);color:rgba(57,255,20,0.4);background:transparent;transition:all 0.15s;}
-.tab.active{background:rgba(57,255,20,0.1);color:var(--pixel);border-color:var(--pixel);}
-.tab-content{display:none;}
-.tab-content.active{display:block;}
+.tabs{display:flex;gap:0;margin-bottom:14px;}
+.tab{flex:1;padding:9px;font-family:'VT323',monospace;font-size:15px;letter-spacing:3px;text-align:center;cursor:pointer;border:1px solid rgba(57,255,20,.12);color:rgba(57,255,20,.35);background:transparent;transition:all .15s;}
+.tab.on{background:rgba(57,255,20,.08);color:var(--pixel);border-color:var(--pixel);}
+.tc{display:none;}
+.tc.on{display:block;}
+
+/* SECCIÓN */
+.sec{margin-bottom:18px;padding:12px;border:1px solid rgba(57,255,20,.1);background:rgba(57,255,20,.025);}
+.sec-t{font-family:'VT323',monospace;font-size:16px;letter-spacing:8px;color:var(--pixel);margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid rgba(57,255,20,.08);}
+
+/* MARCADOR */
+.sc-row{display:flex;align-items:center;justify-content:space-around;padding:8px 0;}
+.sc-box{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.sc-lbl{font-family:'VT323',monospace;font-size:15px;letter-spacing:6px;}
+.sc-lbl.a{color:var(--teamA);}
+.sc-lbl.b{color:var(--teamB);}
+.sc-n{font-family:'Press Start 2P',monospace;font-size:clamp(26px,8vw,42px);}
+.sc-n.a{color:var(--teamA);text-shadow:0 0 12px rgba(74,144,226,.4);}
+.sc-n.b{color:var(--teamB);text-shadow:0 0 12px rgba(255,51,51,.4);}
+.sc-sep{font-family:'VT323',monospace;font-size:28px;color:rgba(255,255,255,.15);}
+.rnd-lbl{text-align:center;font-family:'VT323',monospace;font-size:14px;letter-spacing:5px;color:rgba(255,255,255,.25);margin-top:4px;}
+
+/* JUGADORES LIVE */
+.teams-live{display:flex;gap:8px;}
+.team-col-live{flex:1;padding:8px;border:1px solid;min-height:60px;}
+.team-col-live.ta{border-color:rgba(74,144,226,.25);background:rgba(74,144,226,.03);}
+.team-col-live.tb{border-color:rgba(255,51,51,.25);background:rgba(255,51,51,.03);}
+.tcl-hdr{font-family:'VT323',monospace;font-size:14px;letter-spacing:5px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid;}
+.ta .tcl-hdr{color:var(--teamA);border-color:rgba(74,144,226,.18);}
+.tb .tcl-hdr{color:var(--teamB);border-color:rgba(255,51,51,.18);}
+.tcl-member{font-family:'VT323',monospace;font-size:14px;letter-spacing:2px;padding:2px 0;color:rgba(255,255,255,.6);}
+.tcl-empty{font-family:'VT323',monospace;font-size:12px;letter-spacing:3px;color:rgba(255,255,255,.18);}
+
+/* SELECTS */
+.field{margin-bottom:10px;}
+.field-label{font-family:'VT323',monospace;font-size:14px;letter-spacing:4px;color:rgba(57,255,20,.45);margin-bottom:5px;display:block;}
+.field-sel{width:100%;background:rgba(0,0,0,.5);border:1px solid rgba(57,255,20,.22);color:var(--cream);font-family:'Share Tech Mono',monospace;font-size:15px;padding:9px 10px;outline:none;cursor:pointer;}
+.field-sel:focus{border-color:var(--pixel);}
+.field-sel option{background:#000;color:var(--cream);}
+
+/* MINI GRID */
+.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.mini-btn{background:rgba(0,0,0,.5);border:1px solid rgba(57,255,20,.18);color:rgba(240,230,204,.5);font-family:'Share Tech Mono',monospace;font-size:10px;padding:9px 6px;cursor:pointer;text-align:center;line-height:1.4;transition:all .12s;}
+.mini-btn:active{transform:scale(.96);}
+.mini-btn.on{border-color:var(--pixel);background:rgba(57,255,20,.1);color:var(--pixel);box-shadow:0 0 8px rgba(57,255,20,.18);}
+.mini-e{font-size:16px;display:block;margin-bottom:3px;}
+
+/* BOTONES */
+.btn{width:100%;padding:13px;font-family:'Press Start 2P',monospace;font-size:10px;letter-spacing:1px;border:none;cursor:pointer;margin-bottom:7px;transition:all .12s;}
+.btn:active{transform:scale(.97);}
+.btn-green{background:var(--pixel);color:#000;}
+.btn-blue{background:var(--teamA);color:#fff;}
+.btn-red{background:var(--teamB);color:#fff;}
+.btn-gold{background:var(--gold);color:#000;}
+.btn-gray{background:rgba(255,255,255,.08);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.08);}
+.btn-sm{padding:9px;font-size:9px;margin-bottom:5px;}
+.btn-outline{background:transparent;border:1px solid var(--pixel);color:var(--pixel);}
+
+/* GANADOR BTNS */
+.winner-row{display:flex;gap:8px;margin-bottom:6px;}
+.w-btn{flex:1;padding:14px;font-family:'Press Start 2P',monospace;font-size:10px;border:none;cursor:pointer;}
+.w-btn.a{background:var(--teamA);color:#fff;}
+.w-btn.b{background:var(--teamB);color:#fff;}
+.w-btn:active{opacity:.85;}
+
+/* HISTORIAL */
+.hist-list{display:flex;flex-direction:column;gap:3px;max-height:160px;overflow-y:auto;}
+.hi{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.04);font-family:'VT323',monospace;font-size:13px;}
+.hi-r{color:rgba(255,255,255,.28);width:50px;}
+.hi-w{flex:1;text-align:center;}
+.hi-w.a{color:var(--teamA);}
+.hi-w.b{color:var(--teamB);}
+.hi-g{color:rgba(255,255,255,.25);font-size:11px;}
 </style>
 </head>
 <body>
 
-<!-- ════ LOGIN ════ -->
 <div id="login">
   <div class="login-title">🕹️<br>ADMIN<br>RETRO</div>
-  <div class="login-sub">— JUEGOS RETRO —</div>
-  <input type="password" class="login-input" id="pw-input" placeholder="CONTRASEÑA" onkeydown="if(event.key==='Enter')tryLogin()">
+  <div class="login-sub">— DUELOS RETRO —</div>
+  <input type="password" class="login-input" id="pw" placeholder="CONTRASEÑA" onkeydown="if(event.key==='Enter')tryLogin()">
   <button class="login-btn" onclick="tryLogin()">ENTRAR ▶</button>
-  <div class="login-err" id="login-err">⛔ CONTRASEÑA INCORRECTA</div>
+  <div class="login-err" id="pw-err">⛔ CONTRASEÑA INCORRECTA</div>
 </div>
 
-<!-- ════ PANEL ADMIN ════ -->
 <div id="panel">
-  <div class="panel-header">
+  <div class="ph">
     <div class="ph-title">🕹️ ADMIN RETRO</div>
     <div class="ph-sub">— CONTROL TOTAL —</div>
   </div>
 
-  <!-- Status -->
-  <div class="status-bar">
-    <div class="status-dot"></div>
-    <span id="status-txt">CONECTADO — EN ESPERA</span>
-  </div>
+  <div class="status-bar"><div class="s-dot"></div><span id="status-txt">CONECTADO</span></div>
 
-  <!-- SCORES -->
+  <!-- MARCADOR -->
   <div class="sec">
-    <div class="sec-title">📊 MARCADOR</div>
-    <div class="scores-row">
-      <div class="score-box">
-        <div class="sb-label a">EQUIPO A</div>
-        <div class="sb-num a" id="disp-score-a">0</div>
-      </div>
-      <div class="score-vs">—</div>
-      <div class="score-box">
-        <div class="sb-label b">EQUIPO B</div>
-        <div class="sb-num b" id="disp-score-b">0</div>
-      </div>
+    <div class="sec-t">📊 MARCADOR</div>
+    <div class="sc-row">
+      <div class="sc-box"><div class="sc-lbl a">AZUL</div><div class="sc-n a" id="d-sa">0</div></div>
+      <div class="sc-sep">—</div>
+      <div class="sc-box"><div class="sc-lbl b">ROJO</div><div class="sc-n b" id="d-sb">0</div></div>
     </div>
-    <div class="ronda-label" id="disp-ronda">RONDA 0 / 0</div>
+    <div class="rnd-lbl" id="d-rnd">RONDA 0 / 0</div>
   </div>
 
-  <!-- TABS -->
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('setup')">SETUP</div>
-    <div class="tab" onclick="switchTab('duelo')">DUELO</div>
-    <div class="tab" onclick="switchTab('historial')">HIST.</div>
+    <div class="tab on" onclick="tab('duelo')">DUELO</div>
+    <div class="tab" onclick="tab('jugadores')">JUGADORES</div>
+    <div class="tab" onclick="tab('historial')">HIST.</div>
   </div>
 
-  <!-- TAB: SETUP -->
-  <div class="tab-content active" id="tab-setup">
-    <div class="sec">
-      <div class="sec-title">⚙️ EQUIPOS</div>
-      <div class="teams-wrap">
-        <div class="team-col">
-          <div class="team-col-label a">EQUIPO A</div>
-          <textarea class="team-textarea" id="equipo-a" placeholder="Un nombre por línea:&#10;Carlos&#10;María&#10;Lucía"></textarea>
-        </div>
-        <div class="team-col">
-          <div class="team-col-label b">EQUIPO B</div>
-          <textarea class="team-textarea" id="equipo-b" placeholder="Un nombre por línea:&#10;Pablo&#10;Ana&#10;Diego"></textarea>
-        </div>
-      </div>
-    </div>
-    <div class="sec">
-      <div class="sec-title">🔢 RONDAS TOTALES</div>
-      <div class="field">
-        <input type="number" class="field-input" id="total-rondas" value="6" min="1" max="20" placeholder="Nº de rondas">
-      </div>
-    </div>
-    <button class="btn btn-green" onclick="iniciarTorneo()">▶ INICIAR TORNEO</button>
-    <button class="btn btn-outline btn-sm" onclick="resetTodo()">↺ RESET COMPLETO</button>
-  </div>
+  <!-- TAB DUELO -->
+  <div class="tc on" id="tc-duelo">
 
-  <!-- TAB: DUELO -->
-  <div class="tab-content" id="tab-duelo">
+    <!-- Jugadores en vivo -->
     <div class="sec">
-      <div class="sec-title">⚡ CONVOCAR DUELO</div>
-      <div class="field">
-        <label class="field-label">JUGADOR EQUIPO A</label>
-        <input type="text" class="field-input" id="jugador-a" placeholder="Nombre del duelista A">
-      </div>
-      <div class="field">
-        <label class="field-label">JUGADOR EQUIPO B</label>
-        <input type="text" class="field-input" id="jugador-b" placeholder="Nombre del duelista B">
+      <div class="sec-t">👥 EQUIPOS EN VIVO</div>
+      <div class="teams-live">
+        <div class="team-col-live ta"><div class="tcl-hdr">AZUL (<span id="cnt-a">0</span>)</div><div id="list-a"><div class="tcl-empty">Esperando...</div></div></div>
+        <div class="team-col-live tb"><div class="tcl-hdr">ROJO (<span id="cnt-b">0</span>)</div><div id="list-b"><div class="tcl-empty">Esperando...</div></div></div>
       </div>
     </div>
+
+    <!-- Convocar duelo -->
     <div class="sec">
-      <div class="sec-title">🎮 MINIJUEGO</div>
+      <div class="sec-t">⚡ CONVOCAR DUELO</div>
+      <div class="field">
+        <label class="field-label">DUELISTA EQUIPO AZUL</label>
+        <select class="field-sel" id="sel-a"><option value="">Selecciona jugador...</option></select>
+      </div>
+      <div class="field">
+        <label class="field-label">DUELISTA EQUIPO ROJO</label>
+        <select class="field-sel" id="sel-b"><option value="">Selecciona jugador...</option></select>
+      </div>
+    </div>
+
+    <!-- Minijuego -->
+    <div class="sec">
+      <div class="sec-t">🎮 MINIJUEGO</div>
       <div class="mini-grid" id="mini-grid"></div>
-      <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="miniRandom()">🎲 ALEATORIO</button>
+      <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="miniRandom()">🎲 ALEATORIO</button>
     </div>
+
     <button class="btn btn-blue" onclick="convocarDuelo()">⚡ CONVOCAR DUELO</button>
     <button class="btn btn-green" onclick="iniciarConteo()">▶ ¡INICIAR CONTEO!</button>
-  </div>
 
-  <!-- Ganador de ronda (siempre visible cuando hay duelo activo) -->
-  <div class="sec" id="sec-ganador" style="display:none;">
-    <div class="sec-title">🏆 DECLARAR GANADOR</div>
-    <div class="ganador-row">
-      <button class="btn-winner a" onclick="declararGanador('A')">🥇 GANA<br>EQUIPO A</button>
-      <button class="btn-winner b" onclick="declararGanador('B')">🥇 GANA<br>EQUIPO B</button>
-    </div>
-    <button class="btn btn-gold" onclick="finalizarTorneo()">🏆 FIN DEL TORNEO</button>
-  </div>
-
-  <!-- TAB: HISTORIAL -->
-  <div class="tab-content" id="tab-historial">
-    <div class="sec">
-      <div class="sec-title">📋 HISTORIAL DE RONDAS</div>
-      <div class="hist-list" id="hist-list">
-        <div style="font-family:'VT323',monospace;font-size:16px;color:rgba(255,255,255,0.2);text-align:center;padding:20px;">Aún no hay rondas</div>
+    <!-- Declarar ganador -->
+    <div class="sec" id="sec-ganador" style="display:none">
+      <div class="sec-t">🏆 DECLARAR GANADOR</div>
+      <div class="winner-row">
+        <button class="w-btn a" onclick="declararGanador('A')">🥇 GANA<br>AZUL</button>
+        <button class="w-btn b" onclick="declararGanador('B')">🥇 GANA<br>ROJO</button>
       </div>
+      <button class="btn btn-gold" onclick="finalizarTorneo()">🏆 FIN DEL TORNEO</button>
+    </div>
+
+    <!-- Acciones TV -->
+    <div class="sec">
+      <div class="sec-t">📺 TV</div>
+      <button class="btn btn-gray btn-sm" onclick="enviar('lobby')">📺 LOBBY</button>
+    </div>
+  </div>
+
+  <!-- TAB JUGADORES -->
+  <div class="tc" id="tc-jugadores">
+    <div class="sec">
+      <div class="sec-t">👥 TODOS LOS JUGADORES</div>
+      <div id="all-players"><div class="tcl-empty" style="padding:10px">Nadie aún</div></div>
     </div>
     <div class="sec">
-      <div class="sec-title">🖥️ ACCIONES TV</div>
-      <button class="btn btn-gray btn-sm" onclick="cmdLobby()">📺 MOSTRAR LOBBY</button>
+      <div class="sec-t">⚠️ ACCIONES</div>
+      <button class="btn btn-gray btn-sm" onclick="kickAll()">🗑️ EXPULSAR TODOS</button>
+      <button class="btn btn-gray btn-sm" onclick="resetTorneo()">↺ RESET TORNEO</button>
+    </div>
+  </div>
+
+  <!-- TAB HISTORIAL -->
+  <div class="tc" id="tc-historial">
+    <div class="sec">
+      <div class="sec-t">📋 HISTORIAL</div>
+      <div class="hist-list" id="hist-list"><div class="tcl-empty" style="padding:10px;text-align:center">Sin rondas aún</div></div>
     </div>
   </div>
 </div>
 
 <script>
-// ── FIREBASE ──
 const FC={apiKey:"AIzaSyAib6PDnV_u8GuDp-PnJvop91qv9JHfffc",authDomain:"impostor-322cc.firebaseapp.com",databaseURL:"https://impostor-322cc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"impostor-322cc",storageBucket:"impostor-322cc.firebasestorage.app",messagingSenderId:"808449155212",appId:"1:808449155212:web:c32ca0565b083056f31ba9"};
 firebase.initializeApp(FC);
-const db=firebase.database();
-const RR=db.ref('retro');
+const db=firebase.database(), RR=db.ref('retro');
 
 const PASS='grad2026';
 
-const MINIJUEGOS=[
-  {id:'reflejos',n:'REFLEJOS DE ACERO',e:'⚡'},
+const MJS=[
+  {id:'reflejos',n:'REFLEJOS',e:'⚡'},
   {id:'piedra',n:'PIEDRA PAPEL TIJERA',e:'✂️'},
   {id:'memoria',n:'MEMORIA FLASH',e:'🧠'},
-  {id:'pregunta',n:'PREGUNTA RELÁMPAGO',e:'❓'},
+  {id:'pregunta',n:'PREGUNTA',e:'❓'},
   {id:'click',n:'CLICK LOCO',e:'🖱️'},
-  {id:'dado',n:'EL DADO MALDITO',e:'🎲'},
-  {id:'adivinanza',n:'ADIVINANZA RETRO',e:'🔤'},
-  {id:'escalera',n:'ESCALERA BOTONES',e:'🪜'},
+  {id:'dado',n:'EL DADO',e:'🎲'},
+  {id:'adivinanza',n:'ADIVINANZA',e:'🔤'},
+  {id:'escalera',n:'ESCALERA',e:'🪜'},
 ];
 
-let selectedMini=null;
-let scoreA=0,scoreB=0,rondaActual=0,totalRondas=6;
+let selectedMj=null;
+let scoreA=0,scoreB=0,rondaActual=0,totalRondas=0;
 let historial=[];
 let dueloActivo=false;
+let jugsA=[],jugsB=[];
 
 // LOGIN
 function tryLogin(){
-  const v=document.getElementById('pw-input').value;
-  if(v===PASS){
-    document.getElementById('login').style.display='none';
-    document.getElementById('panel').style.display='block';
-    initAdmin();
-  } else {
-    const e=document.getElementById('login-err');
-    e.style.display='block';
-    setTimeout(()=>e.style.display='none',2000);
-  }
+  const v=document.getElementById('pw').value;
+  if(v===PASS){document.getElementById('login').style.display='none';document.getElementById('panel').style.display='block';initAdmin();}
+  else{const e=document.getElementById('pw-err');e.style.display='block';setTimeout(()=>e.style.display='none',2000);}
 }
 
 // TABS
-function switchTab(id){
-  document.querySelectorAll('.tab').forEach((t,i)=>{
-    const ids=['setup','duelo','historial'];
-    t.classList.toggle('active',ids[i]===id);
-  });
-  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
+function tab(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>{const ids=['duelo','jugadores','historial'];t.classList.toggle('on',ids[i]===id);});
+  document.querySelectorAll('.tc').forEach(c=>c.classList.remove('on'));
+  document.getElementById('tc-'+id).classList.add('on');
 }
 
 // INIT
 function initAdmin(){
   renderMiniGrid();
   RR.on('value',snap=>{
-    const d=snap.val();if(!d)return;
+    const d=snap.val()||{};
     scoreA=d.scoreA||0;scoreB=d.scoreB||0;
-    rondaActual=d.rondaActual||0;totalRondas=d.totalRondas||6;
+    rondaActual=d.rondaActual||0;totalRondas=d.totalRondas||0;
     historial=d.historial||[];
-    document.getElementById('disp-score-a').textContent=scoreA;
-    document.getElementById('disp-score-b').textContent=scoreB;
-    document.getElementById('disp-ronda').textContent='RONDA '+rondaActual+' / '+totalRondas;
+    dueloActivo=!!d.dueloActivo;
+
+    document.getElementById('d-sa').textContent=scoreA;
+    document.getElementById('d-sb').textContent=scoreB;
+    document.getElementById('d-rnd').textContent='RONDA '+rondaActual+' / '+totalRondas;
     document.getElementById('status-txt').textContent=d.status||'EN ESPERA';
+    document.getElementById('sec-ganador').style.display=dueloActivo?'block':'none';
+
+    // Jugadores
+    const jugs=d.jugadores?Object.values(d.jugadores):[];
+    jugsA=jugs.filter(j=>j.equipo==='A');
+    jugsB=jugs.filter(j=>j.equipo==='B');
+    renderJugadoresLive(jugsA,jugsB);
+    renderAllPlayers(jugs);
+    renderSelectores(jugsA,jugsB);
     renderHistorial();
-    // autorellenar jugadores si existen
-    if(d.jugadorA) document.getElementById('jugador-a').value=d.jugadorA;
-    if(d.jugadorB) document.getElementById('jugador-b').value=d.jugadorB;
-    if(d.minijuego) selectMini(d.minijuego);
-    document.getElementById('sec-ganador').style.display=d.dueloActivo?'block':'none';
+
+    // Minijuego activo
+    if(d.minijuego&&d.minijuego!==selectedMj) selectMj(d.minijuego);
   });
 }
 
 function renderMiniGrid(){
-  document.getElementById('mini-grid').innerHTML=MINIJUEGOS.map(m=>`
-    <button class="mini-btn ${selectedMini===m.id?'selected':''}" id="mb-${m.id}" onclick="selectMini('${m.id}')">
-      <span class="mini-emoji">${m.e}</span>
-      <span class="mini-name">${m.n}</span>
+  document.getElementById('mini-grid').innerHTML=MJS.map(m=>`
+    <button class="mini-btn ${selectedMj===m.id?'on':''}" id="mb-${m.id}" onclick="selectMj('${m.id}')">
+      <span class="mini-e">${m.e}</span>${m.n}
     </button>`).join('');
 }
 
-function selectMini(id){
-  selectedMini=id;
-  document.querySelectorAll('.mini-btn').forEach(b=>{
-    b.classList.toggle('selected',b.id==='mb-'+id);
-  });
+function selectMj(id){
+  selectedMj=id;
+  document.querySelectorAll('.mini-btn').forEach(b=>b.classList.toggle('on',b.id==='mb-'+id));
 }
 
-function miniRandom(){
-  const m=MINIJUEGOS[Math.floor(Math.random()*MINIJUEGOS.length)];
-  selectMini(m.id);
+function miniRandom(){selectMj(MJS[~~(Math.random()*MJS.length)].id);}
+
+function renderJugadoresLive(a,b){
+  document.getElementById('cnt-a').textContent=a.length;
+  document.getElementById('cnt-b').textContent=b.length;
+  const rA=document.getElementById('list-a');
+  const rB=document.getElementById('list-b');
+  rA.innerHTML=a.length?a.map(j=>`<div class="tcl-member">${j.nombre}</div>`).join(''):'<div class="tcl-empty">Esperando...</div>';
+  rB.innerHTML=b.length?b.map(j=>`<div class="tcl-member">${j.nombre}</div>`).join(''):'<div class="tcl-empty">Esperando...</div>';
 }
 
-// ACCIONES
-function iniciarTorneo(){
-  const eaRaw=document.getElementById('equipo-a').value.trim();
-  const ebRaw=document.getElementById('equipo-b').value.trim();
-  if(!eaRaw||!ebRaw){alert('Escribe los miembros de ambos equipos');return;}
-  const ea=eaRaw.split('\n').map(s=>s.trim()).filter(Boolean);
-  const eb=ebRaw.split('\n').map(s=>s.trim()).filter(Boolean);
-  const tr=parseInt(document.getElementById('total-rondas').value)||6;
-  RR.set({
-    scoreA:0,scoreB:0,rondaActual:0,totalRondas:tr,
-    equipoA:ea,equipoB:eb,historial:[],
-    dueloActivo:false,
-    status:'TORNEO INICIADO — LOBBY',
-    cmd:'lobby',timestamp:Date.now()
-  });
-  switchTab('duelo');
+function renderAllPlayers(jugs){
+  document.getElementById('all-players').innerHTML=jugs.length?jugs.map(j=>`
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:'VT323',monospace;font-size:15px;">
+      <span style="color:${j.equipo==='A'?'var(--teamA)':'var(--teamB)'}">${j.nombre}</span>
+      <span style="opacity:.3;font-size:12px">EQ.${j.equipo==='A'?'AZUL':'ROJO'}</span>
+    </div>`).join(''):'<div class="tcl-empty" style="padding:10px">Nadie aún</div>';
 }
+
+function renderSelectores(a,b){
+  const sa=document.getElementById('sel-a');
+  const sb=document.getElementById('sel-b');
+  const vA=sa.value,vB=sb.value;
+  sa.innerHTML='<option value="">Selecciona jugador...</option>'+a.map(j=>`<option value="${j.nombre}">${j.nombre}</option>`).join('');
+  sb.innerHTML='<option value="">Selecciona jugador...</option>'+b.map(j=>`<option value="${j.nombre}">${j.nombre}</option>`).join('');
+  if(vA) sa.value=vA;
+  if(vB) sb.value=vB;
+}
+
+function renderHistorial(){
+  if(!historial.length){document.getElementById('hist-list').innerHTML='<div class="tcl-empty" style="padding:10px;text-align:center">Sin rondas aún</div>';return;}
+  const EMOJIS={reflejos:'⚡',piedra:'✂️',memoria:'🧠',pregunta:'❓',click:'🖱️',dado:'🎲',adivinanza:'🔤',escalera:'🪜'};
+  document.getElementById('hist-list').innerHTML=historial.map((h,i)=>`
+    <div class="hi">
+      <span class="hi-r">R${i+1}</span>
+      <span class="hi-w ${h.ganador.toLowerCase()}">${(h.jugador||'').toUpperCase()} (${h.ganador==='A'?'AZUL':'ROJO'})</span>
+      <span class="hi-g">${EMOJIS[h.minijuego]||'🎮'}</span>
+    </div>`).join('');
+}
+
+// ENVIAR CMD
+function enviar(cmd,extra={}){RR.update({cmd,status:cmd.toUpperCase(),...extra,timestamp:Date.now()});}
 
 function convocarDuelo(){
-  const ja=document.getElementById('jugador-a').value.trim();
-  const jb=document.getElementById('jugador-b').value.trim();
-  if(!ja||!jb){alert('Escribe los nombres de los duelistas');return;}
-  if(!selectedMini){alert('Selecciona un minijuego');return;}
+  const ja=document.getElementById('sel-a').value;
+  const jb=document.getElementById('sel-b').value;
+  if(!ja){alert('Selecciona el duelista del Equipo Azul');return;}
+  if(!jb){alert('Selecciona el duelista del Equipo Rojo');return;}
+  if(!selectedMj){miniRandom();}
   const ronda=rondaActual+1;
   RR.update({
-    jugadorA:ja,jugadorB:jb,minijuego:selectedMini,
-    ronda:ronda,rondaActual:ronda,totalRondas,
+    jugadorA:ja,jugadorB:jb,minijuego:selectedMj,
+    ronda,rondaActual:ronda,totalRondas:Math.max(totalRondas,ronda),
     dueloActivo:true,
-    status:'DUELO RONDA '+ronda+': '+ja+' VS '+jb,
+    status:'DUELO R'+ronda+': '+ja+' VS '+jb,
     cmd:'duelo',timestamp:Date.now()
   });
 }
@@ -359,18 +361,16 @@ function iniciarConteo(){
 }
 
 function declararGanador(equipo){
-  const ja=document.getElementById('jugador-a').value.trim()||'Jugador A';
-  const jb=document.getElementById('jugador-b').value.trim()||'Jugador B';
-  const ganadorNombre=equipo==='A'?ja:jb;
-  const newScoreA=scoreA+(equipo==='A'?1:0);
-  const newScoreB=scoreB+(equipo==='B'?1:0);
-  const newHist=[...historial,{ganador:equipo,jugador:ganadorNombre,minijuego:selectedMini,ronda:rondaActual}];
+  const ja=document.getElementById('sel-a').value||'Azul';
+  const jb=document.getElementById('sel-b').value||'Rojo';
+  const ganNombre=equipo==='A'?ja:jb;
+  const nA=scoreA+(equipo==='A'?1:0);
+  const nB=scoreB+(equipo==='B'?1:0);
+  const hist=[...historial,{ganador:equipo,jugador:ganNombre,minijuego:selectedMj,ronda:rondaActual}];
   RR.update({
-    scoreA:newScoreA,scoreB:newScoreB,
-    historial:newHist,
-    dueloActivo:false,
-    ganadorEquipo:equipo,ganadorNombre,
-    status:'GANADOR RONDA '+rondaActual+': EQUIPO '+equipo,
+    scoreA:nA,scoreB:nB,historial:hist,dueloActivo:false,
+    ganadorEquipo:equipo,ganadorNombre:ganNombre,
+    status:'GANADOR R'+rondaActual+': EQ.'+(equipo==='A'?'AZUL':'ROJO'),
     cmd:'ganador',timestamp:Date.now()
   });
 }
@@ -378,41 +378,11 @@ function declararGanador(equipo){
 function finalizarTorneo(){
   if(!confirm('¿Finalizar el torneo y mostrar campeones?'))return;
   const campeon=scoreA>=scoreB?'A':'B';
-  RR.update({
-    campeonEquipo:campeon,
-    historial,
-    dueloActivo:false,
-    status:'CAMPEONES — EQUIPO '+campeon,
-    cmd:'campeones',timestamp:Date.now()
-  });
+  RR.update({campeonEquipo:campeon,historial,dueloActivo:false,status:'CAMPEONES EQ.'+(campeon==='A'?'AZUL':'ROJO'),cmd:'campeones',timestamp:Date.now()});
 }
 
-function cmdLobby(){
-  RR.update({cmd:'lobby',status:'LOBBY',timestamp:Date.now()});
-}
-
-function resetTodo(){
-  if(!confirm('¿Reset completo del torneo?'))return;
-  RR.set({scoreA:0,scoreB:0,rondaActual:0,totalRondas:0,historial:[],dueloActivo:false,status:'RESET',cmd:'lobby',timestamp:Date.now()});
-  document.getElementById('equipo-a').value='';
-  document.getElementById('equipo-b').value='';
-  selectedMini=null;
-  renderMiniGrid();
-}
-
-function renderHistorial(){
-  if(!historial||historial.length===0){
-    document.getElementById('hist-list').innerHTML='<div style="font-family:VT323,monospace;font-size:16px;color:rgba(255,255,255,0.2);text-align:center;padding:20px;">Aún no hay rondas</div>';
-    return;
-  }
-  const EMOJIS={reflejos:'⚡',piedra:'✂️',memoria:'🧠',pregunta:'❓',click:'🖱️',dado:'🎲',adivinanza:'🔤',escalera:'🪜'};
-  document.getElementById('hist-list').innerHTML=historial.map((h,i)=>`
-    <div class="hist-item">
-      <span class="hi-rnd">R${i+1}</span>
-      <span class="hi-winner ${h.ganador.toLowerCase()}">${h.jugador.toUpperCase()} (EQ.${h.ganador})</span>
-      <span class="hi-game">${EMOJIS[h.minijuego]||'🎮'}</span>
-    </div>`).join('');
-}
+function kickAll(){if(!confirm('¿Expulsar a todos los jugadores del lobby?'))return;RR.child('jugadores').remove();}
+function resetTorneo(){if(!confirm('¿Reset completo del torneo?'))return;RR.set({scoreA:0,scoreB:0,rondaActual:0,totalRondas:0,historial:[],dueloActivo:false,status:'RESET',cmd:'lobby',timestamp:Date.now()});}
 </script>
 </body>
 </html>
