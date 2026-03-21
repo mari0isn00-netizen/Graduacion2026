@@ -227,6 +227,7 @@ const CATS=[{id:'trends',name:'Tendencias & Viral',emoji:'🔥'},{id:'rrss',name
 
 let miNombre='',miId='',miRol='',miPalabra='',yaVoteCat=false,yaVoteExp=false,cardFlipped=false;
 let adivinarCdIv=null;
+let turnoYaEnviado=''; // key del turno que ya envié
 
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 let tT=null;
@@ -291,8 +292,18 @@ function flipCard(){if(!cardFlipped){cardFlipped=true;document.getElementById('r
 function pasarTurno(){
   const btn=document.getElementById('btn-hice');
   btn.disabled=true;
-  btn.textContent='ENVIANDO...';
-  GR.update({avanzarTurno:true,timestamp:Date.now()});
+  btn.textContent='✓ ENVIADO';
+  // Obtener turnoKey actual del Firebase para bloquearlo
+  GR.child('turnoNombre').get().then(s=>{
+    const tn=s.val()||'';
+    GR.child('ronda').get().then(r=>{
+      const rn=r.val()||1;
+      GR.child('turnoIdx').get().then(ti=>{
+        turnoYaEnviado=tn+'_'+rn+'_'+(ti.val()||0);
+        GR.update({avanzarTurno:true,timestamp:Date.now()});
+      });
+    });
+  });
 }
 
 // PEDIR VOTACIÓN
@@ -399,23 +410,26 @@ GR.on('value',snap=>{
     if(soyEli){show('scr-espera-reveal');document.getElementById('espera-rev-sub').textContent='Eres eliminado — sigue en la TV';return;}
     document.getElementById('turno-rnd').textContent='RONDA '+(d.ronda||1);
     const tm=document.getElementById('turno-main');
-    const turnoKey=d.turnoNombre+(d.ronda||1);
+    // Key única de este turno específico
+    const turnoKey=(d.turnoNombre||'')+'_'+(d.ronda||1)+'_'+(d.turnoIdx||0);
     if(esMiTurno){
       tm.innerHTML=`<div class="es-tu-turno"><div class="big">¡ES TU TURNO!</div><div class="sm">Di UNA palabra relacionada con la tuya</div></div>`;
       const btn=document.getElementById('btn-hice');
       btn.style.display='block';
-      btn.disabled=false;
-      btn.textContent='✓ YA DIJE MI PALABRA';
+      // Solo reactivar si es un turno nuevo que no hemos enviado
+      if(turnoYaEnviado!==turnoKey){
+        btn.disabled=false;
+        btn.textContent='✓ YA DIJE MI PALABRA';
+      }
     } else {
+      // Turno de otro — limpiar el flag para el próximo turno nuestro
+      turnoYaEnviado='';
       tm.innerHTML=`<div class="turno-otro"><div class="quien">${d.turnoNombre||'—'}</div><div class="sub">DICIENDO SU PALABRA...</div></div>`;
       document.getElementById('btn-hice').style.display='none';
     }
-    // Botón ir a votación: visible solo cuando hemos hecho una vuelta y es tu turno o eres el primero del orden
     const orden=d.orden||[];
     const activos=orden.filter(n=>!(d.eliminados||[]).includes(n));
-    const esPrimero=activos[0]===miNombre;
-    document.getElementById('btn-votar').style.display=esPrimero&&(d.ronda||1)>1?'block':'none';
-    lastTurno2=turnoKey;
+    document.getElementById('btn-votar').style.display=activos[0]===miNombre&&(d.ronda||1)>1?'block':'none';
     show('scr-turno');
   }
   else if(fase==='votacion'){
