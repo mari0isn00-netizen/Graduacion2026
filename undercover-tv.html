@@ -385,14 +385,54 @@ function iniciarCatsTimer(startAt){
 
 // ── PAREJAS DE PALABRAS POR CATEGORÍA ──
 const WORD_PAIRS={
-  trends:[['GHOSTEAR','IGNORAR'],['POSTUREO','APARENTAR'],['BURNOUT','AGOTAMIENTO'],['FOMO','ENVIDIA'],['CANCELAR','BOICOTEAR'],['HYPE','EXPECTATIVA'],['DETOX DIGITAL','DESCONECTAR'],['DOOMSCROLLING','SCROLLEAR SIN PARAR'],['SHARENTING','EXPONER HIJOS'],['NOMOFOBIA','ADICCIÓN AL MÓVIL']],
-  rrss:[['SHADOWBAN','RESTRICCIÓN OCULTA'],['STORY','ESTADO'],['MUTE','SILENCIAR'],['RATIO','SER CONTESTADO'],['ALGORITMO','FEED PERSONALIZADO'],['FINSTA','CUENTA PRIVADA'],['THREAD','HILO DE MENSAJES'],['UNFOLLOW','DEJAR DE SEGUIR'],['STALKEAR','ESPIAR PERFIL'],['LIKE','REACCIÓN']],
-  deporte:[['FUERA DE JUEGO','POSICIÓN ADELANTADA'],['PRÓRROGA','TIEMPO EXTRA'],['BANQUILLO','SUPLENTE'],['DOPAJE','TRAMPA'],['DERBI','CLÁSICO LOCAL'],['TARJETA AMARILLA','AMONESTACIÓN'],['CORNER','SAQUE DE ESQUINA'],['FICHAJE','CONTRATACIÓN'],['RÉCORD','MARCA PERSONAL'],['SPRINT','ACELERACIÓN FINAL']],
-  musica:[['FEAT','COLABORACIÓN'],['ACÚSTICO','UNPLUGGED'],['SAMPLE','FRAGMENTO ROBADO'],['FLOW','CADENCIA'],['PLAYBACK','FALSEAR EN DIRECTO'],['SINGLE','SENCILLO'],['LOOP','REPETICIÓN'],['BEATBOX','PERCUSIÓN VOCAL'],['GIRA','TOUR'],['LETRA','LÍRICA']],
-  pelis:[['CAMEO','APARICIÓN ESPECIAL'],['CLIFFHANGER','FINAL ABIERTO'],['BIOPIC','DOCUDRAMA'],['SPIN-OFF','DERIVADO'],['ANTIHÉROE','VILLANO SIMPÁTICO'],['MCGUFFIN','OBJETO CLAVE'],['JUMPSCARE','SUSTO REPENTINO'],['PLOT TWIST','GIRO ARGUMENTAL'],['REMAKE','VERSIÓN NUEVA'],['CROSSOVER','UNIVERSO COMPARTIDO']],
-  comida:[['AL DENTE','POCO HECHO'],['MARINAR','MACERAR'],['GRATINAR','DORAR AL HORNO'],['UMAMI','SABOR PROFUNDO'],['BLANQUEAR','ESCALDAR'],['REDUCCIÓN','SALSA ESPESA'],['MISE EN PLACE','PREPARACIÓN PREVIA'],['CARAMELIZAR','DORAR CON AZÚCAR'],['FERMENTAR','MADURAR'],['EMULSIONAR','MEZCLAR GRASAS']],
-  viajes:[['LAYOVER','ESCALA LARGA'],['OVERBOOKING','SOBREVENTA'],['MOCHILERO','VIAJERO BARATO'],['COUCHSURFING','HOSPEDAJE GRATIS'],['JETLAG','DESFASE HORARIO'],['TRANSFER','TRASLADO'],['VISADO','PERMISO ENTRADA'],['GENTRIFICACIÓN','TURISTIFICACIÓN'],['CHARTER','VUELO ESPECIAL'],['TEMPORADA ALTA','VACACIONES']],
-  random:[['PARADOJA','CONTRADICCIÓN'],['SARCASMO','IRONÍA'],['DÉJÀ VU','SENSACIÓN FAMILIAR'],['EMPATÍA','COMPASIÓN'],['DILEMA','ENCRUCIJADA'],['EFÍMERO','PASAJERO'],['NOSTALGIA','AÑORANZA'],['RESILIENCIA','FORTALEZA'],['EUFEMISMO','SUAVIZAR LA VERDAD'],['AMBIGÜEDAD','DOBLE SENTIDO']]
+  trends:[
+    ['VIRAL','POPULAR'],['CANCELAR','CRITICAR'],['POSTUREO','FARSA'],
+    ['ENVIDIA','ADMIRACIÓN'],['FAMA','NOTORIEDAD'],['RUMOR','COTILLEO'],
+    ['ADICCIÓN','VICIO'],['MANIPULACIÓN','PERSUASIÓN'],['RECHAZO','EXCLUSIÓN'],
+    ['MENTIRA','EXAGERACIÓN']
+  ],
+  rrss:[
+    ['SILENCIAR','IGNORAR'],['ESPIAR','CURIOSEAR'],['COMPARAR','ENVIDIAR'],
+    ['ELIMINAR','BLOQUEAR'],['PUBLICAR','COMPARTIR'],['SEGUIR','OBSERVAR'],
+    ['APARENTAR','PRESUMIR'],['COMENTAR','OPINAR'],['BORRAR','ARREPENTIRSE'],
+    ['ADICCIÓN','DEPENDENCIA']
+  ],
+  deporte:[
+    ['EXPULSIÓN','AMONESTACIÓN'],['LESIÓN','MOLESTIA'],['TRAMPA','ENGAÑO'],
+    ['CAMPEÓN','FINALISTA'],['SUPLENTE','RESERVA'],['EMPATE','TABLAS'],
+    ['PRÓRROGA','DESCUENTO'],['LESIÓN','BAJA'],['RIVAL','ADVERSARIO'],
+    ['DERROTA','FRACASO']
+  ],
+  musica:[
+    ['DESAFINAR','CANTAR MAL'],['ENSAYO','PRÁCTICA'],['CONCIERTO','ACTUACIÓN'],
+    ['COMPOSITOR','AUTOR'],['INTÉRPRETE','CANTANTE'],['MELODÍA','ESTRIBILLO'],
+    ['SILENCIO','PAUSA'],['RITMO','CADENCIA'],['APLAUSOS','OVACIÓN'],
+    ['ACÚSTICO','SIN MICRÓFONO']
+  ],
+  pelis:[
+    ['VILLANО','ANTAGONISTA'],['SUSTO','SOBRESALTO'],['GIRO FINAL','SORPRESA'],
+    ['SECUELA','CONTINUACIÓN'],['REMAKE','VERSIÓN NUEVA'],['PROTAGONISTA','HÉROE'],
+    ['GUION','HISTORIA'],['DIRECTOR','REALIZADOR'],['ESCENA','MOMENTO'],
+    ['PELÍCULA DE CULTO','PELÍCULA RARA']
+  ],
+  comida:[
+    ['ESCALDAR','HERVIR POCO'],['MACERAR','ADOBAR'],['REDUCIR','CONCENTRAR'],
+    ['DORAR','TOSTAR'],['AMASAR','TRABAJAR LA MASA'],['SAZONAR','CONDIMENTAR'],
+    ['REPOSAR','ENFRIAR'],['GLASEAR','CARAMELIZAR'],['PICAR','TROCEAR'],
+    ['CALDO','CONSOMÉ']
+  ],
+  viajes:[
+    ['ESCALA','PARADA'],['EQUIPAJE','MALETA'],['ADUANA','CONTROL'],
+    ['ALBERGUE','PENSIÓN'],['EXCURSIÓN','VISITA'],['GUÍA TURÍSTICO','ACOMPAÑANTE'],
+    ['TEMPORADA ALTA','VERANO'],['VISADO','PERMISO'],['RESERVA','ADELANTO'],
+    ['VUELO DIRECTO','SIN ESCALAS']
+  ],
+  random:[
+    ['MURMULLO','SUSURRO'],['PARADOJA','CONTRADICCIÓN'],['ILUSIÓN','ENGAÑO'],
+    ['COBARDÍA','PRUDENCIA'],['ORGULLO','SOBERBIA'],['SECRETO','MISTERIO'],
+    ['OBSTÁCULO','DIFICULTAD'],['NOSTALGIA','MELANCOLÍA'],['DILEMA','DUDA'],
+    ['CULPA','REMORDIMIENTO']
+  ]
 };
 
 async function generarPalabras(){
@@ -498,7 +538,7 @@ function avanzarTurno(d){
     showLT('🗳️ TODOS HAN HABLADO','¡A votar! ¿Quién es el espía?','VOTACIÓN',8000);
     playS('fanfare');
     setTimeout(()=>{
-      GR.update({fase:'votacion',votos:{},votacionResuelta:false,avanzarTurno:null,palabrasDichas:null,timestamp:Date.now()});
+      GR.update({fase:'votacion',votos:{},votacionResuelta:false,votacionAutoIniciada:false,votacionEmpate:null,avanzarTurno:null,palabrasDichas:null,timestamp:Date.now()});
     },2000);
   } else {
     GR.update({turnoNombre:orden[next],turnoIdx:next,avanzarTurno:null,turnoStartedAt:Date.now(),palabrasDichas:dichas,fase:'ronda'});
@@ -518,17 +558,15 @@ function renderVotacion(d){
   }).join('');
   document.getElementById('vot-count').textContent=totalV;
   document.getElementById('vot-total').textContent=jugs.length;
-  // Auto resolver cuando todos votaron
-  if(totalV>=jugs.length&&jugs.length>0&&!d.votacionResuelta){
-    if(!votAutoIv){
-      document.getElementById('vot-auto-bar').style.display='block';
-      let rem=3;
-      document.getElementById('vot-auto-fill').style.width='100%';
-      votAutoIv=setInterval(()=>{
-        rem--;document.getElementById('vot-auto-fill').style.width=(rem/3*100)+'%';
-        if(rem<=0){clearInterval(votAutoIv);votAutoIv=null;resolverVotacion(d);}
-      },1000);
-    }
+  // Auto resolver cuando todos han votado
+  if(totalV>=jugs.length&&jugs.length>0&&!d.votacionResuelta&&!d.votacionAutoIniciada){
+    GR.update({votacionAutoIniciada:true});
+    setTimeout(()=>{
+      GR.get().then(snap=>{
+        const dd=snap.val();
+        if(dd&&!dd.votacionResuelta) resolverVotacion(dd);
+      });
+    },2000);
   }
 }
 
@@ -536,11 +574,26 @@ function resolverVotacion(d){
   const votos=d.votos||{};
   if(!Object.keys(votos).length)return;
   GR.update({votacionResuelta:true});
-  const top=Object.entries(votos).sort((a,b)=>b[1]-a[1])[0];
-  const nombre=top[0];
+  // Ordenar por votos descendente
+  const sorted=Object.entries(votos).sort((a,b)=>b[1]-a[1]);
+  const maxVotos=sorted[0][1];
+  const empatados=sorted.filter(([,v])=>v===maxVotos);
+  if(empatados.length>1){
+    // Empate — nueva votación entre los empatados
+    GR.update({
+      fase:'votacion',
+      votos:{},
+      votacionResuelta:false,
+      votacionEmpate:empatados.map(([n])=>n),
+      timestamp:Date.now()
+    });
+    showLT('🤝 EMPATE','Nueva votación — solo entre los empatados','¡Decidid!',6000);
+    return;
+  }
+  const nombre=sorted[0][0];
   const jug=Object.entries(d.jugadores||{}).find(([,j])=>j.nombre===nombre);
   const esSpy=!!(jug&&d.roles&&d.roles[jug[0]]&&d.roles[jug[0]].rol==='spy');
-  GR.update({fase:'reveal',eliminadoNombre:nombre,esSpy,eliminados:[...(d.eliminados||[]),nombre],revealStartedAt:Date.now()});
+  GR.update({fase:'reveal',eliminadoNombre:nombre,esSpy,eliminados:[...(d.eliminados||[]),nombre],revealStartedAt:Date.now(),votacionEmpate:null});
 }
 
 function mostrarReveal(d){
