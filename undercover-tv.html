@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{--gold:#c9a84c;--dark:#04050d;--dark2:#080a14;--cream:#f0e6cc;--spy:#cc1111;--spy2:#ff3333;--green:#00c853;--purple:#7c5cbf;--purple2:#a07de0;}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -317,21 +318,27 @@ function nP(){return{x:Math.random()*bgC.width,y:Math.random()*bgC.height,s:Math
 
 function tick(){const n=new Date();document.getElementById('clk').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}tick();setInterval(tick,10000);
 
-// QR — URL hardcodeada, sin librerías externas
-const MOVIL_URL='https://mari0isn00-netizen.github.io/el-impostor/undercover-movil.html';
+// QR — generado dinámicamente desde la URL actual
+const MOVIL_URL=window.location.href.replace(/[^/]*$/,'undercover-movil.html');
 (function initQR(){
   const el=document.getElementById('qr-box');
-  const encoded=encodeURIComponent(MOVIL_URL);
-  const img=document.createElement('img');
-  img.src=`https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encoded}&bgcolor=f5f5f5&color=1a0a2e&margin=4`;
-  img.width=130;img.height=130;img.alt='QR';
-  img.onerror=()=>{el.innerHTML=`<div style="font-size:8px;color:rgba(124,92,191,.6);padding:8px;text-align:center;max-width:130px;word-break:break-all">${MOVIL_URL}</div>`;};
-  el.appendChild(img);
   const lbl=document.getElementById('qr-url');
-  if(lbl)lbl.textContent=MOVIL_URL;
+  if(lbl)lbl.textContent=MOVIL_URL.replace(/^https?:\/\//,'');
+  try{
+    new QRCode(el,{text:MOVIL_URL,width:130,height:130,colorDark:'#1a0a2e',colorLight:'#f5f5f5',correctLevel:QRCode.CorrectLevel.M});
+  } catch(e){
+    // fallback API
+    const img=document.createElement('img');
+    img.src=`https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(MOVIL_URL)}&bgcolor=f5f5f5&color=1a0a2e&margin=4`;
+    img.width=130;img.height=130;el.appendChild(img);
+  }
 })();
 
-let ltT=null;
+// ── VOLVER AL HUB (función unificada en todos los juegos) ──
+function volverAlHub(){
+  HR.update({comando:'standby',timestamp:Date.now()});
+  window.location.href='tv-interior.html';
+}
 function showLT(tag,text,sub,dur=5000){clearTimeout(ltT);document.getElementById('lt-tag').textContent=tag;document.getElementById('lt-text').textContent=text;document.getElementById('lt-sub').textContent=sub||'🕵️';document.getElementById('lower-third').classList.add('show');ltT=setTimeout(()=>document.getElementById('lower-third').classList.remove('show'),dur);}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function setSbl(t){document.getElementById('sb-lbl').textContent=t;}
@@ -653,6 +660,7 @@ function finalizarCon(ganador,d){
     puntos[j.nombre]=p;
     if(p>0)HR.child('jugadores/'+id+'/puntos').transaction(v=>(v||0)+p);
   });
+  // Escribir puntos en GR para que el móvil pueda leerlos en la pantalla final
   GR.update({fase:'fin',ganador,puntos,palabraReal:d.palabraReal,palabraSpy:d.palabraSpy});
 }
 
@@ -699,10 +707,7 @@ function mostrarFin(d){
     const btnEl=document.createElement('button');
     btnEl.style.cssText='margin-top:16px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3);color:var(--gold);font-family:"Bebas Neue",sans-serif;font-size:16px;letter-spacing:4px;padding:12px 28px;cursor:pointer;animation:up .5s both';
     btnEl.textContent='← VOLVER A TV PRINCIPAL';
-    btnEl.onclick=()=>{
-      HR.update({comando:'standby',timestamp:Date.now()});
-      window.location.href='tv-interior.html';
-    };
+    btnEl.onclick=volverAlHub;
     document.getElementById('scr-fin').querySelector('.fin-wrap').appendChild(btnEl);
   },3000);
 

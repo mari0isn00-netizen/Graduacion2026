@@ -11,7 +11,17 @@
 :root{--p:#7c5cbf;--p2:#a07de0;--dark:#04050d;--cream:#f0e6cc;--c2:#6a5a3a;--spy:#ff3333;--green:#00c853;--gold:#c9a84c;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{background:var(--dark);color:var(--cream);font-family:'Share Tech Mono',monospace;min-height:100%;}
-.wrap{padding:16px 16px 60px;}
+#login{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;padding:24px;text-align:center;}
+#login.on{display:flex;}
+.l-logo{font-size:46px;}
+.l-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,7vw,32px);letter-spacing:8px;color:var(--p2);}
+.l-sub{font-family:'VT323',monospace;font-size:16px;letter-spacing:5px;color:rgba(124,92,191,.3);}
+.l-inp{width:100%;max-width:240px;background:rgba(124,92,191,.05);border:1px solid rgba(124,92,191,.22);color:var(--p2);font-family:'Share Tech Mono',monospace;font-size:18px;padding:11px 14px;text-align:center;letter-spacing:4px;outline:none;}
+.l-btn{width:100%;max-width:240px;background:var(--p);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:5px;padding:13px;border:none;cursor:pointer;}
+.l-btn:active{opacity:.8;}
+.l-err{color:var(--spy);font-family:'VT323',monospace;font-size:16px;letter-spacing:4px;display:none;}
+.wrap{display:none;padding:16px 16px 60px;}
+.wrap.on{display:block;}
 .hdr{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid rgba(124,92,191,.15);margin-bottom:14px;}
 .hdr-t{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:5px;color:var(--p2);}
 .hdr-f{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:3px;color:rgba(124,92,191,.4);background:rgba(124,92,191,.06);padding:3px 8px;border:1px solid rgba(124,92,191,.12);}
@@ -52,7 +62,15 @@ html,body{background:var(--dark);color:var(--cream);font-family:'Share Tech Mono
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="on" id="login">
+  <div class="l-logo">🕵️</div>
+  <div class="l-title">UNDERCOVER</div>
+  <div class="l-sub">— PANEL DE CONTROL —</div>
+  <input type="password" class="l-inp" id="pw" placeholder="PIN" onkeydown="if(event.key==='Enter')tryLogin()">
+  <button class="l-btn" onclick="tryLogin()">ENTRAR</button>
+  <div class="l-err" id="pw-e">⛔ PIN INCORRECTO</div>
+</div>
+<div id="panel" class="wrap">
   <div class="hdr">
     <div class="hdr-t">🕵️ UNDERCOVER</div>
     <div class="hdr-f" id="hdr-f">LOBBY</div>
@@ -89,22 +107,30 @@ html,body{background:var(--dark);color:var(--cream);font-family:'Share Tech Mono
 <div id="toast">✓</div>
 
 <script>
+const PIN_ADM='2026';
+function tryLogin(){
+  if(document.getElementById('pw').value===PIN_ADM){
+    document.getElementById('login').className='';
+    document.getElementById('login').style.display='none';
+    document.getElementById('panel').style.display='block';
+    initAdmin();
+  } else {
+    const e=document.getElementById('pw-e');e.style.display='block';
+    setTimeout(()=>e.style.display='none',2000);
+  }
+}
+// Mostrar login al cargar
+document.getElementById('panel').style.display='none';
+
 const FC={apiKey:"AIzaSyAib6PDnV_u8GuDp-PnJvop91qv9JHfffc",authDomain:"impostor-322cc.firebaseapp.com",databaseURL:"https://impostor-322cc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"impostor-322cc",storageBucket:"impostor-322cc.firebasestorage.app",messagingSenderId:"808449155212",appId:"1:808449155212:web:c32ca0565b083056f31ba9"};
-try{firebase.initializeApp(FC);}catch(e){/* ya inicializado */}
+try{firebase.initializeApp(FC);}catch(e){}
 const db=firebase.database(), GR=db.ref('undercover'), HR=db.ref('hub');
-
-// Indicador de conexión
-db.ref('.info/connected').on('value',snap=>{
-  const c=snap.val();
-  document.getElementById('hdr-f').style.borderColor=c?'rgba(0,200,83,.4)':'rgba(255,51,51,.4)';
-  if(!c) document.getElementById('hdr-f').textContent='SIN CONEXIÓN';
-});
-
-const CATS=[{id:'trends',n:'Tendencias'},{id:'rrss',n:'Redes Sociales'},{id:'deporte',n:'Deporte'},{id:'musica',n:'Música'},{id:'pelis',n:'Pelis & Series'},{id:'comida',n:'Comida'},{id:'viajes',n:'Viajes'},{id:'random',n:'Random'}];
 
 let est={},spyCount=1;
 let tT=null;
 function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>e.classList.remove('show'),2200);}
+
+const CATS=[{id:'trends',n:'Tendencias'},{id:'rrss',n:'Redes Sociales'},{id:'deporte',n:'Deporte'},{id:'musica',n:'Música'},{id:'pelis',n:'Pelis & Series'},{id:'comida',n:'Comida'},{id:'viajes',n:'Viajes'},{id:'random',n:'Random'}];
 
 function chgSpy(d){
   const max=Math.max(1,Math.floor(Object.keys(est.jugadores||{}).length/2)||3);
@@ -134,7 +160,7 @@ function renderInfo(d){
     t=`Votos: <span class="hl">${tv}/${jugs.length}</span> · Ganando: <span class="hl">${cn}</span>`;
   }
   else if(fase==='generando') t='Eligiendo palabras...';
-  else if(fase==='roles') t='Jugadores viendo sus roles (15s)';
+  else if(fase==='roles') t='Jugadores viendo roles (15s)';
   else if(fase==='ronda') t=`Ronda <span class="hl">${d.ronda||1}</span> · Turno: <span class="hl">${d.turnoNombre||'—'}</span> · Activos: ${activos.length}`;
   else if(fase==='votacion'){const tv=Object.values(d.votos||{}).reduce((a,b)=>a+b,0);t=`Votación · <span class="hl">${tv}/${activos.length}</span> votos`;}
   else if(fase==='reveal') t=`<span class="hls">${d.eliminadoNombre}</span> — ${d.esSpy?'<span class="hls">SPY 🔴</span>':'<span class="hlg">INOCENTE ✅</span>'}`;
@@ -149,13 +175,14 @@ function renderAcc(d){
     h=`<button class="btn-big" ${jugs.length<2?'disabled':''} onclick="iniciar()">${jugs.length<2?'ESPERANDO JUGADORES...':'▶ INICIAR JUEGO'}</button>`;
   }else if(fase==='cats'){
     const tv=Object.values(d.catVotos||{}).reduce((a,b)=>a+b,0);
-    h=`<button class="btn-big" onclick="forzarGen()">🎲 GENERAR PALABRAS YA</button><div style="font-size:9px;letter-spacing:3px;color:rgba(124,92,191,.3);text-align:center;margin-top:-4px;margin-bottom:8px">${tv}/${jugs.length} votos · o espera que voten todos</div>`;
+    h=`<button class="btn-big" onclick="forzarGen()">🎲 GENERAR PALABRAS YA</button><div style="font-size:9px;letter-spacing:3px;color:rgba(124,92,191,.3);text-align:center;margin-top:-4px;margin-bottom:8px">${tv}/${jugs.length} votos</div>`;
   }else if(fase==='generando'){
     h=`<div class="info">Eligiendo palabras...</div>`;
   }else if(fase==='palabras_listas'||fase==='roles'){
     h=`<div class="info">Jugadores viendo roles (15s automático)</div>`;
   }else if(fase==='ronda'){
-    h=`<button class="abtn" onclick="forzarTurno()"><span class="ico">⏭️</span><div class="inf">PASAR TURNO<span class="s">Si el jugador no pulsa</span></div></button><button class="abtn" onclick="irVot()"><span class="ico">🗳️</span><div class="inf">IR A VOTACIÓN<span class="s">Cuando acabe la ronda</span></div></button>`;
+    h=`<button class="abtn" onclick="forzarTurno()"><span class="ico">⏭️</span><div class="inf">PASAR TURNO<span class="s">Si el jugador no pulsa</span></div></button>
+       <button class="abtn" onclick="irVot()"><span class="ico">🗳️</span><div class="inf">IR A VOTACIÓN<span class="s">Cuando acabe la ronda</span></div></button>`;
   }else if(fase==='votacion'){
     const tv=Object.values(d.votos||{}).reduce((a,b)=>a+b,0), activos=jugs.filter(j=>!(d.eliminados||[]).includes(j.nombre));
     h=`<div class="info">${tv}/${activos.length} votos</div><button class="btn-big" onclick="resolverVot()">⚡ RESOLVER VOTACIÓN</button>`;
@@ -165,7 +192,8 @@ function renderAcc(d){
       ex=`<button class="btn-big r" onclick="verificarAdiv()" style="margin-bottom:8px">🔴 VERIFICAR: "${d.adivinanzaSpy}"</button>`;
     h=ex+`<button class="btn-big" onclick="continuar()">▶ CONTINUAR</button>`;
   }else if(fase==='fin'){
-    h=`<button class="btn-big g" onclick="reset()">🔄 NUEVA PARTIDA</button>`;
+    h=`<button class="btn-big g" onclick="reset()">🔄 NUEVA PARTIDA</button>
+       <button class="abtn" onclick="volverHub()" style="margin-top:4px"><span class="ico">🏠</span><div class="inf">VOLVER AL HUB<span class="s">Pantalla principal</span></div></button>`;
   }
   document.getElementById('acc').innerHTML=h;
 }
@@ -174,6 +202,7 @@ function iniciar(){GR.update({fase:'cats',catVotos:{},catsTimerStarted:false,spy
 function forzarGen(){GR.update({catsTimerStarted:true,catsTimerAt:Date.now()-9500});toast('🎲 Generando...');}
 function forzarTurno(){GR.update({avanzarTurno:true,timestamp:Date.now()});toast('⏭️ Turno pasado');}
 function irVot(){GR.update({fase:'votacion',votos:{},votacionResuelta:false,timestamp:Date.now()});toast('🗳️ Votación');}
+function volverHub(){HR.update({comando:'standby',timestamp:Date.now()});window.location.href='tv-interior.html';}
 
 function resolverVot(){
   const d=est,vt=d.votos||{};if(!Object.keys(vt).length){toast('Sin votos aún');return;}
@@ -206,42 +235,58 @@ function continuar(){
 
 function terminar(ganador){
   const d=est;
+  const puntos={};
   Object.entries(d.jugadores||{}).forEach(([id,j])=>{
     const isSpy=d.roles&&d.roles[id]&&d.roles[id].rol==='spy';
     const p=(ganador==='inocentes'&&!isSpy)?3:(ganador==='spy'&&isSpy)?5:0;
+    puntos[j.nombre]=p;
     if(p>0)HR.child('jugadores/'+id+'/puntos').transaction(v=>(v||0)+p);
+    if(p>0)HR.child('ranking/'+j.nombre).transaction(v=>(v||0)+p);
   });
-  GR.update({fase:'fin',ganador,palabraReal:d.palabraReal,palabraSpy:d.palabraSpy});
+  GR.update({fase:'fin',ganador,puntos,palabraReal:d.palabraReal,palabraSpy:d.palabraSpy});
   toast('🏆 '+(ganador==='spy'?'SPY':'INOCENTES'));
 }
 
-function reset(){if(!confirm('¿Reiniciar?'))return;GR.update({fase:'lobby',catVotos:null,roles:null,eliminados:null,votos:null,palabraReal:null,palabraSpy:null,orden:null,turnoNombre:null,ronda:null,ganador:null,catsTimerStarted:false,spyCount});toast('🔄 Reiniciado');}
+function reset(){
+  if(!confirm('¿Reiniciar?'))return;
+  GR.update({fase:'lobby',catVotos:null,roles:null,eliminados:null,votos:null,palabraReal:null,palabraSpy:null,orden:null,turnoNombre:null,ronda:null,ganador:null,puntos:null,catsTimerStarted:false,spyCount});
+  toast('🔄 Reiniciado');
+}
 
-GR.on('value',snap=>{
-  const d=snap.val()||{fase:'lobby'};
-  est=d;
-  document.getElementById('hdr-f').textContent=(d.fase||'lobby').toUpperCase();
-  if(d.spyCount){spyCount=d.spyCount;document.getElementById('snum').textContent=spyCount;}
-  if(d.palabraReal||d.palabraSpy){
-    document.getElementById('pals-wrap').style.display='block';
-    document.getElementById('pw-r').textContent=d.palabraReal||'—';
-    document.getElementById('pw-s').textContent=d.palabraSpy||'—';
-  } else {
-    document.getElementById('pals-wrap').style.display='none';
-  }
-  // El admin es quien avanza el turno cuando el jugador pulsa en el móvil
-  if(d.avanzarTurno&&d.fase==='ronda'){
-    const eli=d.eliminados||[];
-    const orden=(d.orden||[]).filter(n=>!eli.includes(n));
-    const cur=orden.indexOf(d.turnoNombre);
-    const next=(cur+1)%orden.length;
-    GR.update({turnoNombre:orden[next],turnoIdx:next,avanzarTurno:null,turnoStartedAt:Date.now()});
-    return; // no renderizar hasta que llegue el snapshot limpio
-  }
-  renderJugs(d);renderInfo(d);renderAcc(d);
-},err=>{
-  document.getElementById('info').innerHTML='<span style="color:var(--spy)">Error Firebase: '+err.message+'</span>';
-});
+function initAdmin(){
+  db.ref('.info/connected').on('value',snap=>{
+    const c=snap.val();
+    const hf=document.getElementById('hdr-f');
+    if(hf){hf.style.borderColor=c?'rgba(0,200,83,.4)':'rgba(255,51,51,.4)';if(!c)hf.textContent='SIN CONEXIÓN';}
+  });
+  GR.on('value',snap=>{
+    const d=snap.val()||{fase:'lobby'};
+    est=d;
+    const hf=document.getElementById('hdr-f');
+    if(hf)hf.textContent=(d.fase||'lobby').toUpperCase();
+    if(d.spyCount){spyCount=d.spyCount;const sn=document.getElementById('snum');if(sn)sn.textContent=spyCount;}
+    const pw=document.getElementById('pals-wrap');
+    if(pw){
+      if(d.palabraReal||d.palabraSpy){
+        pw.style.display='block';
+        document.getElementById('pw-r').textContent=d.palabraReal||'—';
+        document.getElementById('pw-s').textContent=d.palabraSpy||'—';
+      } else pw.style.display='none';
+    }
+    if(d.avanzarTurno&&d.fase==='ronda'){
+      const eli=d.eliminados||[];
+      const orden=(d.orden||[]).filter(n=>!eli.includes(n));
+      const cur=orden.indexOf(d.turnoNombre);
+      const next=(cur+1)%orden.length;
+      GR.update({turnoNombre:orden[next],turnoIdx:next,avanzarTurno:null,turnoStartedAt:Date.now()});
+      return;
+    }
+    renderJugs(d);renderInfo(d);renderAcc(d);
+  },err=>{
+    const el=document.getElementById('info');
+    if(el)el.innerHTML='<span style="color:var(--spy)">Error Firebase: '+err.message+'</span>';
+  });
+}
 </script>
 </body>
 </html>

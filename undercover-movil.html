@@ -214,9 +214,9 @@ html,body{background:var(--dark);color:var(--cream);font-family:'Share Tech Mono
   <div id="fin-rol-info" style="display:none;font-size:10px;letter-spacing:4px;color:rgba(240,230,204,.5);margin-top:4px"></div>
   <div class="fin-pts-lbl">PUNTOS GANADOS</div>
   <div class="fin-pts" id="fin-pts">+0</div>
-  <div style="font-size:9px;letter-spacing:4px;color:rgba(124,92,191,.3);margin-top:2px">AÑADIDOS AL MARCADOR</div>
-  <div id="fin-pal-info" style="display:none;font-size:10px;letter-spacing:2px;color:rgba(240,230,204,.4);margin-top:8px;text-align:center"></div>
-  <div style="font-size:9px;letter-spacing:3px;color:rgba(124,92,191,.25);margin-top:12px">Mira la TV para ver la clasificación</div>
+  <div id="fin-pal-info" style="display:none;font-size:10px;letter-spacing:2px;color:rgba(240,230,204,.4);margin-top:6px;text-align:center"></div>
+  <div id="fin-ranking" style="display:none;width:100%;max-width:280px;margin-top:12px;background:rgba(124,92,191,.04);border:1px solid rgba(124,92,191,.12);padding:10px;"></div>
+  <div style="font-size:9px;letter-spacing:3px;color:rgba(124,92,191,.22);margin-top:10px">Mira la TV para ver detalles</div>
 </div>
 
 <div id="toast">✓</div>
@@ -457,13 +457,14 @@ GR.on('value',snap=>{
   else if(fase==='fin'){
     const ganador=d.ganador;
     const gane=(ganador==='spy'&&miRol==='spy')||(ganador==='inocentes'&&miRol==='inocente');
-    const pts=d.puntos&&d.puntos[miNombre]?d.puntos[miNombre]:0;
+    // puntos del objeto puntos que escribe undercover-tv/admin
+    const pts=(d.puntos&&d.puntos[miNombre])||0;
     document.getElementById('fin-icon').textContent=gane?'🏆':'😔';
     const fr=document.getElementById('fin-result');
     fr.textContent=gane?'¡HAS GANADO!':'Has perdido';
     fr.className='fin-result '+(gane?'gan':'per');
     document.getElementById('fin-pts').textContent='+'+(pts||0);
-    // Mostrar rol propio al final
+    // Rol propio
     const rolInfo=document.getElementById('fin-rol-info');
     if(rolInfo){
       rolInfo.textContent='Eras: '+(miRol==='spy'?'🔴 ESPÍA':'✅ INOCENTE');
@@ -472,9 +473,26 @@ GR.on('value',snap=>{
     // Palabras reveladas
     const palInfo=document.getElementById('fin-pal-info');
     if(palInfo){
-      palInfo.innerHTML=`Real: <b>${d.palabraReal||'?'}</b> · Spy: <b style="color:var(--spy2)">${d.palabraSpy||'?'}</b>`;
+      palInfo.innerHTML=`Real: <b style="color:var(--green)">${d.palabraReal||'?'}</b> · Spy: <b style="color:var(--spy2)">${d.palabraSpy||'?'}</b>`;
       palInfo.style.display='block';
     }
+    // Ranking global desde hub
+    HR.child('ranking').get().then(snap=>{
+      const rk=snap.val()||{};
+      const sorted=Object.entries(rk).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      if(sorted.length){
+        const rkEl=document.getElementById('fin-ranking');
+        if(rkEl){
+          rkEl.style.display='block';
+          rkEl.innerHTML=`<div style="font-size:8px;letter-spacing:5px;color:rgba(124,92,191,.3);margin-bottom:6px">CLASIFICACIÓN GENERAL</div>`+
+            sorted.map(([n,p],i)=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(124,92,191,.07)">
+              <span style="font-size:14px;width:16px">${['🥇','🥈','🥉'][i]||'·'}</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;flex:1;${n===miNombre?'color:var(--gold)':''}">${n}</span>
+              <span style="font-family:'VT323',monospace;font-size:18px;color:var(--gold)">${p}</span>
+            </div>`).join('');
+        }
+      }
+    });
     show('scr-fin-movil');
   }
   lastFase2=fase;

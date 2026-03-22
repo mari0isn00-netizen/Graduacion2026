@@ -297,6 +297,12 @@ const FC={apiKey:"AIzaSyAib6PDnV_u8GuDp-PnJvop91qv9JHfffc",authDomain:"impostor-
 firebase.initializeApp(FC);
 const db=firebase.database(), RR=db.ref('retro');
 
+// ── VOLVER AL HUB (función unificada en todos los juegos) ──
+function volverAlHub(){
+  db.ref('hub').update({comando:'standby',timestamp:Date.now()});
+  window.location.href='tv-interior.html';
+}
+
 const MJS=[
   {id:'reflejos',n:'REFLEJOS DE ACERO',e:'⚡',inst:'¡Pulsa cuando se ponga VERDE! El más rápido gana'},
   {id:'click',n:'CLICK LOCO',e:'🖱️',inst:'El que más veces pulse en 10 segundos gana'},
@@ -421,9 +427,22 @@ RR.on('value',snap=>{
     document.getElementById('fin-hist').innerHTML=hist.map((h,i)=>`<div class="fhi"><span class="fhi-g">R${i+1}</span><span class="fhi-w ${h.ganador==='A'?'a':'b'}">${(h.jugador||'').toUpperCase()} (${h.ganador==='A'?'AZUL':'ROJO'}) — ${MJS.find(m=>m.id===h.minijuego)?.n||h.minijuego}</span></div>`).join('');
     show('s-fin');setSbl('¡CAMPEONES!');snd('fanfare');pixeles(isA?'#4a90e2':'#ff3333');
     showLT('🏆','¡CAMPEONES — EQUIPO '+(isA?'AZUL':'ROJO')+'!','TORNEO FINALIZADO',15000);
-    // Guardar en ranking global
-    const ganNm='Equipo '+(isA?'Azul':'Rojo')+' (Retro)';
-    db.ref('hub/ranking/'+ganNm).transaction(v=>(v||0)+5);
+    // Guardar puntos en ranking global: +3 a cada miembro del equipo campeón, +1 al resto
+    db.ref('retro/jugadores').once('value').then(snap=>{
+      const jugs=Object.values(snap.val()||{});
+      jugs.forEach(j=>{
+        const pts=(j.equipo===d.campeonEquipo)?3:1;
+        db.ref('hub/ranking/'+j.nombre).transaction(v=>(v||0)+pts);
+      });
+    });
+    // Botón para volver al hub
+    setTimeout(()=>{
+      const btn=document.createElement('button');
+      btn.style.cssText='margin-top:18px;background:rgba(57,255,20,.08);border:1px solid rgba(57,255,20,.3);color:#39ff14;font-family:"Share Tech Mono",monospace;font-size:14px;letter-spacing:3px;padding:12px 28px;cursor:pointer;';
+      btn.textContent='← VOLVER AL HUB';
+      btn.onclick=volverAlHub;
+      document.querySelector('#s-fin .fin-wrap').appendChild(btn);
+    },3000);
   }
 });
 

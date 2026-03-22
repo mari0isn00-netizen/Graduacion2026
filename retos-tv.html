@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RULETA DE RETOS — GRADUACIÓN 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,900;1,900&family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --g:#c9a84c;--g2:#e8c97a;--dark:#04050d;--cream:#f0e6cc;
+  --A:#4a90e2;--B:#ff3333;
+  --neon:#ff6bff;--neon2:#ffcc00;--neon3:#00ffcc;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--dark);color:var(--cream);font-family:'Share Tech Mono',monospace;}
+
+/* ── CRT / FX ── */
+#bgc{position:fixed;inset:0;z-index:0;}
+.crt{position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 6px);}
+.vig{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse 88% 88% at 50% 50%,transparent 48%,rgba(0,0,0,.9) 100%);}
+.tvb{position:fixed;inset:0;z-index:3;pointer-events:none;box-shadow:inset 0 0 60px rgba(0,0,0,.7);}
+
+/* ── STATUS BAR ── */
+.sb{position:fixed;top:0;left:0;right:0;height:40px;z-index:200;background:rgba(4,5,13,.96);border-bottom:2px solid rgba(201,168,76,.18);display:flex;align-items:center;justify-content:space-between;padding:0 24px;}
+.sb-logo{font-family:'VT323',monospace;font-size:22px;letter-spacing:6px;color:rgba(201,168,76,.5);}
+.sb-mid{display:flex;align-items:center;gap:10px;}
+.sb-dot{width:6px;height:6px;border-radius:50%;background:var(--B);animation:blink 1s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+.sb-lbl{font-family:'VT323',monospace;font-size:20px;letter-spacing:5px;color:rgba(201,168,76,.65);}
+.sb-clk{font-family:'VT323',monospace;font-size:22px;color:rgba(201,168,76,.5);}
+
+/* ── LOWER THIRD ── */
+.lt{position:fixed;bottom:0;left:0;right:0;z-index:200;transform:translateY(100%);transition:transform .4s cubic-bezier(.16,1,.3,1);}
+.lt.show{transform:translateY(0);}
+.lt-bar{height:4px;background:var(--g);}
+.lt-body{background:rgba(4,5,13,.97);padding:10px 28px;display:flex;align-items:center;gap:14px;border-top:1px solid rgba(201,168,76,.2);}
+.lt-tag{font-family:'VT323',monospace;font-size:13px;letter-spacing:4px;color:var(--g);background:rgba(201,168,76,.1);padding:3px 10px;flex-shrink:0;}
+.lt-txt{font-family:'VT323',monospace;font-size:22px;color:var(--cream);letter-spacing:2px;flex:1;}
+.lt-sub{font-family:'VT323',monospace;font-size:15px;color:rgba(201,168,76,.4);flex-shrink:0;}
+
+/* ── SCREENS ── */
+.scr{display:none;position:fixed;inset:0;top:40px;z-index:10;flex-direction:column;align-items:center;justify-content:center;}
+.scr.on{display:flex;}
+
+/* ══ STANDBY ══ */
+#s-standby{background:transparent;}
+.sdb-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;animation:riseIn 2s cubic-bezier(.16,1,.3,1) both;}
+@keyframes riseIn{from{opacity:0;transform:translateY(60px);}to{opacity:1;transform:translateY(0);}}
+.sdb-pre{font-family:'VT323',monospace;font-size:clamp(14px,1.6vw,20px);letter-spacing:14px;color:rgba(201,168,76,.38);margin-bottom:6px;}
+.sdb-title{font-family:'Playfair Display',serif;font-weight:900;font-style:italic;font-size:clamp(60px,11vw,150px);line-height:.88;text-align:center;color:var(--cream);text-shadow:0 0 80px rgba(201,168,76,.12);}
+.sdb-title .hl{color:var(--g);}
+.sdb-sub{font-family:'Bebas Neue',sans-serif;font-size:clamp(16px,2.5vw,34px);letter-spacing:16px;color:rgba(240,230,204,.2);margin-top:12px;animation:fadePulse 3s ease-in-out infinite;}
+@keyframes fadePulse{0%,100%{opacity:.18;}50%{opacity:.55;}}
+.sdb-orn{display:flex;align-items:center;gap:12px;margin-top:16px;}
+.orn-l{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--g));}
+.orn-r{width:60px;height:1px;background:linear-gradient(90deg,var(--g),transparent);}
+.orn-d{width:7px;height:7px;background:var(--g);transform:rotate(45deg);animation:dPulse 2s ease-in-out infinite;}
+@keyframes dPulse{0%,100%{opacity:.25;transform:rotate(45deg) scale(1);}50%{opacity:1;transform:rotate(45deg) scale(1.5);}}
+
+/* ══ RULETA ══ */
+#s-ruleta{background:rgba(2,2,8,.98);}
+.rul-wrap{display:grid;grid-template-columns:1fr 340px;gap:0;width:100%;height:100%;align-items:center;padding:20px 30px;}
+
+/* Carta del reto — izquierda */
+.reto-card{display:flex;flex-direction:column;gap:16px;padding:30px 40px 30px 30px;}
+.rc-label{font-family:'VT323',monospace;font-size:clamp(13px,1.5vw,18px);letter-spacing:10px;color:rgba(201,168,76,.4);}
+.rc-emoji{font-size:clamp(70px,12vw,140px);line-height:1;animation:emoPop .5s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes emoPop{from{transform:scale(0) rotate(-20deg);}to{transform:scale(1) rotate(0deg);}}
+.rc-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,6vw,80px);line-height:.95;color:var(--cream);letter-spacing:2px;}
+.rc-desc{font-family:'Share Tech Mono',monospace;font-size:clamp(14px,1.8vw,22px);color:rgba(240,230,204,.55);line-height:1.5;max-width:620px;}
+.rc-cat{display:inline-flex;align-items:center;gap:8px;padding:5px 16px;border:1px solid;font-family:'VT323',monospace;font-size:clamp(12px,1.4vw,17px);letter-spacing:5px;margin-top:4px;}
+.rc-cat.fisico{border-color:rgba(255,107,255,.4);color:var(--neon);}
+.rc-cat.mental{border-color:rgba(0,255,204,.4);color:var(--neon3);}
+.rc-cat.suerte{border-color:rgba(255,204,0,.4);color:var(--neon2);}
+.rc-cat.social{border-color:rgba(74,144,226,.4);color:var(--A);}
+
+/* Marcador — derecha */
+.score-panel{display:flex;flex-direction:column;gap:14px;padding:20px 20px 20px 0;}
+.sp-title{font-family:'VT323',monospace;font-size:clamp(13px,1.5vw,18px);letter-spacing:8px;color:rgba(255,255,255,.25);}
+.sp-teams{display:flex;flex-direction:column;gap:10px;}
+.sp-team{padding:14px 16px;border:1px solid;display:flex;align-items:center;gap:12px;}
+.sp-team.a{border-color:rgba(74,144,226,.3);background:rgba(74,144,226,.05);}
+.sp-team.b{border-color:rgba(255,51,51,.3);background:rgba(255,51,51,.05);}
+.sp-icon{font-size:clamp(22px,3vw,34px);}
+.sp-info{flex:1;}
+.sp-nm{font-family:'Bebas Neue',sans-serif;font-size:clamp(16px,2.2vw,26px);letter-spacing:3px;}
+.sp-team.a .sp-nm{color:var(--A);}
+.sp-team.b .sp-nm{color:var(--B);}
+.sp-pts{font-family:'VT323',monospace;font-size:clamp(12px,1.4vw,16px);letter-spacing:3px;opacity:.4;margin-top:2px;}
+.sp-score{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,6vw,72px);line-height:1;}
+.sp-team.a .sp-score{color:var(--A);text-shadow:0 0 20px rgba(74,144,226,.5);}
+.sp-team.b .sp-score{color:var(--B);text-shadow:0 0 20px rgba(255,51,51,.5);}
+.sp-members{font-family:'VT323',monospace;font-size:clamp(10px,1.2vw,14px);letter-spacing:2px;color:rgba(255,255,255,.25);margin-top:6px;line-height:1.5;}
+.sp-ronda{text-align:center;font-family:'VT323',monospace;font-size:clamp(12px,1.4vw,17px);letter-spacing:6px;color:rgba(255,255,255,.2);margin-top:4px;}
+
+/* Sorteo animado (spinner de texto) */
+.spin-wrap{display:flex;flex-direction:column;gap:10px;}
+.spin-label{font-family:'VT323',monospace;font-size:clamp(13px,1.5vw,18px);letter-spacing:10px;color:rgba(201,168,76,.4);animation:fadePulse 1s ease-in-out infinite;}
+.spin-card{padding:16px 20px;border:2px solid rgba(201,168,76,.25);background:rgba(201,168,76,.04);overflow:hidden;}
+.spin-txt{font-family:'Bebas Neue',sans-serif;font-size:clamp(16px,2.2vw,28px);letter-spacing:3px;color:var(--g);animation:spinFlash .08s step-end infinite;}
+@keyframes spinFlash{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ══ CUENTA ATRÁS ══ */
+#s-cd{background:rgba(2,2,8,.99);}
+.cd-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.cd-reto{font-family:'Bebas Neue',sans-serif;font-size:clamp(18px,3vw,40px);letter-spacing:4px;color:var(--g);text-align:center;max-width:80vw;}
+.cd-num{font-family:'Bebas Neue',sans-serif;font-size:clamp(120px,22vw,260px);line-height:.85;animation:cdPop .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes cdPop{from{transform:scale(.3);opacity:0;}to{transform:scale(1);opacity:1;}}
+.cd-lbl{font-family:'VT323',monospace;font-size:clamp(14px,1.8vw,22px);letter-spacing:10px;color:rgba(255,255,255,.3);}
+
+/* ══ GANADOR ══ */
+#s-ganador{background:rgba(2,2,8,.99);}
+.gan-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;}
+.gan-pre{font-family:'VT323',monospace;font-size:clamp(13px,1.6vw,20px);letter-spacing:14px;color:rgba(201,168,76,.38);}
+.gan-trophy{font-size:clamp(60px,12vw,110px);animation:tB .7s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes tB{from{transform:scale(0) rotate(-15deg);}to{transform:scale(1) rotate(0);}},
+.gan-nm{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,8vw,110px);letter-spacing:4px;line-height:.9;}
+.gan-nm.a{color:var(--A);text-shadow:0 0 40px rgba(74,144,226,.6);}
+.gan-nm.b{color:var(--B);text-shadow:0 0 40px rgba(255,51,51,.6);}
+.gan-reto{font-family:'VT323',monospace;font-size:clamp(14px,1.8vw,22px);letter-spacing:4px;color:rgba(240,230,204,.4);max-width:70vw;}
+.gan-sb{display:flex;align-items:center;gap:clamp(28px,5vw,80px);margin-top:10px;padding:14px 36px;border:1px solid rgba(201,168,76,.15);background:rgba(201,168,76,.04);}
+.gs{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.gs-l{font-family:'VT323',monospace;font-size:clamp(12px,1.5vw,20px);letter-spacing:6px;}
+.gs-l.a{color:var(--A);}
+.gs-l.b{color:var(--B);}
+.gs-n{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,7vw,88px);}
+.gs-n.a{color:var(--A);}
+.gs-n.b{color:var(--B);}
+.gs-sep{font-family:'VT323',monospace;font-size:clamp(30px,5vw,60px);color:rgba(255,255,255,.1);}
+
+/* ══ FIN ══ */
+#s-fin{background:rgba(2,2,8,.99);}
+.fin-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;}
+.fin-pre{font-family:'VT323',monospace;font-size:clamp(12px,1.5vw,18px);letter-spacing:14px;color:rgba(201,168,76,.3);}
+.fin-title{font-family:'Playfair Display',serif;font-weight:900;font-style:italic;font-size:clamp(40px,8vw,110px);color:var(--cream);text-shadow:0 0 60px rgba(201,168,76,.3);}
+.fin-title .hl{color:var(--g);}
+.fin-camp{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 40px;border:2px solid rgba(201,168,76,.28);background:rgba(201,168,76,.05);margin:4px 0;}
+.fin-cl{font-family:'VT323',monospace;font-size:clamp(12px,1.5vw,18px);letter-spacing:8px;color:rgba(201,168,76,.4);}
+.fin-cn{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,7vw,88px);letter-spacing:4px;}
+.fin-cn.a{color:var(--A);}
+.fin-cn.b{color:var(--B);}
+.fin-pts{font-family:'VT323',monospace;font-size:clamp(16px,2.2vw,28px);letter-spacing:4px;color:rgba(255,255,255,.35);}
+</style>
+</head>
+<body>
+<canvas id="bgc"></canvas>
+<div class="crt"></div><div class="vig"></div><div class="tvb"></div>
+
+<div class="sb">
+  <div class="sb-logo">RETOS 2026</div>
+  <div class="sb-mid"><div class="sb-dot"></div><div class="sb-lbl" id="sb-lbl">EN ESPERA</div></div>
+  <div class="sb-clk" id="clk">00:00</div>
+</div>
+<div class="lt" id="lt">
+  <div class="lt-bar"></div>
+  <div class="lt-body"><div class="lt-tag" id="lt-tag">RETO</div><div class="lt-txt" id="lt-txt">—</div><div class="lt-sub" id="lt-sub">GRADUACIÓN 2026</div></div>
+</div>
+
+<!-- STANDBY -->
+<div class="scr on" id="s-standby">
+  <div style="display:flex;align-items:center;gap:60px;flex-wrap:wrap;justify-content:center;">
+    <div class="sdb-wrap">
+      <div class="sdb-pre">— GRADUACIÓN 2026 —</div>
+      <div class="sdb-title">Ruleta de<br><span class="hl">Retos</span></div>
+      <div class="sdb-sub">PREPARAD LOS NERVIOS</div>
+      <div class="sdb-orn"><div class="orn-l"></div><div class="orn-d"></div><div class="orn-r"></div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+      <div style="font-family:'VT323',monospace;font-size:clamp(13px,1.6vw,20px);letter-spacing:8px;color:rgba(201,168,76,.5);animation:fadePulse 2s ease-in-out infinite;">📱 ÚNETE AL JUEGO</div>
+      <div id="sdb-qr" style="background:#fff;padding:9px;border:3px solid rgba(201,168,76,.4);box-shadow:0 0 20px rgba(201,168,76,.2);"></div>
+      <div id="sdb-qr-url" style="font-family:'VT323',monospace;font-size:clamp(9px,1.1vw,14px);letter-spacing:2px;color:rgba(255,255,255,.25);word-break:break-all;max-width:240px;text-align:center;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RULETA -->
+<div class="scr" id="s-ruleta">
+  <div class="rul-wrap">
+    <!-- IZQUIERDA: reto -->
+    <div class="reto-card" id="reto-card">
+      <div class="rc-label">— RETO SORTEADO —</div>
+      <div class="rc-emoji" id="rc-emoji">🎰</div>
+      <div class="rc-title" id="rc-title">SORTEANDO...</div>
+      <div class="rc-desc" id="rc-desc">La ruleta está girando...</div>
+      <div class="rc-cat" id="rc-cat"></div>
+    </div>
+    <!-- DERECHA: marcador -->
+    <div class="score-panel">
+      <div class="sp-title">◆ MARCADOR</div>
+      <div class="sp-teams">
+        <div class="sp-team a">
+          <div class="sp-icon">🔵</div>
+          <div class="sp-info">
+            <div class="sp-nm" id="sp-nm-a">EQUIPO AZUL</div>
+            <div class="sp-pts" id="sp-pts-a">0 victorias</div>
+          </div>
+          <div class="sp-score" id="sp-sc-a">0</div>
+        </div>
+        <div class="sp-team b">
+          <div class="sp-icon">🔴</div>
+          <div class="sp-info">
+            <div class="sp-nm" id="sp-nm-b">EQUIPO ROJO</div>
+            <div class="sp-pts" id="sp-pts-b">0 victorias</div>
+          </div>
+          <div class="sp-score" id="sp-sc-b">0</div>
+        </div>
+      </div>
+      <div class="sp-ronda" id="sp-ronda">RETO 0</div>
+      <div class="sp-members" id="sp-members-a" style="color:rgba(74,144,226,.3);margin-top:4px;text-align:center"></div>
+      <div class="sp-members" id="sp-members-b" style="color:rgba(255,51,51,.3);text-align:center"></div>
+      <!-- QR para unirse -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:12px;padding:10px;border:1px solid rgba(201,168,76,.1);background:rgba(201,168,76,.03);">
+        <div style="font-family:'VT323',monospace;font-size:clamp(11px,1.3vw,16px);letter-spacing:6px;color:rgba(201,168,76,.45);">📱 ÚNETE AL JUEGO</div>
+        <div id="retos-qr" style="background:#fff;padding:7px;"></div>
+        <div id="retos-qr-url" style="font-family:'VT323',monospace;font-size:clamp(9px,1vw,13px);letter-spacing:2px;color:rgba(255,255,255,.22);word-break:break-all;max-width:280px;text-align:center;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CUENTA ATRÁS -->
+<div class="scr" id="s-cd">
+  <div class="cd-wrap">
+    <div class="cd-lbl">¡EL RETO COMIENZA EN!</div>
+    <div class="cd-num" id="cd-n" style="color:var(--g)">3</div>
+    <div class="cd-reto" id="cd-reto">—</div>
+  </div>
+</div>
+
+<!-- GANADOR RONDA -->
+<div class="scr" id="s-ganador">
+  <div class="gan-wrap">
+    <div class="gan-pre">— GANADOR DEL RETO —</div>
+    <div class="gan-trophy">🏆</div>
+    <div class="gan-nm" id="gan-nm">—</div>
+    <div class="gan-reto" id="gan-reto">—</div>
+    <div class="gan-sb">
+      <div class="gs"><div class="gs-l a">AZUL</div><div class="gs-n a" id="gs-a">0</div></div>
+      <div class="gs-sep">—</div>
+      <div class="gs"><div class="gs-l b">ROJO</div><div class="gs-n b" id="gs-b">0</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FIN -->
+<div class="scr" id="s-fin">
+  <div class="fin-wrap">
+    <div class="fin-pre">— FIN DE LA NOCHE —</div>
+    <div class="fin-title">¡<span class="hl">Campeones</span>!</div>
+    <div class="fin-camp">
+      <div class="fin-cl">EQUIPO GANADOR</div>
+      <div class="fin-cn" id="fin-cn">AZUL</div>
+      <div class="fin-pts" id="fin-pts">0 RETOS GANADOS</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const FC={apiKey:"AIzaSyAib6PDnV_u8GuDp-PnJvop91qv9JHfffc",authDomain:"impostor-322cc.firebaseapp.com",databaseURL:"https://impostor-322cc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"impostor-322cc",storageBucket:"impostor-322cc.firebasestorage.app",messagingSenderId:"808449155212",appId:"1:808449155212:web:c32ca0565b083056f31ba9"};
+firebase.initializeApp(FC);
+const db=firebase.database(), RR=db.ref('retos');
+
+// ── VOLVER AL HUB (función unificada en todos los juegos) ──
+function volverAlHub(){
+  db.ref('hub').update({comando:'standby',timestamp:Date.now()});
+  window.location.href='tv-interior.html';
+}
+
+// QR para unirse al móvil
+const MOVIL_URL=window.location.href.replace(/[^/]*$/,'retos-movil.html');
+document.getElementById('retos-qr-url').textContent=MOVIL_URL.replace(/^https?:\/\//,'');
+document.getElementById('sdb-qr-url').textContent=MOVIL_URL.replace(/^https?:\/\//,'');
+try{new QRCode(document.getElementById('retos-qr'),{text:MOVIL_URL,width:120,height:120,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}catch(e){}
+try{new QRCode(document.getElementById('sdb-qr'),{text:MOVIL_URL,width:160,height:160,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}catch(e){}
+
+const RETOS=[
+  {e:'💪',t:'10 FLEXIONES',d:'El primero en hacer 10 flexiones perfectas gana el punto.',cat:'fisico'},
+  {e:'🕺',t:'IMITA A UN FAMOSO',d:'Imita a un famoso durante 30 segundos. El público vota quién lo hace mejor.',cat:'social'},
+  {e:'🪑',t:'SILLA EN LA PARED',d:'En posición de silla contra la pared. El que aguante más tiempo gana.',cat:'fisico'},
+  {e:'🗣️',t:'TRABALENGUAS',d:'Di este trabalenguas 3 veces seguidas sin equivocarte: "Tres tristes tigres tragaban trigo en un trigal".',cat:'mental'},
+  {e:'🎤',t:'CANTA SIN MÚSICA',d:'Canta el estribillo de una canción elegida por el público. El que lo haga mejor gana.',cat:'social'},
+  {e:'🥚',t:'HUEVO EN LA CUCHARA',d:'Lleva el huevo en la cuchara de un lado a otro de la habitación sin que caiga. El más rápido gana.',cat:'fisico'},
+  {e:'🤔',t:'ADIVINA LA CANCIÓN',d:'El admin tararea una canción. El primero en adivinarla gana.',cat:'mental'},
+  {e:'🎭',t:'MÍMICA ÉPICA',d:'Representa una película famosa solo con gestos. El equipo contrario tiene 1 minuto para adivinarla.',cat:'social'},
+  {e:'🏃',t:'SPRINT AL OBJETO',d:'El admin esconde algo. Primero en encontrarlo y traerlo gana.',cat:'fisico'},
+  {e:'🤫',t:'CARA DE PALO',d:'Mantén la cara seria mientras el contrincante intenta hacerte reír durante 30 segundos. Si te ríes, pierdes.',cat:'social'},
+  {e:'🧠',t:'DELETREA AL REVÉS',d:'El admin dice una palabra y hay que deletrearla al revés en menos de 10 segundos.',cat:'mental'},
+  {e:'🎯',t:'LANZA Y ENCESTA',d:'Lanza una bola de papel a una papelera a 3 metros. El primero en encestar 2 de 3 gana.',cat:'fisico'},
+  {e:'🤸',t:'EQUILIBRIO EXTREMO',d:'Ponte sobre un pie con los ojos cerrados. El que más aguante sin moverse gana.',cat:'fisico'},
+  {e:'📞',t:'TELÉFONO ROTO',d:'El admin susurra una frase al oído de cada jugador (distinta). La que llegue más parecida al original gana.',cat:'social'},
+  {e:'✂️',t:'PIEDRA PAPEL TIJERA',d:'Al mejor de 5. Sin trampa ni cartón.',cat:'suerte'},
+  {e:'🎲',t:'TIRADA DE DADOS',d:'Cada jugador tira dos dados. El que saque mayor suma total gana.',cat:'suerte'},
+  {e:'💃',t:'BATALLA DE BAILE',d:'30 segundos de baile libre. El público elige al ganador con aplausos.',cat:'social'},
+  {e:'🤯',t:'PALABRAS SIN LETRA',d:'Habla durante 20 segundos sobre cualquier tema sin usar la letra que diga el admin.',cat:'mental'},
+  {e:'👃',t:'OLFATO MISTERIOSO',d:'Con los ojos tapados, identifica 3 objetos por su olor. El que más acierte gana.',cat:'mental'},
+  {e:'🌀',t:'MAREO TOTAL',d:'Da 10 vueltas sobre ti mismo, luego camina en línea recta. El que llegue más recto gana.',cat:'fisico'},
+  {e:'🤲',t:'PALMAS COORDINADAS',d:'Repite la secuencia de palmas del admin exactamente. Si fallas, pierdes.',cat:'mental'},
+  {e:'🥤',t:'SOPLA LA BOLA',d:'Sopla una pelotita de ping-pong de una mesa a otra sin tocarla con las manos.',cat:'fisico'},
+  {e:'😱',t:'GRITO DE GUERRA',d:'El equipo que grite más fuerte durante 3 segundos (medido por la audiencia) gana.',cat:'social'},
+  {e:'🃏',t:'ADIVINANZA ÉPICA',d:'El admin lee una adivinanza. El primero en pulsar su botón y acertar gana.',cat:'mental'},
+  {e:'🍋',t:'CARA AL LIMÓN',d:'Los dos se comen un gajo de limón. El que menos gesticule gana.',cat:'fisico'},
+];
+
+function scr(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+function setSbl(t){document.getElementById('sb-lbl').textContent=t;}
+
+let ltT=null;
+function showLT(tag,txt,sub,dur=6000){
+  clearTimeout(ltT);
+  document.getElementById('lt-tag').textContent=tag;
+  document.getElementById('lt-txt').textContent=txt;
+  document.getElementById('lt-sub').textContent=sub||'GRADUACIÓN 2026';
+  document.getElementById('lt').classList.add('show');
+  ltT=setTimeout(()=>document.getElementById('lt').classList.remove('show'),dur);
+}
+
+let scA=0,scB=0,retoActual=null;
+function updScores(d){
+  scA=d.scoreA||0;scB=d.scoreB||0;
+  document.getElementById('sp-sc-a').textContent=scA;
+  document.getElementById('sp-sc-b').textContent=scB;
+  document.getElementById('gs-a').textContent=scA;
+  document.getElementById('gs-b').textContent=scB;
+  document.getElementById('sp-pts-a').textContent=scA+' victorias';
+  document.getElementById('sp-pts-b').textContent=scB+' victorias';
+  document.getElementById('sp-ronda').textContent='RETO '+(d.retoNum||0);
+}
+
+function mostrarReto(r){
+  retoActual=r;
+  document.getElementById('rc-emoji').textContent=r.e;
+  document.getElementById('rc-title').textContent=r.t;
+  document.getElementById('rc-desc').textContent=r.d;
+  const cat=document.getElementById('rc-cat');
+  const labels={fisico:'⚡ RETO FÍSICO',mental:'🧠 RETO MENTAL',social:'👥 RETO SOCIAL',suerte:'🎲 PURA SUERTE'};
+  cat.textContent=labels[r.cat]||r.cat;
+  cat.className='rc-cat '+(r.cat||'fisico');
+}
+
+// Spinner de texto mientras sortea
+let spinIv=null;
+function startSpin(){
+  const el=document.getElementById('rc-title');
+  const el2=document.getElementById('rc-emoji');
+  const el3=document.getElementById('rc-desc');
+  el3.textContent='La ruleta está eligiendo...';
+  el.className='rc-title';
+  spinIv=setInterval(()=>{
+    const r=RETOS[~~(Math.random()*RETOS.length)];
+    el2.textContent=r.e;
+    el.textContent=r.t;
+  },80);
+}
+function stopSpin(r){
+  clearInterval(spinIv);
+  document.getElementById('rc-emoji').className='rc-emoji';
+  void document.getElementById('rc-emoji').offsetWidth;
+  document.getElementById('rc-emoji').className='rc-emoji';
+  mostrarReto(r);
+}
+
+// Cuenta atrás
+function conteo(retoTxt,cb){
+  scr('s-cd');setSbl('¡PREPARADOS!');
+  document.getElementById('cd-reto').textContent=retoTxt;
+  let n=3;
+  const el=document.getElementById('cd-n');
+  const COLS=['var(--B)','var(--neon2)','var(--neon3)'];
+  el.textContent=n;el.style.color=COLS[0];
+  snd('cd');
+  const iv=setInterval(()=>{
+    n--;
+    if(n>0){el.style.color=COLS[3-n]||'var(--g)';void el.offsetWidth;el.className='cd-num';el.textContent=n;snd('cd');}
+    else{clearInterval(iv);el.style.color='var(--g)';el.textContent='¡YA!';snd('go');setTimeout(cb,900);}
+  },1000);
+}
+
+// Confetti
+function confetti(color){
+  const cv=document.createElement('canvas');cv.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:300;';cv.width=window.innerWidth;cv.height=window.innerHeight;document.body.appendChild(cv);
+  const ctx=cv.getContext('2d');const cols=[color,'#c9a84c','#e8c97a','#ff6bff','#00ffcc','#fff'];
+  const ps=[...Array(100)].map(()=>({x:Math.random()*cv.width,y:-20,w:Math.random()*12+4,h:Math.random()*12+4,c:cols[~~(Math.random()*cols.length)],vy:Math.random()*5+2,vx:(Math.random()-.5)*5,rot:Math.random()*360,rs:(Math.random()-.5)*10,op:1}));
+  function anim(){ctx.clearRect(0,0,cv.width,cv.height);let alive=false;ps.forEach(p=>{p.y+=p.vy;p.x+=p.vx;p.rot+=p.rs;if(p.y>cv.height)p.op-=.04;if(p.op>0){alive=true;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.globalAlpha=p.op;ctx.fillStyle=p.c;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();}});ctx.globalAlpha=1;if(alive)requestAnimationFrame(anim);else cv.remove();}
+  requestAnimationFrame(anim);setTimeout(()=>cv.remove(),7000);
+}
+
+// Audio
+let aC=null;
+function gAC(){if(!aC)aC=new(window.AudioContext||window.webkitAudioContext)();return aC;}
+function snd(t){try{const c=gAC();
+  if(t==='cd'){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=880;g.gain.setValueAtTime(.15,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.12);o.start(c.currentTime);o.stop(c.currentTime+.14);}
+  else if(t==='go'){[523,659,784,1047].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='square';o.frequency.value=f;const tt=c.currentTime+i*.09;g.gain.setValueAtTime(0,tt);g.gain.linearRampToValueAtTime(.1,tt+.02);g.gain.exponentialRampToValueAtTime(.001,tt+.18);o.start(tt);o.stop(tt+.2);});}
+  else if(t==='fanfare'){[[262,0],[330,.15],[392,.3],[523,.5],[659,.7],[784,.9],[1047,1.2],[880,1.6]].forEach(([f,d])=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='triangle';o.frequency.value=f;const tt=c.currentTime+d;g.gain.setValueAtTime(0,tt);g.gain.linearRampToValueAtTime(.14,tt+.04);g.gain.exponentialRampToValueAtTime(.001,tt+.22);o.start(tt);o.stop(tt+.25);});}
+  else if(t==='spin'){for(let i=0;i<6;i++){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sawtooth';o.frequency.value=200+i*60;const tt=c.currentTime+i*.12;g.gain.setValueAtTime(0,tt);g.gain.linearRampToValueAtTime(.08,tt+.02);g.gain.exponentialRampToValueAtTime(.001,tt+.11);o.start(tt);o.stop(tt+.13);}}
+  else if(t==='alarm'){for(let i=0;i<12;i++){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);const ev=i%2===0;o.type='sawtooth';o.frequency.value=ev?660:550;const tt=c.currentTime+i*.18;g.gain.setValueAtTime(0,tt);g.gain.linearRampToValueAtTime(.16,tt+.02);g.gain.exponentialRampToValueAtTime(.001,tt+.17);o.start(tt);o.stop(tt+.18);}}
+}catch(e){}}
+
+// BG canvas
+const bgC=document.getElementById('bgc'),bgX=bgC.getContext('2d');
+function rBg(){bgC.width=window.innerWidth;bgC.height=window.innerHeight;}rBg();window.addEventListener('resize',rBg);
+const PC=['#c9a84c','#e8c97a','#7c3fa0','#ff6bff','#00ffcc'];let bpts=[];
+for(let i=0;i<100;i++)bpts.push({x:Math.random()*bgC.width,y:Math.random()*bgC.height,s:Math.random()*1.2+.2,vy:-(Math.random()*.25+.05),vx:(Math.random()-.5)*.07,life:Math.random(),ml:Math.random()*3+2,c:PC[~~(Math.random()*PC.length)]});
+function dBg(){bgX.clearRect(0,0,bgC.width,bgC.height);bpts.forEach((p,i)=>{p.life+=.003;p.x+=p.vx;p.y+=p.vy;const o=Math.sin(p.life/p.ml*Math.PI)*.35;if(p.y<-5||p.life>=p.ml){bpts[i]={...bpts[i],x:Math.random()*bgC.width,y:bgC.height+5,life:0};return;}bgX.beginPath();bgX.arc(p.x,p.y,p.s,0,Math.PI*2);bgX.fillStyle=p.c;bgX.globalAlpha=o;bgX.fill();bgX.globalAlpha=1;});requestAnimationFrame(dBg);}
+dBg();
+
+function tick(){const n=new Date();document.getElementById('clk').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
+tick();setInterval(tick,10000);
+
+// FIREBASE LISTENER
+RR.on('value',snap=>{
+  const d=snap.val();if(!d)return;
+  updScores(d);
+
+  // Equipos
+  if(d.equipoA)document.getElementById('sp-members-a').textContent=d.equipoA.join(' · ');
+  if(d.equipoB)document.getElementById('sp-members-b').textContent=d.equipoB.join(' · ');
+
+  if(!d.cmd)return;
+  const cmd=d.cmd;RR.update({cmd:null});
+
+  if(cmd==='standby'){
+    scr('s-standby');setSbl('EN ESPERA');
+
+  }else if(cmd==='sortear'){
+    scr('s-ruleta');setSbl('SORTEANDO...');
+    snd('spin');
+    startSpin();
+    const retoIdx=d.retoIdx;
+    const r=RETOS[retoIdx%RETOS.length];
+    setTimeout(()=>{
+      stopSpin(r);
+      setSbl(r.t.toUpperCase());
+      showLT(r.e,r.t,'RETO SORTEADO',8000);
+    },2500);
+
+  }else if(cmd==='conteo'){
+    const r=retoActual||RETOS[0];
+    conteo(r.e+' '+r.t,()=>{scr('s-ruleta');setSbl('¡EN JUEGO!');});
+
+  }else if(cmd==='ganador'){
+    const isA=d.ganadorEq==='A';
+    const nm=(d.ganadorNm||'EQUIPO '+(isA?'AZUL':'ROJO')).toUpperCase();
+    document.getElementById('gan-nm').textContent=nm;
+    document.getElementById('gan-nm').className='gan-nm '+(isA?'a':'b');
+    document.getElementById('gan-reto').textContent=retoActual?retoActual.e+' '+retoActual.t:'—';
+    scr('s-ganador');setSbl('¡GANADOR!');
+    snd('fanfare');confetti(isA?'#4a90e2':'#ff3333');
+    showLT('🏆','¡'+nm+' GANA EL RETO!','EQUIPO '+(isA?'AZUL':'ROJO')+' +1',8000);
+    // +1 a cada miembro del equipo ganador en ranking global
+    db.ref('retos/jugadores').once('value').then(snap=>{
+      Object.values(snap.val()||{}).forEach(j=>{
+        if(j.equipo===d.ganadorEq) db.ref('hub/ranking/'+j.nombre).transaction(v=>(v||0)+1);
+      });
+    });
+
+  }else if(cmd==='fin'){
+    const isA=d.campeon==='A';
+    document.getElementById('fin-cn').textContent='EQUIPO '+(isA?'AZUL':'ROJO');
+    document.getElementById('fin-cn').className='fin-cn '+(isA?'a':'b');
+    document.getElementById('fin-pts').textContent=(isA?scA:scB)+' RETOS GANADOS';
+    scr('s-fin');setSbl('¡CAMPEONES!');
+    snd('fanfare');confetti(isA?'#4a90e2':'#ff3333');
+    setTimeout(()=>{snd('fanfare');confetti(isA?'#4a90e2':'#ff3333');},2000);
+    showLT('🏆','¡CAMPEONES — EQUIPO '+(isA?'AZUL':'ROJO')+'!','GRADUACIÓN 2026',20000);
+    // +3 a campeones, +1 al resto
+    db.ref('retos/jugadores').once('value').then(snap=>{
+      Object.values(snap.val()||{}).forEach(j=>{
+        const pts=(j.equipo===d.campeon)?3:1;
+        db.ref('hub/ranking/'+j.nombre).transaction(v=>(v||0)+pts);
+      });
+    });
+    setTimeout(()=>{
+      const btn=document.createElement('button');
+      btn.style.cssText='margin-top:18px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3);color:var(--g);font-family:"Share Tech Mono",monospace;font-size:14px;letter-spacing:3px;padding:12px 28px;cursor:pointer;z-index:100;position:relative;';
+      btn.textContent='← VOLVER AL HUB';
+      btn.onclick=volverAlHub;
+      document.querySelector('#s-fin .fin-wrap').appendChild(btn);
+    },3000);
+
+  }else if(cmd==='alarm'){
+    snd('alarm');
+    showLT('🚨','¡TODOS ATENTOS! Reto inminente','¡AHORA!',10000);
+  }
+});
+</script>
+</body>
+</html>

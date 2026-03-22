@@ -391,11 +391,6 @@ const db=firebase.database(), HR=db.ref('hub'), HE=db.ref('hub_exterior');
 
 // ── JUEGOS ──
 const JUEGOS=[
-  {id:'undercover',n:'Undercover',e:'🕵️',t:'Espionaje',
-    d:'Todos reciben la misma palabra secreta... excepto el espía. Por turnos, cada uno dice una pista. El espía debe pasar desapercibido.',
-    p:['Cada jugador recibe su palabra en el móvil (los inocentes la misma, el spy una distinta)','Por turnos, di UNA palabra relacionada con la tuya — ni muy obvia ni muy rara','Debate: ¿quién dio una pista sospechosa? Vota para expulsar'],
-    ej:'Palabra real: PLAYA · Spy recibe: PISCINA. Los inocentes dicen "arena", "ola", "chiringuito"... el spy dice "agua" intentando no delatarse.',
-    loc:'interior',url:'undercover-tv.html'},
   {id:'impostor',n:'El Impostor',e:'🔪',t:'Nave espacial',
     d:'Impostores entre la tripulación. Cada noche eliminan a alguien. De día, debaten quién es el asesino. El médico puede salvar a uno.',
     p:['Roles secretos: inocentes, médico e impostores','Noche: impostores eligen víctima, médico elige a quién salvar','Día: debate y votación — el más votado es expulsado'],
@@ -441,11 +436,16 @@ const JUEGOS=[
     p:['La ruleta elige al buscador — cuenta hasta 30 mientras todos se esconden','Al pillar a alguien ganas puntos; los pillados ayudan a buscar','Con 4 jugadores libres, el buscador activa el radar frío/caliente en el móvil'],
     ej:'Quedan 3 libres. El buscador abre el radar: "MUY CALIENTE" hacia los arbustos... pero era una trampa, ¡el jugador ya se había movido!',
     loc:'exterior',url:'escondite-tv.html'},
-  {id:'retro',n:'Duelos Retro',e:'🕹️',t:'Arcade',
-    d:'La fiesta se divide en dos equipos. Por turnos, un jugador de cada equipo se enfrenta en un duelo de minijuegos retro 1vs1: reflejos, memoria, click loco, dado, preguntas...',
-    p:['Se forman dos equipos — el admin convoca a un duelista de cada bando','El admin elige el minijuego del duelo (o sale aleatorio)','¡El ganador suma un punto para su equipo! El torneo acaba cuando todos han jugado al menos una vez'],
-    ej:'Carlos (Eq. A) vs María (Eq. B). Minijuego: REFLEJOS. La pantalla se pone verde... ¡María pulsa primero! Punto para el Equipo B.',
-    loc:'interior',url:'retro-tv.html'}
+  {id:'retos',n:'Ruleta de Retos',e:'🎰',t:'Programa de TV',
+    d:'La ruleta sortea un reto físico, mental o social. Un representante de cada equipo lo ejecuta en directo. El admin declara el ganador.',
+    p:['El admin gira la ruleta — aparece un reto sorteado en la TV','Un jugador de cada equipo acepta el desafío y lo ejecuta en directo','El admin declara al ganador — punto se suma al ranking global'],
+    ej:'Reto: SILLA EN LA PARED. Carlos y María aguantan. Carlos cae a los 45s. ¡María gana el punto!',
+    loc:'interior',url:'retos-tv.html'},
+  {id:'undercover',n:'Undercover',e:'🕵️',t:'Espionaje',
+    d:'Todos reciben la misma palabra secreta… excepto el espía. Debatid dando pistas sin revelaros. ¿Puedes descubrir al espía?',
+    p:['Votad la categoría temática','Cada jugador ve su palabra en el móvil — el espía tiene una diferente','Debate, vota, elimina — ¿descubrirás al espía?'],
+    ej:'Palabra real: TINDER. Palabra spy: MEETIC. El spy da la pista "citas"… ¡8 votos sobre Carlos!',
+    loc:'interior',url:'undercover-tv.html'}
 ];
 
 // ── BACKGROUND ──

@@ -203,7 +203,8 @@ html,body{background:var(--dark);color:var(--cream);font-family:'Share Tech Mono
     <button class="abtn primary" onclick="ruletaInterior()"><span class="ico">🎡</span><div class="info">RULETA INTERIOR<span class="sub">Solo juegos de interior</span></div></button>
     <button class="abtn" onclick="cmd('ranking')"><span class="ico">🏆</span><div class="info">RANKING<span class="sub">Muestra clasificación</span></div></button>
     <button class="abtn" onclick="cmd('premios')"><span class="ico">🎖️</span><div class="info">PREMIOS<span class="sub">Ceremonia de clausura</span></div></button>
-    <button class="abtn" onclick="lanzarRetroDirecto()"><span class="ico">🕹️</span><div class="info">DUELOS RETRO<span class="sub">Abre panel de admin Retro</span></div></button>
+    <button class="abtn" onclick="window.open('undercover-admin.html','_blank')"><span class="ico">🕵️</span><div class="info">UNDERCOVER<span class="sub">Panel de admin Undercover</span></div></button>
+    <button class="abtn" onclick="window.open('retos-admin.html','_blank')"><span class="ico">🎰</span><div class="info">RULETA DE RETOS<span class="sub">Panel de admin Retos</span></div></button>
 
     <div class="slbl">◆ ELEGIR JUEGO MANUAL</div>
     <div class="juego-picker" id="jp-directo"></div>
@@ -310,6 +311,7 @@ function checkPin(){
 const JUEGOS=[
   {id:'undercover',n:'Undercover',e:'🕵️',loc:'interior',
     params:[{key:'spyCount',label:'Número de spies',sub:'1 spy por cada 4-5 jugadores',min:1,max:4,default:1}]},
+  {id:'retos',n:'Ruleta de Retos',e:'🎰',loc:'interior'},
   {id:'impostor',n:'El Impostor',e:'🔪',loc:'interior'},
   {id:'bomba',n:'Bomba',e:'💣',loc:'interior'},
   {id:'trivia',n:'Trivia',e:'🎓',loc:'interior'},
@@ -319,7 +321,6 @@ const JUEGOS=[
   {id:'dibujar',n:'Dibuja y Adivina',e:'🎨',loc:'interior'},
   {id:'esconder',n:'Esconder Objeto',e:'🫙',loc:'exterior'},
   {id:'escondite',n:'Escondite Extremo',e:'🏃',loc:'exterior'},
-  {id:'retro',n:'Duelos Retro',e:'🕹️',loc:'interior'},
 ];
 const JUEGOS_EXT=[
   {id:'esconder',n:'Esconder Objeto',e:'🫙'},
@@ -467,10 +468,6 @@ function ruletaExterior(){
   // La TV interior muestra "al porche" y manda instrucciones al exterior
   cmd_data('ruleta',{destino:'exterior'});
   toast('🎡 Ruleta exterior');
-}
-function lanzarRetroDirecto(){
-  window.open('retro-admin.html','_blank');
-  toast('🕹️ Abriendo admin Retro...');
 }
 function lanzarRuletaPick(){
   if(juegoSeleccionado===null){toast('Elige un juego primero');return;}
