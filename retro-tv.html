@@ -298,13 +298,14 @@ firebase.initializeApp(FC);
 const db=firebase.database(), RR=db.ref('retro');
 
 const MJS=[
-  {id:'reflejos',n:'REFLEJOS DE ACERO',e:'⚡',inst:'Pulsa el botón cuando la pantalla se ponga VERDE'},
+  {id:'reflejos',n:'REFLEJOS DE ACERO',e:'⚡',inst:'¡Pulsa cuando se ponga VERDE! El más rápido gana'},
   {id:'click',n:'CLICK LOCO',e:'🖱️',inst:'El que más veces pulse en 10 segundos gana'},
-  {id:'dado',n:'EL DADO MALDITO',e:'🎲',inst:'Pulsa para tirar — el mayor número gana'},
-  {id:'piedra',n:'PIEDRA PAPEL TIJERA',e:'✂️',inst:'Elige en secreto — se revela a la vez'},
-  {id:'pregunta',n:'PREGUNTA RELÁMPAGO',e:'❓',inst:'El primero en acertar gana el punto'},
-  {id:'memoria',n:'MEMORIA FLASH',e:'🧠',inst:'Memoriza la secuencia y repítela'},
-  {id:'escalera',n:'ESCALERA DE BOTONES',e:'🪜',inst:'Sigue la secuencia sin fallar'},
+  {id:'dado',n:'EL DADO MALDITO',e:'🎲',inst:'Tira el dado — el mayor número gana'},
+  {id:'piedra',n:'PIEDRA PAPEL TIJERA',e:'✂️',inst:'Elige en secreto — se revela simultáneamente'},
+  {id:'pregunta',n:'PREGUNTA RELÁMPAGO',e:'❓',inst:'Responde antes que tu rival — primer acierto gana'},
+  {id:'memoria',n:'MEMORIA FLASH',e:'🧠',inst:'Misma secuencia para ambos — el primero en completarla gana'},
+  {id:'moneda',n:'CARA O CRUZ',e:'🪙',inst:'Elige cara o cruz — suerte pura'},
+  {id:'precio',n:'ADIVINA EL PRECIO',e:'💰',inst:'¿Cuánto cuesta? El que más se acerque gana'},
 ];
 
 // QR

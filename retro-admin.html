@@ -220,10 +220,11 @@ const MJS=[
   {id:'reflejos',n:'REFLEJOS',e:'⚡'},
   {id:'click',n:'CLICK LOCO',e:'🖱️'},
   {id:'dado',n:'DADO',e:'🎲'},
-  {id:'piedra',n:'PIEDRA P.T.',e:'✂️'},
+  {id:'piedra',n:'P.P.T.',e:'✂️'},
   {id:'pregunta',n:'PREGUNTA',e:'❓'},
   {id:'memoria',n:'MEMORIA',e:'🧠'},
-  {id:'escalera',n:'ESCALERA',e:'🪜'},
+  {id:'moneda',n:'CARA/CRUZ',e:'🪙'},
+  {id:'precio',n:'PRECIO',e:'💰'},
 ];
 
 const EMOJIS=Object.fromEntries(MJS.map(m=>[m.id,m.e]));
@@ -349,22 +350,29 @@ function convocarManual(){
 
 function lanzarDuelo(ja,jb,mj){
   const ronda=rondaActual+1;
-  // Primero: anunciar el duelo y contar 4s antes de lanzar conteo
+  const ts=Date.now();
+  // Limpiar resultados de ronda anterior
+  RR.child('resultadoPendiente').remove();
+  RR.child('clickR').remove();
+  RR.child('dadoR').remove();
+  RR.child('pptR').remove();
+  RR.child('monedaR').remove();
+  RR.child('precioR').remove();
+  RR.child('pregR').remove();
+  // Seed compartido para esta ronda (determina pregunta, secuencia, cara/cruz, precio)
+  RR.child('rondaTs').set(ts);
+  // Anunciar el duelo
   RR.update({
     jugadorA:ja,jugadorB:jb,minijuego:mj,
     ronda,rondaActual:ronda,totalRondas:Math.max(totalRondas,ronda),
-    dueloActivo:true,resultadoPendiente:null,
+    dueloActivo:true,
     status:'DUELO R'+ronda+': '+ja+' VS '+jb,
-    cmd:'duelo',timestamp:Date.now()
+    cmd:'duelo',timestamp:ts
   });
-  // Después de 4s: conteo automático
-  setTimeout(()=>{
-    RR.update({cmd:'conteo',timestamp:Date.now()});
-  },4000);
-  // Después de 7s: flag jugando (por si acaso)
-  setTimeout(()=>{
-    RR.update({cmd:'jugando',timestamp:Date.now()});
-  },7500);
+  // Conteo automático tras 4s
+  setTimeout(()=>RR.update({cmd:'conteo',timestamp:Date.now()}),4000);
+  // Flag jugando tras 7.5s (por si el conteo no llegó)
+  setTimeout(()=>RR.update({cmd:'jugando',timestamp:Date.now()}),7500);
 }
 
 function finalizarTorneo(){

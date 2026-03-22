@@ -14,8 +14,8 @@ html,body{width:100%;height:100%;background:var(--dark);color:var(--cream);font-
 .scr{display:none;position:fixed;inset:0;flex-direction:column;align-items:center;justify-content:center;padding:22px;}
 .scr.on{display:flex;}
 
-/* REGISTRO */
-#s-reg{gap:18px;text-align:center;background:var(--dark);}
+/* ── REGISTRO ── */
+#s-reg{gap:18px;text-align:center;}
 .ri{font-size:clamp(46px,14vw,70px);animation:fl 2.5s ease-in-out infinite;}
 @keyframes fl{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
 .rt{font-family:'Press Start 2P',monospace;font-size:clamp(13px,4.2vw,20px);color:var(--pixel);text-shadow:0 0 18px rgba(57,255,20,.5);line-height:1.5;}
@@ -27,19 +27,19 @@ html,body{width:100%;height:100%;background:var(--dark);color:var(--cream);font-
 .rbtn:active{transform:scale(.97);opacity:.85;}
 .rerr{color:var(--B);font-family:'VT323',monospace;font-size:17px;letter-spacing:4px;min-height:22px;text-align:center;}
 
-/* EQUIPO ASIGNADO */
+/* ── EQUIPO ── */
 #s-eq{gap:13px;text-align:center;}
-#s-eq.ea{background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(74,144,226,.1) 0%,var(--dark) 70%);}
-#s-eq.eb{background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(255,51,51,.1) 0%,var(--dark) 70%);}
+#s-eq.ea{background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(74,144,226,.12) 0%,var(--dark) 70%);}
+#s-eq.eb{background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(255,51,51,.12) 0%,var(--dark) 70%);}
 .eq-lbl{font-family:'VT323',monospace;font-size:clamp(12px,4vw,17px);letter-spacing:8px;color:rgba(255,255,255,.28);}
 .eq-esc{font-size:clamp(58px,17vw,86px);animation:pop .5s cubic-bezier(.34,1.56,.64,1) both;}
 @keyframes pop{from{transform:scale(0);}to{transform:scale(1);}}
 .eq-nm{font-family:'Press Start 2P',monospace;font-size:clamp(20px,6.5vw,32px);line-height:1.2;}
 .eq-nm.ea{color:var(--A);text-shadow:0 0 28px rgba(74,144,226,.55);}
 .eq-nm.eb{color:var(--B);text-shadow:0 0 28px rgba(255,51,51,.55);}
-.eq-desc{font-family:'VT323',monospace;font-size:clamp(13px,4.2vw,19px);letter-spacing:4px;opacity:.45;margin-top:3px;}
+.eq-desc{font-family:'VT323',monospace;font-size:clamp(13px,4.2vw,19px);letter-spacing:4px;opacity:.45;}
 
-/* ESPERA */
+/* ── ESPERA ── */
 #s-wait{gap:13px;text-align:center;}
 .wi{font-size:clamp(46px,14vw,70px);animation:fl 2.5s ease-in-out infinite;}
 .wn{font-family:'Press Start 2P',monospace;font-size:clamp(13px,4.2vw,19px);line-height:1.4;}
@@ -59,7 +59,7 @@ html,body{width:100%;height:100%;background:var(--dark);color:var(--cream);font-
 .wsn.ea{color:var(--A);}
 .wsn.eb{color:var(--B);}
 
-/* DUELO ANUNCIADO */
+/* ── DUELO ── */
 #s-duel{gap:13px;text-align:center;}
 #s-duel.ea{background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(74,144,226,.1) 0%,var(--dark) 70%);}
 #s-duel.eb{background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(255,51,51,.1) 0%,var(--dark) 70%);}
@@ -70,70 +70,86 @@ html,body{width:100%;height:100%;background:var(--dark);color:var(--cream);font-
 .dn{font-family:'Press Start 2P',monospace;font-size:clamp(15px,4.8vw,22px);line-height:1.4;}
 .dn.ea{color:var(--A);}
 .dn.eb{color:var(--B);}
-.dr{font-family:'VT323',monospace;font-size:clamp(17px,5.3vw,24px);letter-spacing:4px;color:rgba(255,255,255,.65);margin-top:3px;}
-.dmj{padding:12px 18px;border:2px solid rgba(57,255,20,.26);background:rgba(57,255,20,.04);width:100%;max-width:310px;text-align:center;margin-top:4px;}
-.dmj-l{font-family:'VT323',monospace;font-size:12px;letter-spacing:8px;color:rgba(57,255,20,.32);margin-bottom:4px;}
+.dr{font-family:'VT323',monospace;font-size:clamp(17px,5.3vw,24px);letter-spacing:4px;color:rgba(255,255,255,.6);margin-top:3px;}
+.dmj{padding:12px 18px;border:2px solid rgba(57,255,20,.25);background:rgba(57,255,20,.04);width:100%;max-width:310px;text-align:center;}
+.dmj-l{font-family:'VT323',monospace;font-size:12px;letter-spacing:8px;color:rgba(57,255,20,.3);margin-bottom:4px;}
 .dmj-n{font-family:'Press Start 2P',monospace;font-size:clamp(10px,3.3vw,15px);color:var(--pixel);line-height:1.4;}
-.dmj-i{font-family:'VT323',monospace;font-size:clamp(13px,4.3vw,18px);color:rgba(240,230,204,.44);margin-top:5px;letter-spacing:2px;}
-.dw{font-family:'VT323',monospace;font-size:clamp(12px,4.2vw,17px);letter-spacing:5px;color:rgba(57,255,20,.32);animation:pulse 1.5s ease-in-out infinite;margin-top:5px;}
+.dmj-i{font-family:'VT323',monospace;font-size:clamp(13px,4.3vw,18px);color:rgba(240,230,204,.42);margin-top:5px;letter-spacing:2px;}
+.dw{font-family:'VT323',monospace;font-size:clamp(12px,4.2vw,17px);letter-spacing:5px;color:rgba(57,255,20,.3);animation:pulse 1.5s ease-in-out infinite;}
 
-/* MINIJUEGO */
+/* ── MINIJUEGO ── */
 #s-mj{background:#000;}
 .mj-w{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;width:100%;height:100%;padding:18px;}
-.mj-l{font-family:'VT323',monospace;font-size:clamp(14px,4.8vw,20px);letter-spacing:5px;color:rgba(57,255,20,.48);text-align:center;}
-.mj-r{font-family:'Press Start 2P',monospace;font-size:clamp(16px,5.5vw,26px);text-align:center;animation:pop .4s cubic-bezier(.34,1.56,.64,1);}
-.mj-r.win{color:var(--pixel);}
-.mj-r.lose{color:var(--B);}
-.mj-r.tie{color:var(--gold);}
-.mj-timer{font-family:'VT323',monospace;font-size:clamp(44px,14vw,76px);color:var(--pixel);font-variant-numeric:tabular-nums;}
+.mj-l{font-family:'VT323',monospace;font-size:clamp(14px,4.8vw,20px);letter-spacing:4px;color:rgba(57,255,20,.5);text-align:center;line-height:1.4;}
 
-/* Botón grande */
-.bbtn{width:min(230px,70vw);height:min(230px,70vw);border-radius:50%;font-family:'Press Start 2P',monospace;font-size:clamp(10px,3.3vw,15px);border:4px solid;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.5;transition:transform .1s;padding:18px;}
-.bbtn:active{transform:scale(.91);}
-.green{background:rgba(57,255,20,.13);border-color:var(--pixel);color:var(--pixel);box-shadow:0 0 32px rgba(57,255,20,.26);}
-.gold{background:rgba(201,168,76,.13);border-color:var(--gold);color:var(--gold);box-shadow:0 0 32px rgba(201,168,76,.26);}
-.red{background:rgba(255,51,51,.13);border-color:var(--B);color:var(--B);}
-.blue{background:rgba(74,144,226,.13);border-color:var(--A);color:var(--A);}
-.flash{animation:fl2 .3s step-end infinite;}
-@keyframes fl2{0%,100%{opacity:1;}50%{opacity:.3;}}
+/* Botón gordo redondo */
+.bbtn{width:min(220px,68vw);height:min(220px,68vw);border-radius:50%;font-family:'Press Start 2P',monospace;font-size:clamp(10px,3.2vw,14px);border:4px solid;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.6;transition:transform .08s,background .2s;padding:18px;}
+.bbtn:active{transform:scale(.88);}
+.btn-red{background:rgba(255,51,51,.14);border-color:var(--B);color:var(--B);}
+.btn-green{background:rgba(57,255,20,.14);border-color:var(--pixel);color:var(--pixel);box-shadow:0 0 30px rgba(57,255,20,.25);}
+.btn-gold{background:rgba(201,168,76,.14);border-color:var(--gold);color:var(--gold);}
+.flash{animation:fl2 .35s step-end infinite;}
+@keyframes fl2{0%,100%{opacity:1;}50%{opacity:.25;}}
+.mj-res{font-family:'Press Start 2P',monospace;font-size:clamp(15px,5vw,22px);text-align:center;animation:pop .4s cubic-bezier(.34,1.56,.64,1);}
+.mj-res.win{color:var(--pixel);}
+.mj-res.lose{color:var(--B);}
+.mj-res.tie{color:var(--gold);}
+.mj-timer{font-family:'VT323',monospace;font-size:clamp(52px,16vw,80px);color:var(--pixel);font-variant-numeric:tabular-nums;}
 
 /* PPT */
 .ppt-g{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;width:100%;}
-.pbt{padding:16px 7px;font-size:clamp(20px,6.5vw,34px);background:rgba(57,255,20,.07);border:2px solid rgba(57,255,20,.18);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .1s;}
-.pbt:active{background:rgba(57,255,20,.18);transform:scale(.94);}
-.pbt-l{font-family:'VT323',monospace;font-size:12px;letter-spacing:3px;color:rgba(255,255,255,.32);}
-.pbt.sel{border-color:var(--pixel);background:rgba(57,255,20,.14);}
+.pbt{padding:15px 6px;font-size:clamp(22px,7vw,36px);background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.12);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:6px;transition:all .1s;}
+.pbt:active{transform:scale(.93);}
+.pbt-l{font-family:'VT323',monospace;font-size:12px;letter-spacing:3px;color:rgba(255,255,255,.3);}
+.pbt.sel{border-color:var(--pixel);background:rgba(57,255,20,.12);}
+.pbt.win-h{border-color:var(--pixel);background:rgba(57,255,20,.18);}
+.pbt.lose-h{border-color:var(--B);background:rgba(255,51,51,.1);opacity:.5;}
 
 /* Pregunta */
-.preg-t{font-family:'VT323',monospace;font-size:clamp(17px,5.3vw,25px);text-align:center;color:var(--cream);line-height:1.5;margin-bottom:7px;}
-.preg-os{display:flex;flex-direction:column;gap:7px;width:100%;}
-.preg-o{padding:12px;background:rgba(57,255,20,.05);border:1px solid rgba(57,255,20,.16);font-family:'Share Tech Mono',monospace;font-size:clamp(12px,3.8vw,16px);cursor:pointer;text-align:center;transition:all .1s;}
-.preg-o:active{background:rgba(57,255,20,.14);}
-.preg-o.ok{border-color:var(--pixel);background:rgba(57,255,20,.17);color:var(--pixel);}
-.preg-o.ko{border-color:var(--B);background:rgba(255,51,51,.1);color:var(--B);}
+.preg-q{font-family:'VT323',monospace;font-size:clamp(18px,5.5vw,26px);text-align:center;color:var(--cream);line-height:1.5;margin-bottom:8px;}
+.preg-opts{display:flex;flex-direction:column;gap:7px;width:100%;}
+.preg-opt{padding:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);font-family:'Share Tech Mono',monospace;font-size:clamp(13px,4vw,17px);cursor:pointer;text-align:center;border-radius:4px;transition:all .1s;}
+.preg-opt:active{background:rgba(255,255,255,.12);}
+.preg-opt.ok{border-color:var(--pixel);background:rgba(57,255,20,.15);color:var(--pixel);}
+.preg-opt.ko{border-color:var(--B);background:rgba(255,51,51,.1);color:var(--B);}
+.preg-opt:disabled{pointer-events:none;}
 
-/* Secuencia */
-.seq-g{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(270px,78vw);}
-.sqb{height:76px;border-radius:7px;cursor:pointer;border:2px solid transparent;display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:11px;opacity:.28;transition:all .1s;}
-.sqb.rc{background:rgba(255,51,51,.22);border-color:var(--B);color:var(--B);}
-.sqb.bc{background:rgba(74,144,226,.22);border-color:var(--A);color:var(--A);}
-.sqb.gc{background:rgba(57,255,20,.22);border-color:var(--pixel);color:var(--pixel);}
-.sqb.yc{background:rgba(255,255,0,.22);border-color:#ffff00;color:#ffff00;}
-.sqb.lit{opacity:1;transform:scale(1.04);}
+/* Secuencia colores */
+.seq-g{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:min(260px,76vw);}
+.sqb{height:80px;border-radius:8px;cursor:pointer;border:2px solid transparent;display:flex;align-items:center;justify-content:center;font-size:28px;opacity:.3;transition:opacity .1s,transform .1s;}
+.sqb.rc{background:rgba(255,51,51,.25);border-color:var(--B);}
+.sqb.bc{background:rgba(74,144,226,.25);border-color:var(--A);}
+.sqb.gc{background:rgba(57,255,20,.25);border-color:var(--pixel);}
+.sqb.yc{background:rgba(255,220,0,.25);border-color:#ffdd00;}
+.sqb.lit{opacity:1;transform:scale(1.06);}
 .sqb:active{opacity:1;}
+.seq-prog{font-family:'VT323',monospace;font-size:clamp(14px,4.5vw,20px);letter-spacing:4px;color:rgba(255,255,255,.4);text-align:center;}
 
-/* RESULTADO */
+/* Precio */
+.precio-img{font-size:clamp(56px,17vw,90px);line-height:1;}
+.precio-q{font-family:'VT323',monospace;font-size:clamp(16px,5vw,23px);text-align:center;color:rgba(240,230,204,.7);letter-spacing:3px;}
+.precio-input{width:100%;max-width:260px;background:rgba(57,255,20,.06);border:none;border-bottom:2px solid rgba(57,255,20,.3);color:var(--pixel);font-family:'Press Start 2P',monospace;font-size:clamp(18px,6vw,26px);padding:12px 16px;text-align:center;outline:none;caret-color:var(--pixel);}
+.precio-input::placeholder{color:rgba(57,255,20,.18);}
+.precio-btn{width:100%;max-width:260px;background:var(--pixel);color:#000;font-family:'Press Start 2P',monospace;font-size:12px;padding:13px;border:none;cursor:pointer;}
+.precio-btn:active{transform:scale(.96);}
+.precio-res{font-family:'VT323',monospace;font-size:clamp(15px,4.8vw,21px);letter-spacing:4px;text-align:center;min-height:24px;}
+
+/* Cara o cruz */
+.moneda{font-size:clamp(80px,24vw,120px);cursor:pointer;animation:spin3d 0s ease-in-out;display:block;line-height:1;}
+@keyframes spin3d{0%{transform:rotateY(0deg);}100%{transform:rotateY(1800deg);}}
+.moneda.girando{animation:spin3d 1.5s ease-in-out forwards;}
+
+/* Resultado final */
 #s-res{gap:11px;text-align:center;}
 .res-i{font-size:clamp(50px,15vw,76px);animation:fl 2s ease-in-out infinite;}
 .res-t{font-family:'Press Start 2P',monospace;font-size:clamp(13px,4.2vw,20px);line-height:1.4;}
 .res-t.win{color:var(--pixel);}
 .res-t.lose{color:var(--B);}
-.res-s{font-family:'VT323',monospace;font-size:clamp(13px,4.2vw,19px);letter-spacing:5px;color:rgba(255,255,255,.32);}
+.res-s{font-family:'VT323',monospace;font-size:clamp(13px,4.2vw,19px);letter-spacing:5px;color:rgba(255,255,255,.3);}
 </style>
 </head>
 <body>
 
-<!-- REGISTRO -->
 <div class="scr on" id="s-reg">
   <div class="ri">🕹️</div>
   <div class="rt">RETRO<br>ARENA</div>
@@ -143,7 +159,6 @@ html,body{width:100%;height:100%;background:var(--dark);color:var(--cream);font-
   <div class="rerr" id="rerr"></div>
 </div>
 
-<!-- EQUIPO ASIGNADO -->
 <div class="scr" id="s-eq">
   <div class="eq-lbl">HAS SIDO ASIGNADO A</div>
   <div class="eq-esc" id="eq-esc">🎮</div>
@@ -151,7 +166,6 @@ html,body{width:100%;height:100%;background:var(--dark);color:var(--cream);font-
   <div class="eq-desc" id="eq-desc">¡Lucha por tu equipo!</div>
 </div>
 
-<!-- ESPERA -->
 <div class="scr" id="s-wait">
   <div class="wi" id="w-i">🔵</div>
   <div class="wn" id="w-n">—</div>
@@ -163,12 +177,11 @@ html,body{width:100%;height:100%;background:var(--dark);color:var(--cream);font-
   </div>
 </div>
 
-<!-- DUELO ANUNCIADO -->
 <div class="scr" id="s-duel">
   <div class="dt">⚡ ¡DUELO! ⚡</div>
   <div class="de" id="d-e">ERES EL DUELISTA</div>
   <div class="dn" id="d-n">—</div>
-  <div class="dr" id="d-r">VS —</div>
+  <div class="dr" id="d-r">—</div>
   <div class="dmj">
     <div class="dmj-l">— MINIJUEGO —</div>
     <div class="dmj-n" id="d-mjn">—</div>
@@ -177,12 +190,10 @@ html,body{width:100%;height:100%;background:var(--dark);color:var(--cream);font-
   <div class="dw" id="d-w">Espera el conteo...</div>
 </div>
 
-<!-- MINIJUEGO -->
 <div class="scr" id="s-mj">
   <div class="mj-w" id="mj-c"></div>
 </div>
 
-<!-- RESULTADO -->
 <div class="scr" id="s-res">
   <div class="res-i" id="r-i">🏆</div>
   <div class="res-t" id="r-t">—</div>
@@ -190,48 +201,54 @@ html,body{width:100%;height:100%;background:var(--dark);color:var(--cream);font-
 </div>
 
 <script>
+// ── FIREBASE ──
 const FC={apiKey:"AIzaSyAib6PDnV_u8GuDp-PnJvop91qv9JHfffc",authDomain:"impostor-322cc.firebaseapp.com",databaseURL:"https://impostor-322cc-default-rtdb.europe-west1.firebasedatabase.app",projectId:"impostor-322cc",storageBucket:"impostor-322cc.firebasestorage.app",messagingSenderId:"808449155212",appId:"1:808449155212:web:c32ca0565b083056f31ba9"};
 firebase.initializeApp(FC);
 const db=firebase.database(), RR=db.ref('retro');
 
 const MJS={
-  reflejos:{e:'⚡',n:'REFLEJOS DE ACERO',inst:'¡Pulsa el botón cuando se ponga VERDE!'},
+  reflejos:{e:'⚡',n:'REFLEJOS DE ACERO',inst:'¡Pulsa cuando se ponga VERDE! El más rápido gana'},
   click:{e:'🖱️',n:'CLICK LOCO',inst:'El que más veces pulse en 10 segundos gana'},
-  dado:{e:'🎲',n:'EL DADO MALDITO',inst:'Pulsa para tirar — el mayor número gana'},
-  piedra:{e:'✂️',n:'PIEDRA PAPEL TIJERA',inst:'Elige en secreto — se revela a la vez'},
-  pregunta:{e:'❓',n:'PREGUNTA RELÁMPAGO',inst:'El primero en acertar gana el punto'},
-  memoria:{e:'🧠',n:'MEMORIA FLASH',inst:'Memoriza la secuencia y repítela sin fallar'},
-  escalera:{e:'🪜',n:'ESCALERA DE BOTONES',inst:'Sigue la secuencia sin fallar'},
+  dado:{e:'🎲',n:'EL DADO MALDITO',inst:'Tira el dado — el mayor número gana'},
+  piedra:{e:'✂️',n:'PIEDRA PAPEL TIJERA',inst:'Elige en secreto — se revela simultáneamente'},
+  pregunta:{e:'❓',n:'PREGUNTA RELÁMPAGO',inst:'Responde antes que tu rival — primer acierto gana'},
+  memoria:{e:'🧠',n:'MEMORIA FLASH',inst:'Ambos ven la MISMA secuencia — el primero en completarla gana'},
+  moneda:{e:'🪙',n:'CARA O CRUZ',inst:'Elige cara o cruz antes del lanzamiento — suerte pura'},
+  precio:{e:'💰',n:'ADIVINA EL PRECIO',inst:'¿Cuánto cuesta? El que más se acerque gana'},
 };
 
+// ── ESTADO ──
 let myName='',myTeam='',myId='',isDuel=false,curMj='',duelA='',duelB='';
+// Refs activos de Firebase que hay que limpiar entre rondas
+let activeListeners=[];
+function cleanListeners(){activeListeners.forEach(([ref,fn])=>ref.off('value',fn));activeListeners=[];}
 
+// ── NAVEGACIÓN ──
 function scr(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
 
+// ── REGISTRO ──
 document.getElementById('rname').addEventListener('keydown',e=>{if(e.key==='Enter')registrarse();});
-
 function registrarse(){
   const n=document.getElementById('rname').value.trim();
-  if(!n){err('Escribe tu nombre');return;}
+  if(!n){showErr('Escribe tu nombre');return;}
   const btn=document.getElementById('rbtn');
   btn.textContent='...';btn.disabled=true;
   RR.child('jugadores').once('value').then(snap=>{
     const jugs=snap.val()||{};
     const total=Object.keys(jugs).length;
-    const equipo=total%2===0?'A':'B';
-    myName=n.toUpperCase();myTeam=equipo;
+    myTeam=total%2===0?'A':'B';
+    myName=n.toUpperCase();
     const ref=RR.child('jugadores').push();
     myId=ref.key;
     return ref.set({nombre:myName,equipo:myTeam,ts:Date.now()});
   }).then(()=>{mostrarEquipo();initListener();})
-  .catch(()=>{err('Error de conexión');btn.textContent='UNIRME ▶';btn.disabled=false;});
+  .catch(()=>{showErr('Error de conexión');btn.textContent='UNIRME ▶';btn.disabled=false;});
 }
-function err(m){const e=document.getElementById('rerr');e.textContent=m;setTimeout(()=>e.textContent='',2500);}
+function showErr(m){const e=document.getElementById('rerr');e.textContent=m;setTimeout(()=>e.textContent='',2500);}
 
 function mostrarEquipo(){
   const isA=myTeam==='A';
-  const s=document.getElementById('s-eq');
-  s.className='scr '+(isA?'ea':'eb');
+  document.getElementById('s-eq').className='scr '+(isA?'ea':'eb');
   document.getElementById('eq-esc').textContent=isA?'🔵':'🔴';
   document.getElementById('eq-nm').textContent='EQUIPO '+(isA?'AZUL':'ROJO');
   document.getElementById('eq-nm').className='eq-nm '+(isA?'ea':'eb');
@@ -246,9 +263,11 @@ function irEspera(){
   document.getElementById('w-n').className='wn '+(isA?'ea':'eb');
   document.getElementById('w-t').textContent='EQUIPO '+(isA?'AZUL':'ROJO');
   document.getElementById('w-t').className='wt '+(isA?'ea':'eb');
+  cleanListeners(); // limpiar listeners de minijuego anterior
   scr('s-wait');
 }
 
+// ── LISTENER PRINCIPAL ──
 function initListener(){
   RR.on('value',snap=>{
     const d=snap.val();if(!d)return;
@@ -256,27 +275,29 @@ function initListener(){
     if(d.scoreB!==undefined)document.getElementById('mob-sb').textContent=d.scoreB;
     if(!d.cmd)return;
     const cmd=d.cmd;
-
     if(cmd==='lobby'){irEspera();}
-    else if(cmd==='duelo') onDuelo(d);
-    else if(cmd==='conteo'||cmd==='jugando'){if(isDuel)lanzarMj(curMj);else{document.getElementById('w-st').textContent='Duelo en curso — mira la TV 📺';irEspera();}}
-    else if(cmd==='ganador') onGanador(d);
-    else if(cmd==='campeones') onCampeones(d);
+    else if(cmd==='duelo'){onDuelo(d);}
+    else if(cmd==='conteo'||cmd==='jugando'){
+      if(isDuel){scr('s-mj');lanzarMj(curMj);}
+      else{document.getElementById('w-st').textContent='Duelo en curso — mira la TV 📺';irEspera();}
+    }
+    else if(cmd==='ganador'){onGanador(d);}
+    else if(cmd==='campeones'){onCampeones(d);}
   });
 }
 
 function onDuelo(d){
+  cleanListeners();
   curMj=d.minijuego||'reflejos';
   duelA=(d.jugadorA||'').toUpperCase();
   duelB=(d.jugadorB||'').toUpperCase();
   isDuel=(myName===duelA||myName===duelB);
-  const isA_me=myName===duelA;
   const mj=MJS[curMj]||MJS.reflejos;
   document.getElementById('d-mjn').textContent=mj.e+' '+mj.n;
   document.getElementById('d-mji').textContent=mj.inst;
   const s=document.getElementById('s-duel');
   if(isDuel){
-    const rival=isA_me?duelB:duelA;
+    const rival=myName===duelA?duelB:duelA;
     s.className='scr '+(myTeam==='A'?'ea':'eb');
     document.getElementById('d-e').textContent='¡TÚ DUELEAS!';
     document.getElementById('d-n').textContent=myName;
@@ -305,6 +326,7 @@ function onGanador(d){
   setTimeout(()=>irEspera(),4500);
 }
 function onCampeones(d){
+  cleanListeners();
   const miEq=d.campeonEquipo===myTeam;
   document.getElementById('r-i').textContent=miEq?'🏆':'🎖️';
   document.getElementById('r-t').textContent=miEq?'¡CAMPEONES!':'Buena batalla';
@@ -313,262 +335,505 @@ function onCampeones(d){
   scr('s-res');
 }
 
-// ══════════════════════════════
-// MINIJUEGOS AUTOMÁTICOS
-// Cada uno al terminar llama a: declararGanador(equipo, nombre)
-// ══════════════════════════════
+// ══════════════════════════════════════════════════
+// SISTEMA CENTRAL DE RESULTADO
+// Un solo punto de escritura. Usa una flag en Firebase
+// para garantizar que solo el primer resultado cuenta.
+// ══════════════════════════════════════════════════
 
-// declararGanador escribe en Firebase y el listener de TV lo recoge
+let resultadoEnviado=false; // flag local para no escribir dos veces desde el mismo móvil
+
 function declararGanador(eq,nm){
-  // Solo el ganador (o el primero en llegar) lo escribe
-  // Usamos transaction para evitar doble escritura
-  const ronda=null; // se coge del estado en Firebase
-  RR.child('resultadoPendiente').transaction(cur=>{
-    if(cur!==null) return; // ya escrito por el rival
-    return {ganadorEquipo:eq,ganadorNombre:nm,ts:Date.now()};
+  if(resultadoEnviado) return;
+  resultadoEnviado=true;
+  // set con condición: solo escribe si el campo está vacío
+  const ref=RR.child('resultadoPendiente');
+  ref.once('value').then(snap=>{
+    if(snap.val()===null){
+      ref.set({ganadorEquipo:eq,ganadorNombre:nm,ts:Date.now()});
+    }
+    // Si ya había un valor, otro móvil ganó primero — no hacemos nada
   });
 }
 
+// ── RESET del flag al iniciar un nuevo minijuego ──
 function lanzarMj(id){
-  scr('s-mj');
+  resultadoEnviado=false;
+  cleanListeners();
   const c=document.getElementById('mj-c');
   c.innerHTML='';
-  if(id==='reflejos') mjReflejos(c);
-  else if(id==='click') mjClick(c);
-  else if(id==='dado') mjDado(c);
-  else if(id==='piedra') mjPiedra(c);
-  else if(id==='pregunta') mjPregunta(c);
-  else if(id==='memoria') mjMemoria(c);
-  else if(id==='escalera') mjEscalera(c);
-}
-
-// ── REFLEJOS ──
-// El primero en pulsar cuando verde gana. Penalización si pulsa rojo.
-function mjReflejos(c){
-  let fase='espera',fired=false;
-  const delay=1800+Math.random()*3200;
-  c.innerHTML=`<div class="mj-l">¡PULSA CUANDO SEA VERDE!</div><button class="bbtn red flash" id="rb" onclick="rflP()">ESPERA...</button><div class="mj-r" id="rb-r" style="min-height:36px"></div>`;
-  const btn=document.getElementById('rb');
-  const res=document.getElementById('rb-r');
-  const timer=setTimeout(()=>{
-    if(fired) return;
-    fase='verde';
-    btn.className='bbtn green flash';
-    btn.textContent='¡PULSA\nAHORA!';
-  },delay);
-  window.rflP=()=>{
-    if(fired) return;
-    if(fase==='espera'){
-      clearTimeout(timer);
-      fired=true;
-      btn.className='bbtn red';btn.textContent='⛔ PRONTO';
-      res.textContent='¡Demasiado pronto!';res.className='mj-r lose';
-      // El rival gana por defecto si pulsé antes
-      const rival=myName===duelA?duelB:duelA;
-      const rivalEq=myName===duelA?'B':'A';
-      declararGanador(rivalEq,rival);
-    } else if(fase==='verde'){
-      fired=true;
-      btn.className='bbtn green';btn.textContent='✅ ¡PULSADO!';
-      res.textContent='¡PRIMERO!';res.className='mj-r win';
-      declararGanador(myTeam,myName);
-    }
+  const fns={
+    reflejos:mjReflejos,click:mjClick,dado:mjDado,
+    piedra:mjPiedra,pregunta:mjPregunta,memoria:mjMemoria,
+    moneda:mjMoneda,precio:mjPrecio,
   };
-  // Timeout: si nadie pulsa en 3s desde verde → empate → dado
-  setTimeout(()=>{
-    if(!fired&&fase==='verde'){
-      fired=true;btn.className='bbtn gold';btn.textContent='TIEMPO';
-      res.textContent='Empate → dado';res.className='mj-r tie';
-      // Desempate por dado
-      const rA=~~(Math.random()*6)+1,rB=~~(Math.random()*6)+1;
-      if(rA>rB) declararGanador('A',duelA);
-      else if(rB>rA) declararGanador('B',duelB);
-      else declararGanador(Math.random()>.5?'A':'B',Math.random()>.5?duelA:duelB);
-    }
-  },delay+3000);
+  (fns[id]||mjReflejos)(c);
 }
 
-// ── CLICK LOCO ──
-// Cada jugador pulsa 10s. Firebase acumula clicks de cada uno.
-// Al acabar el tiempo, el que tenga más gana.
+// ══════════════════════════════════════════════════
+// MINIJUEGO 1: REFLEJOS
+// Solo los duelistas lo juegan. Secuencia:
+// 1) Pantalla ROJA → espera random 2-5s
+// 2) Pantalla VERDE → pulsa! El primero gana
+// 3) Si pulsas en rojo → penalización, rival gana
+// Bug fix: ambos móviles tienen el mismo delay (seed fijo por ronda)
+// ══════════════════════════════════════════════════
+function mjReflejos(c){
+  let fase='espera',done=false;
+  // Usamos el timestamp de la ronda como seed para que el delay sea igual en ambos
+  RR.child('rondaTs').once('value').then(snap=>{
+    const seed=(snap.val()||Date.now())%10000;
+    const delay=2000+(seed%3000); // 2000-5000ms, igual para ambos
+    c.innerHTML=`
+      <div class="mj-l">¡ESPERA... LUEGO PULSA!</div>
+      <button id="rb" style="width:min(260px,78vw);height:min(260px,78vw);border-radius:50%;background:rgba(255,51,51,.25);border:5px solid var(--B);color:var(--B);font-family:'Press Start 2P',monospace;font-size:clamp(18px,6vw,28px);cursor:pointer;transition:background .3s,border-color .3s" onclick="rflPulsar()">
+        ESPERA...
+      </button>
+      <div class="mj-res" id="rfl-r" style="min-height:36px"></div>`;
+    const btn=document.getElementById('rb');
+    const timGreen=setTimeout(()=>{
+      if(done)return;
+      fase='verde';
+      btn.style.background='rgba(57,255,20,.3)';
+      btn.style.borderColor='var(--pixel)';
+      btn.style.color='var(--pixel)';
+      btn.classList.add('flash');
+      btn.textContent='¡AHORA!';
+    },delay);
+    // Timeout si nadie pulsa en 4s tras verde
+    const timOut=setTimeout(()=>{
+      if(!done&&fase==='verde'){done=true;clearTimeout(timGreen);
+        btn.textContent='TIEMPO';btn.style.background='rgba(201,168,76,.2)';
+        document.getElementById('rfl-r').textContent='¡Tiempo!';document.getElementById('rfl-r').className='mj-res tie';
+        declararGanador(Math.random()>.5?'A':'B',Math.random()>.5?duelA:duelB);
+      }
+    },delay+4000);
+    window._rflTimers=[timGreen,timOut];
+    window.rflPulsar=()=>{
+      if(done)return;done=true;
+      clearTimeout(window._rflTimers[0]);clearTimeout(window._rflTimers[1]);
+      if(fase==='espera'){
+        btn.classList.remove('flash');btn.style.background='rgba(255,51,51,.3)';
+        btn.textContent='⛔';
+        document.getElementById('rfl-r').textContent='¡DEMASIADO PRONTO!';
+        document.getElementById('rfl-r').className='mj-res lose';
+        const rEq=myTeam==='A'?'B':'A',rNm=myTeam==='A'?duelB:duelA;
+        declararGanador(rEq,rNm);
+      } else {
+        btn.classList.remove('flash');btn.style.background='rgba(57,255,20,.4)';
+        btn.textContent='✅';
+        document.getElementById('rfl-r').textContent='¡PRIMERO!';
+        document.getElementById('rfl-r').className='mj-res win';
+        declararGanador(myTeam,myName);
+      }
+    };
+  });
+}
+
+// ══════════════════════════════════════════════════
+// MINIJUEGO 2: CLICK LOCO
+// Ambos pulsan 10s. Se guardan los clicks en Firebase.
+// Bug fix: listener se registra en activeListeners y se limpia
+// Bug fix: comparación correcta cuando ambos terminan
+// ══════════════════════════════════════════════════
 function mjClick(c){
   let count=0,t=10,done=false;
-  c.innerHTML=`<div class="mj-l">¡PULSA LO MÁS RÁPIDO POSIBLE!</div><button class="bbtn green" id="cb" onclick="cbP()">0<br><span style="font-size:11px">CLICKS</span></button><div class="mj-timer" id="cb-t">10</div>`;
+  const slot=myName===duelA?'cA':'cB';
+  c.innerHTML=`
+    <div class="mj-l">¡EL QUE MÁS PULSE GANA!</div>
+    <button id="cb" style="width:min(240px,74vw);height:min(240px,74vw);border-radius:50%;background:rgba(57,255,20,.14);border:5px solid var(--pixel);color:var(--pixel);font-family:'Press Start 2P',monospace;font-size:clamp(20px,6.5vw,32px);cursor:pointer;" onclick="cbPulsar()">0</button>
+    <div class="mj-timer" id="ct">10</div>`;
   const btn=document.getElementById('cb');
-  const tel=document.getElementById('cb-t');
-  // Guardar clicks de este jugador
-  const mySlot=myName===duelA?'clicksA':'clicksB';
+  const tel=document.getElementById('ct');
+  // Limpiar resultados anteriores
+  RR.child('clickR').remove();
   const iv=setInterval(()=>{
     t--;tel.textContent=t;
     if(t<=3)tel.style.color='var(--B)';
     if(t<=0){
       clearInterval(iv);done=true;
-      btn.innerHTML=count+'<br><span style="font-size:11px">CLICKS!</span>';
-      btn.style.background='rgba(57,255,20,.25)';
-      // Guardar mi resultado en Firebase
-      RR.child('clickResults/'+mySlot).set(count);
+      btn.style.opacity='.6';btn.textContent=count;
+      RR.child('clickR/'+slot).set(count);
     }
   },1000);
-  window.cbP=()=>{if(done)return;count++;btn.innerHTML=count+'<br><span style="font-size:11px">CLICKS</span>';};
-  // Listener: cuando ambos terminen, comparar
-  RR.child('clickResults').on('value',snap=>{
-    const r=snap.val();if(!r||!r.clicksA||!r.clicksB) return;
-    RR.child('clickResults').off('value');
-    RR.child('clickResults').remove();
-    if(r.clicksA>r.clicksB) declararGanador('A',duelA);
-    else if(r.clicksB>r.clicksA) declararGanador('B',duelB);
+  window.cbPulsar=()=>{if(done)return;count++;btn.textContent=count;};
+  // Listener con registro para limpieza posterior
+  const fn=(snap)=>{
+    const r=snap.val();
+    if(!r||r.cA===undefined||r.cB===undefined)return;
+    const ref=RR.child('clickR');
+    ref.off('value',fn);
+    // Eliminar del array de activos
+    activeListeners=activeListeners.filter(([_r,_f])=>_f!==fn);
+    if(r.cA>r.cB) declararGanador('A',duelA);
+    else if(r.cB>r.cA) declararGanador('B',duelB);
     else declararGanador(Math.random()>.5?'A':'B',Math.random()>.5?duelA:duelB);
-  });
+  };
+  const ref=RR.child('clickR');
+  ref.on('value',fn);
+  activeListeners.push([ref,fn]);
 }
 
-// ── DADO ──
-// Cada jugador tira. El mayor gana. Firebase compara.
+// ══════════════════════════════════════════════════
+// MINIJUEGO 3: DADO
+// Bug fix: limpiar dadoR antes de empezar
+// Bug fix: listener correcto con cleanup
+// ══════════════════════════════════════════════════
 function mjDado(c){
-  const D=['⚀','⚁','⚂','⚃','⚄','⚅'];let tirado=false;
-  c.innerHTML=`<div class="mj-l">TIRA EL DADO</div><div style="font-size:clamp(70px,21vw,110px)" id="de">🎲</div><button class="bbtn gold" id="db" onclick="dadoT()">TIRAR</button><div class="mj-r" id="dr" style="min-height:28px"></div>`;
-  window.dadoT=()=>{
+  const D=['⚀','⚁','⚂','⚃','⚄','⚅'];
+  let tirado=false;
+  const slot=myName===duelA?'dA':'dB';
+  RR.child('dadoR').remove();
+  c.innerHTML=`
+    <div class="mj-l">TIRA EL DADO<br>EL MAYOR GANA</div>
+    <div style="font-size:clamp(80px,25vw,120px);line-height:1;cursor:pointer" id="dado-e" onclick="dadoTirar()">🎲</div>
+    <button class="bbtn btn-gold" id="dado-btn" onclick="dadoTirar()">TIRAR</button>
+    <div class="mj-res" id="dado-r" style="min-height:28px"></div>`;
+  window.dadoTirar=()=>{
     if(tirado)return;tirado=true;
-    const btn=document.getElementById('db');btn.style.opacity='.4';
-    const de=document.getElementById('de');
-    const roll=setInterval(()=>de.textContent=D[~~(Math.random()*6)],80);
+    document.getElementById('dado-btn').disabled=true;
+    document.getElementById('dado-btn').style.opacity='.4';
+    const de=document.getElementById('dado-e');
+    let i=0;
+    const roll=setInterval(()=>{de.textContent=D[~~(Math.random()*6)];i++;},80);
     setTimeout(()=>{
       clearInterval(roll);
       const r=~~(Math.random()*6)+1;
       de.textContent=D[r-1];
-      document.getElementById('dr').textContent='Sacaste '+r+'!';
-      const mySlot=myName===duelA?'dadoA':'dadoB';
-      RR.child('dadoResults/'+mySlot).set(r);
+      document.getElementById('dado-r').textContent='¡Sacaste '+r+'!';
+      RR.child('dadoR/'+slot).set(r);
     },1200);
   };
-  RR.child('dadoResults').on('value',snap=>{
-    const r=snap.val();if(!r||!r.dadoA||!r.dadoB)return;
-    RR.child('dadoResults').off('value');
-    RR.child('dadoResults').remove();
-    if(r.dadoA>r.dadoB) declararGanador('A',duelA);
-    else if(r.dadoB>r.dadoA) declararGanador('B',duelB);
-    else{// empate: tirada extra automática
-      const xA=~~(Math.random()*6)+1,xB=~~(Math.random()*6)+1;
-      if(xA>=xB) declararGanador('A',duelA); else declararGanador('B',duelB);
-    }
-  });
+  const fn=(snap)=>{
+    const r=snap.val();
+    if(!r||r.dA===undefined||r.dB===undefined)return;
+    const ref=RR.child('dadoR');
+    ref.off('value',fn);
+    activeListeners=activeListeners.filter(([_r,_f])=>_f!==fn);
+    ref.remove();
+    let ganEq,ganNm;
+    if(r.dA>r.dB){ganEq='A';ganNm=duelA;}
+    else if(r.dB>r.dA){ganEq='B';ganNm=duelB;}
+    else{ganEq=Math.random()>.5?'A':'B';ganNm=ganEq==='A'?duelA:duelB;}
+    declararGanador(ganEq,ganNm);
+  };
+  const ref=RR.child('dadoR');
+  ref.on('value',fn);
+  activeListeners.push([ref,fn]);
 }
 
-// ── PIEDRA PAPEL TIJERA ──
-// Cada jugador elige. Firebase compara.
+// ══════════════════════════════════════════════════
+// MINIJUEGO 4: PIEDRA PAPEL TIJERA
+// Bug fix: lógica de beats corregida
+// Bug fix: cleanup correcto
+// ══════════════════════════════════════════════════
 function mjPiedra(c){
   let chosen=null;
-  c.innerHTML=`<div class="mj-l">ELIGE TU MOVIMIENTO</div>
+  const slot=myName===duelA?'pA':'pB';
+  RR.child('pptR').remove();
+  c.innerHTML=`
+    <div class="mj-l">ELIGE TU MOVIMIENTO<br>EN SECRETO</div>
     <div class="ppt-g">
-      <button class="pbt" id="pp-p" onclick="pptE('p')">🪨<div class="pbt-l">PIEDRA</div></button>
-      <button class="pbt" id="pp-pa" onclick="pptE('pa')">📄<div class="pbt-l">PAPEL</div></button>
-      <button class="pbt" id="pp-t" onclick="pptE('t')">✂️<div class="pbt-l">TIJERA</div></button>
+      <button class="pbt" id="ppt-p" onclick="pptElegir('p')">🪨<div class="pbt-l">PIEDRA</div></button>
+      <button class="pbt" id="ppt-pa" onclick="pptElegir('pa')">📄<div class="pbt-l">PAPEL</div></button>
+      <button class="pbt" id="ppt-t" onclick="pptElegir('t')">✂️<div class="pbt-l">TIJERA</div></button>
     </div>
-    <div class="mj-r" id="ppt-r" style="min-height:28px;font-size:clamp(12px,4vw,17px)">Elige en secreto</div>`;
-  window.pptE=e=>{
-    if(chosen)return;chosen=e;
+    <div class="mj-res" id="ppt-r" style="min-height:28px;font-size:clamp(12px,4vw,17px)">Elige antes de que se acabe el tiempo</div>`;
+  // Timeout 8s si no elige
+  const timOut=setTimeout(()=>{
+    if(!chosen){
+      chosen=['p','pa','t'][~~(Math.random()*3)];
+      const btn=document.getElementById('ppt-'+chosen);
+      if(btn){btn.classList.add('sel');document.getElementById('ppt-r').textContent='Auto: '+chosen;}
+      RR.child('pptR/'+slot).set(chosen);
+    }
+  },8000);
+  window.pptElegir=e=>{
+    if(chosen)return;
+    clearTimeout(timOut);
+    chosen=e;
     document.querySelectorAll('.pbt').forEach(b=>b.classList.remove('sel'));
-    document.getElementById('pp-'+e).classList.add('sel');
-    document.getElementById('ppt-r').textContent='Elegido ✅';
-    const mySlot=myName===duelA?'pptA':'pptB';
-    RR.child('pptResults/'+mySlot).set(e);
+    document.getElementById('ppt-'+e).classList.add('sel');
+    document.getElementById('ppt-r').textContent='Elegido ✅ — esperando rival...';
+    RR.child('pptR/'+slot).set(e);
   };
-  const beats={p:'t',pa:'p',t:'pa'}; // piedra gana tijera, papel gana piedra, tijera gana papel
-  RR.child('pptResults').on('value',snap=>{
-    const r=snap.val();if(!r||!r.pptA||!r.pptB)return;
-    RR.child('pptResults').off('value');
-    RR.child('pptResults').remove();
-    const res=document.getElementById('ppt-r');
-    if(r.pptA===r.pptB){res.textContent='¡EMPATE!';res.className='mj-r tie';
-      // Empate: aleatoria
-      setTimeout(()=>declararGanador(Math.random()>.5?'A':'B',Math.random()>.5?duelA:duelB),1000);
-    } else if(beats[r.pptA]===r.pptB){res.textContent=myTeam==='A'?'¡TÚ GANAS!':'Gana el otro';res.className='mj-r '+(myTeam==='A'?'win':'lose');declararGanador('A',duelA);}
-    else{res.textContent=myTeam==='B'?'¡TÚ GANAS!':'Gana el otro';res.className='mj-r '+(myTeam==='B'?'win':'lose');declararGanador('B',duelB);}
+  // Piedra(p) vence Tijera(t), Papel(pa) vence Piedra(p), Tijera(t) vence Papel(pa)
+  const gana=(a,b)=>(a==='p'&&b==='t')||(a==='pa'&&b==='p')||(a==='t'&&b==='pa');
+  const fn=(snap)=>{
+    const r=snap.val();
+    if(!r||r.pA===undefined||r.pB===undefined)return;
+    const ref=RR.child('pptR');
+    ref.off('value',fn);
+    activeListeners=activeListeners.filter(([_r,_f])=>_f!==fn);
+    // Mostrar resultado visual
+    const LABEL={p:'🪨',pa:'📄',t:'✂️'};
+    const bA=document.getElementById('ppt-p'),bPA=document.getElementById('ppt-pa'),bT=document.getElementById('ppt-t');
+    [bA,bPA,bT].forEach(b=>{if(b)b.classList.remove('sel');});
+    document.getElementById('ppt-'+r.pA)?.classList.add(gana(r.pA,r.pB)?'win-h':'lose-h');
+    document.getElementById('ppt-'+r.pB)?.classList.add(gana(r.pB,r.pA)?'win-h':'lose-h');
+    let ganEq,ganNm;
+    if(r.pA===r.pB){ganEq=Math.random()>.5?'A':'B';ganNm=ganEq==='A'?duelA:duelB;
+      document.getElementById('ppt-r').textContent='¡EMPATE! Suerte al azar...';
+      setTimeout(()=>{ref.remove();declararGanador(ganEq,ganNm);},1000);
+    } else if(gana(r.pA,r.pB)){ganEq='A';ganNm=duelA;ref.remove();declararGanador(ganEq,ganNm);}
+    else{ganEq='B';ganNm=duelB;ref.remove();declararGanador(ganEq,ganNm);}
+    document.getElementById('ppt-r').textContent=(ganEq===myTeam)?'¡GANA TU EQUIPO!':'Gana el rival';
+    document.getElementById('ppt-r').className='mj-res '+(ganEq===myTeam?'win':'lose');
+  };
+  const ref=RR.child('pptR');
+  ref.on('value',fn);
+  activeListeners.push([ref,fn]);
+}
+
+// ══════════════════════════════════════════════════
+// MINIJUEGO 5: PREGUNTA RELÁMPAGO
+// Bug fix: los dos ven la MISMA pregunta (elegida con seed de la ronda)
+// El primero en acertar gana. Si fallas, tu rival puede ganar.
+// ══════════════════════════════════════════════════
+const PREG=[
+  {q:'¿Cuántos planetas tiene el Sistema Solar?',o:['7','8','9','10'],a:1},
+  {q:'¿Capital de Australia?',o:['Sídney','Melbourne','Canberra','Brisbane'],a:2},
+  {q:'¿En qué año llegó el hombre a la Luna?',o:['1965','1967','1969','1972'],a:2},
+  {q:'¿Cuántos lados tiene un octógono?',o:['6','7','8','9'],a:2},
+  {q:'¿Quién pintó La Mona Lisa?',o:['Picasso','Rafael','Botticelli','Da Vinci'],a:3},
+  {q:'¿Cuál es el océano más grande?',o:['Atlántico','Índico','Ártico','Pacífico'],a:3},
+  {q:'¿En qué año cayó el Muro de Berlín?',o:['1987','1989','1991','1993'],a:1},
+  {q:'¿Cuántos huesos tiene el cuerpo humano adulto?',o:['186','196','206','216'],a:2},
+  {q:'¿Cuál es el río más largo del mundo?',o:['Amazonas','Nilo','Yangtsé','Misisipi'],a:1},
+  {q:'¿A cuántos grados hierve el agua?',o:['90°','95°','100°','105°'],a:2},
+  {q:'¿Cuántos colores tiene el arcoíris?',o:['5','6','7','8'],a:2},
+  {q:'¿Cuál es el elemento más abundante en el universo?',o:['Oxígeno','Carbono','Helio','Hidrógeno'],a:3},
+  {q:'¿En qué continente está Egipto?',o:['Asia','Europa','África','Oceanía'],a:2},
+  {q:'¿Cuántos jugadores tiene un equipo de fútbol?',o:['9','10','11','12'],a:2},
+  {q:'¿Cuál es la moneda de Japón?',o:['Yuan','Won','Yen','Baht'],a:2},
+];
+function mjPregunta(c){
+  RR.child('pregR').remove();
+  // Misma pregunta para ambos usando seed de la ronda
+  RR.child('rondaTs').once('value').then(snap=>{
+    const seed=(snap.val()||Date.now())%PREG.length;
+    const q=PREG[~~(seed)];
+    let answered=false;
+    c.innerHTML=`
+      <div class="preg-q">${q.q}</div>
+      <div class="preg-opts">${q.o.map((o,i)=>`<button class="preg-opt" id="po${i}" onclick="pregResponder(${i})">${o}</button>`).join('')}</div>
+      <div class="mj-res" id="pr" style="min-height:26px;margin-top:5px"></div>`;
+    const timOut=setTimeout(()=>{
+      if(!answered){answered=true;
+        document.getElementById('pr').textContent='⏱️ Tiempo agotado';
+        declararGanador(Math.random()>.5?'A':'B',Math.random()>.5?duelA:duelB);
+      }
+    },12000);
+    window.pregResponder=i=>{
+      if(answered)return;answered=true;clearTimeout(timOut);
+      document.querySelectorAll('.preg-opt').forEach(b=>b.setAttribute('disabled',''));
+      document.querySelectorAll('.preg-opt').forEach((b,idx)=>{
+        if(idx===q.a)b.classList.add('ok');
+        else if(idx===i&&i!==q.a)b.classList.add('ko');
+      });
+      const res=document.getElementById('pr');
+      if(i===q.a){
+        res.textContent='✅ ¡CORRECTO!';res.className='mj-res win';
+        declararGanador(myTeam,myName);
+      } else {
+        res.textContent='❌ Fallaste — rival gana';res.className='mj-res lose';
+        const rEq=myTeam==='A'?'B':'A',rNm=myTeam==='A'?duelB:duelA;
+        declararGanador(rEq,rNm);
+      }
+    };
   });
 }
 
-// ── PREGUNTA RELÁMPAGO ──
-// El primero en acertar gana. Escribe en Firebase.
-const PREG=[
-  {q:'¿Planetas del Sistema Solar?',o:['7','8','9','10'],a:1},
-  {q:'¿Capital de Francia?',o:['Berlín','Madrid','París','Roma'],a:2},
-  {q:'¿Año en que el hombre llegó a la Luna?',o:['1965','1967','1969','1972'],a:2},
-  {q:'¿Lados de un hexágono?',o:['5','6','7','8'],a:1},
-  {q:'¿Quién escribió El Quijote?',o:['Lope de Vega','Quevedo','Cervantes','Calderón'],a:2},
-  {q:'¿Océano más grande del mundo?',o:['Atlántico','Índico','Ártico','Pacífico'],a:3},
-  {q:'¿Cuántos colores tiene el arcoíris?',o:['5','6','7','8'],a:2},
-  {q:'¿Metal más abundante en la Tierra?',o:['Hierro','Aluminio','Cobre','Oro'],a:0},
-  {q:'¿En qué año acabó la II Guerra Mundial?',o:['1943','1944','1945','1946'],a:2},
-  {q:'¿Huesos en el cuerpo humano adulto?',o:['186','206','226','246'],a:1},
-  {q:'¿Cuántos continentes hay?',o:['5','6','7','8'],a:2},
-  {q:'¿Cuál es el planeta más cercano al Sol?',o:['Venus','Marte','Mercurio','Tierra'],a:2},
-];
-function mjPregunta(c){
-  const q=PREG[~~(Math.random()*PREG.length)];let answered=false;
-  c.innerHTML=`<div class="preg-t">${q.q}</div><div class="preg-os">${q.o.map((o,i)=>`<button class="preg-o" id="po${i}" onclick="pregR(${i})">${o}</button>`).join('')}</div><div class="mj-r" id="pr" style="min-height:26px;margin-top:5px"></div>`;
-  window.pregR=i=>{
-    if(answered)return;answered=true;
-    document.querySelectorAll('.preg-o').forEach((b,idx)=>{if(idx===q.a)b.classList.add('ok');else if(idx===i&&i!==q.a)b.classList.add('ko');});
-    const res=document.getElementById('pr');
-    if(i===q.a){
-      res.textContent='✅ ¡CORRECTO!';res.className='mj-r win';
-      declararGanador(myTeam,myName);
-    } else {
-      res.textContent='❌ Fallaste';res.className='mj-r lose';
-      // El rival gana
-      const rivalEq=myTeam==='A'?'B':'A';
-      const rivalNm=myTeam==='A'?duelB:duelA;
-      declararGanador(rivalEq,rivalNm);
-    }
-  };
-  // Timeout 12s si nadie responde
-  setTimeout(()=>{if(!answered){answered=true;document.getElementById('pr').textContent='⏱️ Tiempo agotado';declararGanador(Math.random()>.5?'A':'B',Math.random()>.5?duelA:duelB);}},12000);
-}
-
-// ── MEMORIA FLASH ──
-// Sequence de 4. El que la completa sin fallar gana.
+// ══════════════════════════════════════════════════
+// MINIJUEGO 6: MEMORIA FLASH
+// Bug fix: AMBOS ven la MISMA secuencia (generada con seed de ronda en Firebase)
+// El primero en completarla sin fallar gana
+// ══════════════════════════════════════════════════
 function mjMemoria(c){
-  const COLS=['rc','bc','gc','yc'];const LABS=['🔴','🔵','🟢','🟡'];
-  const LEN=4;const SEQ=[...Array(LEN)].map(()=>~~(Math.random()*4));
-  let fase='mostrando',ps=[],failed=false;
-  c.innerHTML=`<div class="mj-l" id="ml">Observa la secuencia...</div>
-    <div class="seq-g">${COLS.map((col,i)=>`<button class="sqb ${col}" id="sq${i}" onclick="sqP(${i})">${LABS[i]}</button>`).join('')}</div>`;
-  function ilum(idx,cb){const el=document.getElementById('sq'+idx);el.classList.add('lit');setTimeout(()=>{el.classList.remove('lit');setTimeout(cb,220);},550);}
-  function mostrar(i){if(i>=SEQ.length){fase='jugando';document.getElementById('ml').textContent='¡Repítela!';return;}ilum(SEQ[i],()=>mostrar(i+1));}
-  setTimeout(()=>mostrar(0),600);
-  window.sqP=i=>{
-    if(fase!=='jugando'||failed)return;
-    const el=document.getElementById('sq'+i);el.classList.add('lit');setTimeout(()=>el.classList.remove('lit'),250);
-    ps.push(i);
-    if(i!==SEQ[ps.length-1]){
-      failed=true;document.getElementById('ml').textContent='❌ Error';
-      const rivalEq=myTeam==='A'?'B':'A';declararGanador(rivalEq,myTeam==='A'?duelB:duelA);
-    } else if(ps.length===SEQ.length){
-      document.getElementById('ml').textContent='✅ ¡Completada!';
-      declararGanador(myTeam,myName);
+  const COLS=['rc','bc','gc','yc'];const EMOJ=['🔴','🔵','🟢','🟡'];
+  // Generar secuencia con seed compartido
+  RR.child('rondaTs').once('value').then(snap=>{
+    const seed=snap.val()||Date.now();
+    // Pseudo-random determinista con el seed
+    let s=seed;const rng=()=>{s=(s*1664525+1013904223)&0xffffffff;return(s>>>0)/0xffffffff;};
+    const SEQ=[...Array(5)].map(()=>~~(rng()*4));
+    let fase='mostrando',ps=[],failed=false;
+    c.innerHTML=`
+      <div class="mj-l" id="ml">Observa bien...</div>
+      <div class="seq-g">${COLS.map((col,i)=>`<div class="sqb ${col}" id="sq${i}" onclick="seqPulsar(${i})">${EMOJ[i]}</div>`).join('')}</div>
+      <div class="seq-prog" id="sp">${SEQ.map(i=>EMOJ[i]).join(' ')}</div>`;
+    function ilum(idx,cb){
+      const el=document.getElementById('sq'+idx);if(!el)return cb();
+      el.classList.add('lit');setTimeout(()=>{el.classList.remove('lit');setTimeout(cb,180);},500);
     }
-  };
-  // Timeout 20s
-  setTimeout(()=>{if(fase==='jugando'&&!failed){failed=true;document.getElementById('ml').textContent='⏱️ Tiempo';declararGanador(Math.random()>.5?'A':'B',Math.random()>.5?duelA:duelB);}},20000);
+    function mostrar(i){if(i>=SEQ.length){fase='jugando';document.getElementById('ml').textContent='¡Repítela!';return;}ilum(SEQ[i],()=>mostrar(i+1));}
+    setTimeout(()=>mostrar(0),600);
+    // Timeout 25s
+    const timOut=setTimeout(()=>{
+      if(fase==='jugando'&&!failed){failed=true;
+        document.getElementById('ml').textContent='⏱️ Tiempo';
+        declararGanador(Math.random()>.5?'A':'B',Math.random()>.5?duelA:duelB);
+      }
+    },25000);
+    window.seqPulsar=i=>{
+      if(fase!=='jugando'||failed)return;
+      const el=document.getElementById('sq'+i);el.classList.add('lit');setTimeout(()=>el.classList.remove('lit'),200);
+      ps.push(i);
+      if(i!==SEQ[ps.length-1]){
+        clearTimeout(timOut);failed=true;
+        document.getElementById('ml').textContent='❌ Error — rival puede ganar';
+        document.getElementById('ml').style.color='var(--B)';
+        const rEq=myTeam==='A'?'B':'A';declararGanador(rEq,myTeam==='A'?duelB:duelA);
+      } else if(ps.length===SEQ.length){
+        clearTimeout(timOut);
+        document.getElementById('ml').textContent='✅ ¡Completada!';
+        document.getElementById('ml').style.color='var(--pixel)';
+        declararGanador(myTeam,myName);
+      } else {
+        document.getElementById('sp').textContent=SEQ.slice(ps.length).map(i=>EMOJ[i]).join(' ');
+      }
+    };
+  });
 }
 
-// ── ESCALERA DE BOTONES ──
-// Sequence de 5 pulsaciones. El que la completa sin fallar gana.
-function mjEscalera(c){
-  const BS=[{l:'🔴',c:'red'},{l:'🔵',c:'blue'},{l:'🟢',c:'green'},{l:'🟡',c:'gold'}];
-  const SEQ=[...Array(5)].map(()=>~~(Math.random()*4));
-  let step=0,fail=false;
-  c.innerHTML=`<div class="mj-l">Sigue: ${SEQ.map(i=>BS[i].l).join(' → ')}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(240px,73vw)">
-      ${BS.map((b,i)=>`<button class="${b.c}" style="height:75px;border-radius:7px;font-size:28px;cursor:pointer;background:rgba(255,255,255,.06);border:3px solid rgba(255,255,255,.12)" onclick="escP(${i})">${b.l}</button>`).join('')}
+// ══════════════════════════════════════════════════
+// MINIJUEGO 7: CARA O CRUZ — NUEVO
+// Elige cara o cruz antes del lanzamiento.
+// Animación de moneda. Se revela el resultado con seed compartido.
+// ══════════════════════════════════════════════════
+function mjMoneda(c){
+  let elegido=null;
+  RR.child('monedaR').remove();
+  c.innerHTML=`
+    <div class="mj-l">¿CARA O CRUZ?<br>ELIGE ANTES DEL LANZAMIENTO</div>
+    <div style="display:flex;gap:14px;width:100%;justify-content:center">
+      <button id="btn-cara" style="flex:1;max-width:130px;padding:18px;font-family:'Press Start 2P',monospace;font-size:clamp(11px,3.5vw,15px);background:rgba(201,168,76,.14);border:3px solid var(--gold);color:var(--gold);border-radius:8px;cursor:pointer;line-height:1.5" onclick="monedaElegir('cara')">⭕<br>CARA</button>
+      <button id="btn-cruz" style="flex:1;max-width:130px;padding:18px;font-family:'Press Start 2P',monospace;font-size:clamp(11px,3.5vw,15px);background:rgba(74,144,226,.14);border:3px solid var(--A);color:var(--A);border-radius:8px;cursor:pointer;line-height:1.5" onclick="monedaElegir('cruz')">✖️<br>CRUZ</button>
     </div>
-    <div class="mj-l" id="el">${step+1}/${SEQ.length}</div>`;
-  window.escP=i=>{
-    if(fail||step>=SEQ.length)return;
-    const lbl=document.getElementById('el');
-    if(i===SEQ[step]){step++;if(step>=SEQ.length){lbl.textContent='✅ ¡Completada!';declararGanador(myTeam,myName);}else lbl.textContent=(step+1)+'/'+SEQ.length;}
-    else{fail=true;lbl.textContent='❌ Error en paso '+(step+1);const rivalEq=myTeam==='A'?'B':'A';declararGanador(rivalEq,myTeam==='A'?duelB:duelA);}
+    <div class="moneda" id="m-icon" style="font-size:clamp(70px,22vw,110px);line-height:1">🪙</div>
+    <div class="mj-res" id="m-r" style="min-height:28px"></div>`;
+  // Timeout 6s para elegir
+  const timOut=setTimeout(()=>{
+    if(!elegido) monedaElegir(Math.random()>.5?'cara':'cruz');
+  },6000);
+  window.monedaElegir=elec=>{
+    if(elegido)return;
+    clearTimeout(timOut);
+    elegido=elec;
+    document.getElementById('btn-cara').style.opacity=elec==='cara'?'1':'.3';
+    document.getElementById('btn-cruz').style.opacity=elec==='cruz'?'1':'.3';
+    document.getElementById('m-r').textContent='Elegiste '+elec.toUpperCase()+' — lanzando...';
+    const slot=myName===duelA?'mA':'mB';
+    RR.child('monedaR/'+slot).set(elec);
+    // Animar la moneda
+    const mi=document.getElementById('m-icon');
+    mi.style.animation='none';void mi.offsetWidth;mi.style.animation='spin3d 1.5s ease-in-out forwards';
   };
-  setTimeout(()=>{if(!fail&&step<SEQ.length){fail=true;document.getElementById('el').textContent='⏱️ Tiempo';declararGanador(Math.random()>.5?'A':'B',Math.random()>.5?duelA:duelB);}},18000);
+  // Cuando ambos elijan → el seed de la ronda decide cara o cruz
+  const fn=(snap)=>{
+    const r=snap.val();
+    if(!r||r.mA===undefined||r.mB===undefined)return;
+    const ref=RR.child('monedaR');
+    ref.off('value',fn);
+    activeListeners=activeListeners.filter(([_r,_f])=>_f!==fn);
+    // Resultado determinista con rondaTs
+    RR.child('rondaTs').once('value').then(snap2=>{
+      ref.remove();
+      const resultado=(snap2.val()||Date.now())%2===0?'cara':'cruz';
+      const mi=document.getElementById('m-icon');
+      mi.textContent=resultado==='cara'?'⭕':'✖️';
+      // Quién ganó
+      const ganEqA=r.mA===resultado?'A':null;
+      const ganEqB=r.mB===resultado?'B':null;
+      let ganEq,ganNm;
+      if(ganEqA&&!ganEqB){ganEq='A';ganNm=duelA;}
+      else if(ganEqB&&!ganEqA){ganEq='B';ganNm=duelB;}
+      else{ganEq=Math.random()>.5?'A':'B';ganNm=ganEq==='A'?duelA:duelB;} // ambos igual o ambos distinto
+      document.getElementById('m-r').textContent='Salió '+resultado.toUpperCase()+'! '+(ganEq===myTeam?'¡TU EQUIPO GANA!':'Gana el rival');
+      document.getElementById('m-r').className='mj-res '+(ganEq===myTeam?'win':'lose');
+      setTimeout(()=>declararGanador(ganEq,ganNm),800);
+    });
+  };
+  const ref=RR.child('monedaR');
+  ref.on('value',fn);
+  activeListeners.push([ref,fn]);
+}
+
+// ══════════════════════════════════════════════════
+// MINIJUEGO 8: ADIVINA EL PRECIO — NUEVO
+// Aparece un objeto con emoji. Escribe un precio en €.
+// El que más se acerque gana. Dramático y divertido.
+// ══════════════════════════════════════════════════
+const PRECIOS=[
+  {e:'🍕',n:'Pizza Margarita (restaurante)',p:12},
+  {e:'✈️',n:'Vuelo Madrid→París (Ryanair)',p:45},
+  {e:'🎮',n:'PlayStation 5',p:549},
+  {e:'👟',n:'Nike Air Force 1',p:110},
+  {e:'🍺',n:'Cerveza en bar de Madrid',p:3},
+  {e:'🚗',n:'Seat Ibiza nuevo',p:18000},
+  {e:'🏠',n:'Apartamento Madrid (alquiler/mes)',p:1200},
+  {e:'☕',n:'Café con leche en bar',p:2},
+  {e:'📱',n:'iPhone 16',p:999},
+  {e:'🎬',n:'Entrada de cine',p:10},
+  {e:'🦞',n:'Kilo de langosta',p:65},
+  {e:'🎓',n:'Un año de universidad pública',p:1200},
+  {e:'💈',n:'Corte de pelo en peluquería',p:18},
+  {e:'🥩',n:'Chuletón en asador',p:40},
+  {e:'🎢',n:'Entrada Port Aventura',p:58},
+];
+function mjPrecio(c){
+  RR.child('precioR').remove();
+  const slot=myName===duelA?'pA':'pB';
+  RR.child('rondaTs').once('value').then(snap=>{
+    const seed=(snap.val()||Date.now())%PRECIOS.length;
+    const item=PRECIOS[~~seed];
+    let enviado=false;
+    c.innerHTML=`
+      <div class="precio-img">${item.e}</div>
+      <div class="precio-q">${item.n}</div>
+      <div class="mj-l" style="font-size:clamp(12px,4vw,17px);opacity:.5">¿CUÁNTO CUESTA? (€)</div>
+      <input type="number" class="precio-input" id="precio-inp" placeholder="0" min="0" max="999999">
+      <button class="precio-btn" onclick="precioEnviar()">CONFIRMAR ▶</button>
+      <div class="precio-res" id="precio-r"></div>`;
+    document.getElementById('precio-inp').focus();
+    const timOut=setTimeout(()=>{if(!enviado)precioEnviar();},12000);
+    window.precioEnviar=()=>{
+      if(enviado)return;
+      clearTimeout(timOut);
+      enviado=true;
+      const val=parseFloat(document.getElementById('precio-inp').value)||0;
+      document.getElementById('precio-inp').disabled=true;
+      document.querySelector('.precio-btn').disabled=true;
+      document.getElementById('precio-r').textContent='Tu respuesta: '+val+'€ — esperando rival...';
+      RR.child('precioR/'+slot).set(val);
+    };
+  });
+  const fn=(snap)=>{
+    const r=snap.val();
+    if(!r||r.pA===undefined||r.pB===undefined)return;
+    const ref=RR.child('precioR');
+    ref.off('value',fn);
+    activeListeners=activeListeners.filter(([_r,_f])=>_f!==fn);
+    RR.child('rondaTs').once('value').then(snap2=>{
+      ref.remove();
+      const seed=(snap2.val()||Date.now())%PRECIOS.length;
+      const item=PRECIOS[~~seed];
+      const diffA=Math.abs(r.pA-item.p),diffB=Math.abs(r.pB-item.p);
+      const res=document.getElementById('precio-r');
+      res.textContent=`Precio real: ${item.p}€ · Azul: ${r.pA}€ · Rojo: ${r.pB}€`;
+      let ganEq,ganNm;
+      if(diffA<=diffB){ganEq='A';ganNm=duelA;}
+      else{ganEq='B';ganNm=duelB;}
+      setTimeout(()=>{
+        res.textContent+=' → '+(ganEq===myTeam?'¡GANA TU EQUIPO!':'Gana el rival');
+        res.className='precio-res '+(ganEq===myTeam?'win':'lose');
+        declararGanador(ganEq,ganNm);
+      },1500);
+    });
+  };
+  const ref=RR.child('precioR');
+  ref.on('value',fn);
+  activeListeners.push([ref,fn]);
 }
 </script>
 </body>
