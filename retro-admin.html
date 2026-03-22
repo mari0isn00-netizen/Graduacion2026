@@ -225,6 +225,7 @@ const MJS=[
   {id:'memoria',n:'MEMORIA',e:'🧠'},
   {id:'moneda',n:'CARA/CRUZ',e:'🪙'},
   {id:'precio',n:'PRECIO',e:'💰'},
+  {id:'snake',n:'SNAKE RETRO',e:'🐍'},
 ];
 
 const EMOJIS=Object.fromEntries(MJS.map(m=>[m.id,m.e]));
@@ -351,27 +352,28 @@ function convocarManual(){
 function lanzarDuelo(ja,jb,mj){
   const ronda=rondaActual+1;
   const ts=Date.now();
-  // Limpiar resultados de ronda anterior
-  RR.child('resultadoPendiente').remove();
-  RR.child('clickR').remove();
-  RR.child('dadoR').remove();
-  RR.child('pptR').remove();
-  RR.child('monedaR').remove();
-  RR.child('precioR').remove();
-  RR.child('pregR').remove();
-  // Seed compartido para esta ronda (determina pregunta, secuencia, cara/cruz, precio)
-  RR.child('rondaTs').set(ts);
-  // Anunciar el duelo
+  // Limpiar datos de ronda anterior
+  ['resultadoPendiente','clickR','dadoR','pptR','snakeR','precioR'].forEach(k=>RR.child(k).remove());
+
+  // Seeds específicos por tipo de juego
+  const extras={};
+  if(mj==='pregunta') extras.pregIdx=~~(Math.random()*13); // 13 preguntas
+  if(mj==='memoria'){
+    const SEQ=[...Array(5)].map(()=>~~(Math.random()*4));
+    extras.memSeq=SEQ;
+  }
+  if(mj==='moneda') extras.monedaRes=Math.random()>.5?'cara':'cruz';
+  if(mj==='precio') extras.precioItem=~~(Math.random()*13); // 13 productos
+  extras.rondaTs=ts;
+
   RR.update({
     jugadorA:ja,jugadorB:jb,minijuego:mj,
     ronda,rondaActual:ronda,totalRondas:Math.max(totalRondas,ronda),
-    dueloActivo:true,
+    dueloActivo:true,...extras,
     status:'DUELO R'+ronda+': '+ja+' VS '+jb,
     cmd:'duelo',timestamp:ts
   });
-  // Conteo automático tras 4s
   setTimeout(()=>RR.update({cmd:'conteo',timestamp:Date.now()}),4000);
-  // Flag jugando tras 7.5s (por si el conteo no llegó)
   setTimeout(()=>RR.update({cmd:'jugando',timestamp:Date.now()}),7500);
 }
 
