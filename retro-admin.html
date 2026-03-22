@@ -8,133 +8,134 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-:root{--pixel:#39ff14;--gold:#c9a84c;--dark:#04050d;--cream:#f0e6cc;--teamA:#4a90e2;--teamB:#ff3333;}
+:root{--pixel:#39ff14;--gold:#c9a84c;--dark:#04050d;--cream:#f0e6cc;--A:#4a90e2;--B:#ff3333;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{width:100%;min-height:100%;background:var(--dark);color:var(--cream);font-family:'Share Tech Mono',monospace;overflow-x:hidden;}
 
 /* LOGIN */
-#login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:18px;padding:24px;}
-.login-title{font-family:'Press Start 2P',monospace;font-size:clamp(14px,4vw,20px);color:var(--pixel);text-align:center;text-shadow:0 0 20px rgba(57,255,20,.5);line-height:1.5;}
-.login-sub{font-family:'VT323',monospace;font-size:clamp(16px,5vw,22px);letter-spacing:8px;color:rgba(57,255,20,.35);}
-.login-input{width:100%;max-width:280px;background:rgba(57,255,20,.06);border:1px solid rgba(57,255,20,.25);color:var(--pixel);font-family:'Share Tech Mono',monospace;font-size:18px;padding:13px 16px;text-align:center;letter-spacing:4px;outline:none;}
-.login-btn{width:100%;max-width:280px;background:var(--pixel);color:#000;font-family:'Press Start 2P',monospace;font-size:13px;padding:14px;border:none;cursor:pointer;letter-spacing:2px;}
-.login-btn:active{opacity:.8;}
-.login-err{color:var(--teamB);font-family:'VT323',monospace;font-size:18px;letter-spacing:4px;display:none;text-align:center;}
+#login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:17px;padding:24px;}
+.l-title{font-family:'Press Start 2P',monospace;font-size:clamp(13px,4vw,19px);color:var(--pixel);text-align:center;text-shadow:0 0 18px rgba(57,255,20,.48);line-height:1.5;}
+.l-sub{font-family:'VT323',monospace;font-size:clamp(15px,5vw,21px);letter-spacing:8px;color:rgba(57,255,20,.3);}
+.l-inp{width:100%;max-width:270px;background:rgba(57,255,20,.05);border:1px solid rgba(57,255,20,.22);color:var(--pixel);font-family:'Share Tech Mono',monospace;font-size:17px;padding:12px 15px;text-align:center;letter-spacing:4px;outline:none;}
+.l-btn{width:100%;max-width:270px;background:var(--pixel);color:#000;font-family:'Press Start 2P',monospace;font-size:12px;padding:13px;border:none;cursor:pointer;letter-spacing:2px;}
+.l-btn:active{opacity:.8;}
+.l-err{color:var(--B);font-family:'VT323',monospace;font-size:17px;letter-spacing:4px;display:none;text-align:center;}
 
 /* PANEL */
-#panel{display:none;padding:14px;max-width:480px;margin:0 auto;}
-.ph{text-align:center;padding:14px 0 18px;border-bottom:1px solid rgba(57,255,20,.12);margin-bottom:16px;}
-.ph-title{font-family:'Press Start 2P',monospace;font-size:clamp(11px,3.5vw,16px);color:var(--pixel);text-shadow:0 0 12px rgba(57,255,20,.4);line-height:1.4;}
-.ph-sub{font-family:'VT323',monospace;font-size:16px;letter-spacing:6px;color:rgba(57,255,20,.35);margin-top:5px;}
+#panel{display:none;padding:13px;max-width:460px;margin:0 auto;}
+.ph{text-align:center;padding:13px 0 16px;border-bottom:1px solid rgba(57,255,20,.1);margin-bottom:14px;}
+.ph-t{font-family:'Press Start 2P',monospace;font-size:clamp(10px,3.3vw,15px);color:var(--pixel);text-shadow:0 0 10px rgba(57,255,20,.38);line-height:1.4;}
+.ph-s{font-family:'VT323',monospace;font-size:15px;letter-spacing:6px;color:rgba(57,255,20,.3);margin-top:4px;}
 
 /* STATUS */
-.status-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(57,255,20,.04);border:1px solid rgba(57,255,20,.12);margin-bottom:14px;font-family:'VT323',monospace;font-size:15px;letter-spacing:4px;}
-.s-dot{width:7px;height:7px;border-radius:50%;background:var(--pixel);animation:blink 1s step-end infinite;}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+.sbar{display:flex;align-items:center;gap:7px;padding:7px 11px;background:rgba(57,255,20,.04);border:1px solid rgba(57,255,20,.1);margin-bottom:13px;font-family:'VT323',monospace;font-size:14px;letter-spacing:3px;}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--pixel);animation:bk 1s step-end infinite;}
+@keyframes bk{0%,100%{opacity:1;}50%{opacity:0;}}
+
+/* MARCADOR */
+.sc-row{display:flex;align-items:center;justify-content:space-around;padding:7px 0;}
+.sc-box{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.sc-l{font-family:'VT323',monospace;font-size:14px;letter-spacing:5px;}
+.sc-l.a{color:var(--A);}
+.sc-l.b{color:var(--B);}
+.sc-n{font-family:'Press Start 2P',monospace;font-size:clamp(24px,7.5vw,40px);}
+.sc-n.a{color:var(--A);text-shadow:0 0 11px rgba(74,144,226,.38);}
+.sc-n.b{color:var(--B);text-shadow:0 0 11px rgba(255,51,51,.38);}
+.sc-sep{font-family:'VT323',monospace;font-size:26px;color:rgba(255,255,255,.13);}
+.rnd-l{text-align:center;font-family:'VT323',monospace;font-size:13px;letter-spacing:5px;color:rgba(255,255,255,.22);margin-top:3px;}
 
 /* TABS */
-.tabs{display:flex;gap:0;margin-bottom:14px;}
-.tab{flex:1;padding:9px;font-family:'VT323',monospace;font-size:15px;letter-spacing:3px;text-align:center;cursor:pointer;border:1px solid rgba(57,255,20,.12);color:rgba(57,255,20,.35);background:transparent;transition:all .15s;}
-.tab.on{background:rgba(57,255,20,.08);color:var(--pixel);border-color:var(--pixel);}
+.tabs{display:flex;gap:0;margin-bottom:13px;}
+.tab{flex:1;padding:8px;font-family:'VT323',monospace;font-size:14px;letter-spacing:3px;text-align:center;cursor:pointer;border:1px solid rgba(57,255,20,.1);color:rgba(57,255,20,.3);background:transparent;transition:all .12s;}
+.tab.on{background:rgba(57,255,20,.07);color:var(--pixel);border-color:var(--pixel);}
 .tc{display:none;}
 .tc.on{display:block;}
 
 /* SECCIÓN */
-.sec{margin-bottom:18px;padding:12px;border:1px solid rgba(57,255,20,.1);background:rgba(57,255,20,.025);}
-.sec-t{font-family:'VT323',monospace;font-size:16px;letter-spacing:8px;color:var(--pixel);margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid rgba(57,255,20,.08);}
+.sec{margin-bottom:16px;padding:11px;border:1px solid rgba(57,255,20,.09);background:rgba(57,255,20,.02);}
+.sec-t{font-family:'VT323',monospace;font-size:15px;letter-spacing:7px;color:var(--pixel);margin-bottom:9px;padding-bottom:4px;border-bottom:1px solid rgba(57,255,20,.07);}
 
-/* MARCADOR */
-.sc-row{display:flex;align-items:center;justify-content:space-around;padding:8px 0;}
-.sc-box{display:flex;flex-direction:column;align-items:center;gap:3px;}
-.sc-lbl{font-family:'VT323',monospace;font-size:15px;letter-spacing:6px;}
-.sc-lbl.a{color:var(--teamA);}
-.sc-lbl.b{color:var(--teamB);}
-.sc-n{font-family:'Press Start 2P',monospace;font-size:clamp(26px,8vw,42px);}
-.sc-n.a{color:var(--teamA);text-shadow:0 0 12px rgba(74,144,226,.4);}
-.sc-n.b{color:var(--teamB);text-shadow:0 0 12px rgba(255,51,51,.4);}
-.sc-sep{font-family:'VT323',monospace;font-size:28px;color:rgba(255,255,255,.15);}
-.rnd-lbl{text-align:center;font-family:'VT323',monospace;font-size:14px;letter-spacing:5px;color:rgba(255,255,255,.25);margin-top:4px;}
+/* EQUIPOS LIVE */
+.tl-w{display:flex;gap:7px;}
+.tl-col{flex:1;padding:7px;border:1px solid;min-height:50px;}
+.tl-col.a{border-color:rgba(74,144,226,.22);background:rgba(74,144,226,.025);}
+.tl-col.b{border-color:rgba(255,51,51,.22);background:rgba(255,51,51,.025);}
+.tl-h{font-family:'VT323',monospace;font-size:13px;letter-spacing:5px;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid;}
+.tl-col.a .tl-h{color:var(--A);border-color:rgba(74,144,226,.14);}
+.tl-col.b .tl-h{color:var(--B);border-color:rgba(255,51,51,.14);}
+.tl-m{font-family:'VT323',monospace;font-size:13px;letter-spacing:2px;padding:2px 0;color:rgba(255,255,255,.55);}
+.tl-e{font-family:'VT323',monospace;font-size:12px;letter-spacing:3px;color:rgba(255,255,255,.16);}
 
-/* JUGADORES LIVE */
-.teams-live{display:flex;gap:8px;}
-.team-col-live{flex:1;padding:8px;border:1px solid;min-height:60px;}
-.team-col-live.ta{border-color:rgba(74,144,226,.25);background:rgba(74,144,226,.03);}
-.team-col-live.tb{border-color:rgba(255,51,51,.25);background:rgba(255,51,51,.03);}
-.tcl-hdr{font-family:'VT323',monospace;font-size:14px;letter-spacing:5px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid;}
-.ta .tcl-hdr{color:var(--teamA);border-color:rgba(74,144,226,.18);}
-.tb .tcl-hdr{color:var(--teamB);border-color:rgba(255,51,51,.18);}
-.tcl-member{font-family:'VT323',monospace;font-size:14px;letter-spacing:2px;padding:2px 0;color:rgba(255,255,255,.6);}
-.tcl-empty{font-family:'VT323',monospace;font-size:12px;letter-spacing:3px;color:rgba(255,255,255,.18);}
-
-/* SELECTS */
-.field{margin-bottom:10px;}
-.field-label{font-family:'VT323',monospace;font-size:14px;letter-spacing:4px;color:rgba(57,255,20,.45);margin-bottom:5px;display:block;}
-.field-sel{width:100%;background:rgba(0,0,0,.5);border:1px solid rgba(57,255,20,.22);color:var(--cream);font-family:'Share Tech Mono',monospace;font-size:15px;padding:9px 10px;outline:none;cursor:pointer;}
-.field-sel:focus{border-color:var(--pixel);}
-.field-sel option{background:#000;color:var(--cream);}
-
-/* MINI GRID */
-.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.mini-btn{background:rgba(0,0,0,.5);border:1px solid rgba(57,255,20,.18);color:rgba(240,230,204,.5);font-family:'Share Tech Mono',monospace;font-size:10px;padding:9px 6px;cursor:pointer;text-align:center;line-height:1.4;transition:all .12s;}
-.mini-btn:active{transform:scale(.96);}
-.mini-btn.on{border-color:var(--pixel);background:rgba(57,255,20,.1);color:var(--pixel);box-shadow:0 0 8px rgba(57,255,20,.18);}
-.mini-e{font-size:16px;display:block;margin-bottom:3px;}
+/* DUELO EN CURSO BOX */
+.duelo-box{padding:10px;background:rgba(57,255,20,.04);border:2px solid rgba(57,255,20,.25);text-align:center;margin-bottom:10px;display:none;}
+.db-label{font-family:'VT323',monospace;font-size:13px;letter-spacing:6px;color:rgba(57,255,20,.4);margin-bottom:5px;}
+.db-players{font-family:'Press Start 2P',monospace;font-size:clamp(10px,3.3vw,14px);color:var(--cream);line-height:1.6;}
+.db-mj{font-family:'VT323',monospace;font-size:14px;letter-spacing:3px;color:var(--pixel);margin-top:4px;}
+.db-wait{font-family:'VT323',monospace;font-size:13px;letter-spacing:4px;color:rgba(57,255,20,.35);animation:pulse 1.5s ease-in-out infinite;margin-top:4px;}
+@keyframes pulse{0%,100%{opacity:.3;}50%{opacity:1;}}
+.db-ganador{font-family:'Press Start 2P',monospace;font-size:clamp(10px,3vw,13px);color:var(--pixel);margin-top:6px;display:none;}
 
 /* BOTONES */
-.btn{width:100%;padding:13px;font-family:'Press Start 2P',monospace;font-size:10px;letter-spacing:1px;border:none;cursor:pointer;margin-bottom:7px;transition:all .12s;}
+.btn{width:100%;padding:12px;font-family:'Press Start 2P',monospace;font-size:10px;letter-spacing:1px;border:none;cursor:pointer;margin-bottom:6px;transition:all .12s;}
 .btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none;}
 .btn-green{background:var(--pixel);color:#000;}
-.btn-blue{background:var(--teamA);color:#fff;}
-.btn-red{background:var(--teamB);color:#fff;}
+.btn-blue{background:var(--A);color:#fff;}
+.btn-red{background:var(--B);color:#fff;}
 .btn-gold{background:var(--gold);color:#000;}
-.btn-gray{background:rgba(255,255,255,.08);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.08);}
-.btn-sm{padding:9px;font-size:9px;margin-bottom:5px;}
+.btn-gray{background:rgba(255,255,255,.07);color:rgba(255,255,255,.38);border:1px solid rgba(255,255,255,.07);}
 .btn-outline{background:transparent;border:1px solid var(--pixel);color:var(--pixel);}
+.btn-sm{padding:8px;font-size:9px;margin-bottom:5px;}
+.btn-big{font-size:clamp(11px,3.5vw,15px);padding:16px;letter-spacing:2px;}
 
-/* GANADOR BTNS */
-.winner-row{display:flex;gap:8px;margin-bottom:6px;}
-.w-btn{flex:1;padding:14px;font-family:'Press Start 2P',monospace;font-size:10px;border:none;cursor:pointer;}
-.w-btn.a{background:var(--teamA);color:#fff;}
-.w-btn.b{background:var(--teamB);color:#fff;}
-.w-btn:active{opacity:.85;}
+/* SELECT minijuego */
+.mj-sel{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;}
+.ms-btn{background:rgba(0,0,0,.45);border:1px solid rgba(57,255,20,.16);color:rgba(240,230,204,.45);font-family:'Share Tech Mono',monospace;font-size:10px;padding:8px 5px;cursor:pointer;text-align:center;line-height:1.4;transition:all .12s;}
+.ms-btn.on{border-color:var(--pixel);background:rgba(57,255,20,.09);color:var(--pixel);}
+.ms-e{font-size:15px;display:block;margin-bottom:2px;}
 
-/* HISTORIAL */
-.hist-list{display:flex;flex-direction:column;gap:3px;max-height:160px;overflow-y:auto;}
-.hi{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.04);font-family:'VT323',monospace;font-size:13px;}
-.hi-r{color:rgba(255,255,255,.28);width:50px;}
+/* Historial */
+.hl{display:flex;flex-direction:column;gap:3px;max-height:150px;overflow-y:auto;}
+.hi{display:flex;align-items:center;justify-content:space-between;padding:4px 7px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);font-family:'VT323',monospace;font-size:12px;}
+.hi-r{color:rgba(255,255,255,.25);width:44px;}
 .hi-w{flex:1;text-align:center;}
-.hi-w.a{color:var(--teamA);}
-.hi-w.b{color:var(--teamB);}
-.hi-g{color:rgba(255,255,255,.25);font-size:11px;}
+.hi-w.a{color:var(--A);}
+.hi-w.b{color:var(--B);}
+.hi-g{color:rgba(255,255,255,.22);font-size:10px;}
 </style>
 </head>
 <body>
 
 <div id="login">
-  <div class="login-title">🕹️<br>ADMIN<br>RETRO</div>
-  <div class="login-sub">— DUELOS RETRO —</div>
-  <input type="password" class="login-input" id="pw" placeholder="CONTRASEÑA" onkeydown="if(event.key==='Enter')tryLogin()">
-  <button class="login-btn" onclick="tryLogin()">ENTRAR ▶</button>
-  <div class="login-err" id="pw-err">⛔ CONTRASEÑA INCORRECTA</div>
+  <div class="l-title">🕹️<br>ADMIN<br>RETRO</div>
+  <div class="l-sub">— DUELOS RETRO —</div>
+  <input type="password" class="l-inp" id="pw" placeholder="CONTRASEÑA" onkeydown="if(event.key==='Enter')tryLogin()">
+  <button class="l-btn" onclick="tryLogin()">ENTRAR ▶</button>
+  <div class="l-err" id="pw-e">⛔ CONTRASEÑA INCORRECTA</div>
 </div>
 
 <div id="panel">
-  <div class="ph">
-    <div class="ph-title">🕹️ ADMIN RETRO</div>
-    <div class="ph-sub">— CONTROL TOTAL —</div>
-  </div>
-
-  <div class="status-bar"><div class="s-dot"></div><span id="status-txt">CONECTADO</span></div>
+  <div class="ph"><div class="ph-t">🕹️ ADMIN RETRO</div><div class="ph-s">— CONTROL TOTAL —</div></div>
+  <div class="sbar"><div class="sdot"></div><span id="st-t">CONECTADO</span></div>
 
   <!-- MARCADOR -->
   <div class="sec">
     <div class="sec-t">📊 MARCADOR</div>
     <div class="sc-row">
-      <div class="sc-box"><div class="sc-lbl a">AZUL</div><div class="sc-n a" id="d-sa">0</div></div>
+      <div class="sc-box"><div class="sc-l a">AZUL</div><div class="sc-n a" id="d-sa">0</div></div>
       <div class="sc-sep">—</div>
-      <div class="sc-box"><div class="sc-lbl b">ROJO</div><div class="sc-n b" id="d-sb">0</div></div>
+      <div class="sc-box"><div class="sc-l b">ROJO</div><div class="sc-n b" id="d-sb">0</div></div>
     </div>
-    <div class="rnd-lbl" id="d-rnd">RONDA 0 / 0</div>
+    <div class="rnd-l" id="d-rnd">RONDA 0 / 0</div>
+  </div>
+
+  <!-- DUELO EN CURSO (se muestra durante el juego) -->
+  <div class="duelo-box" id="duelo-box">
+    <div class="db-label">⚡ DUELO EN CURSO ⚡</div>
+    <div class="db-players" id="db-pl">A VS B</div>
+    <div class="db-mj" id="db-mj">—</div>
+    <div class="db-wait" id="db-wait">Esperando resultado automático...</div>
+    <div class="db-ganador" id="db-gan">—</div>
   </div>
 
   <div class="tabs">
@@ -146,52 +147,43 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--cream);f
   <!-- TAB DUELO -->
   <div class="tc on" id="tc-duelo">
 
-    <!-- Jugadores en vivo -->
     <div class="sec">
       <div class="sec-t">👥 EQUIPOS EN VIVO</div>
-      <div class="teams-live">
-        <div class="team-col-live ta"><div class="tcl-hdr">AZUL (<span id="cnt-a">0</span>)</div><div id="list-a"><div class="tcl-empty">Esperando...</div></div></div>
-        <div class="team-col-live tb"><div class="tcl-hdr">ROJO (<span id="cnt-b">0</span>)</div><div id="list-b"><div class="tcl-empty">Esperando...</div></div></div>
+      <div class="tl-w">
+        <div class="tl-col a"><div class="tl-h">AZUL (<span id="cnt-a">0</span>)</div><div id="tl-a"><div class="tl-e">Esperando...</div></div></div>
+        <div class="tl-col b"><div class="tl-h">ROJO (<span id="cnt-b">0</span>)</div><div id="tl-b"><div class="tl-e">Esperando...</div></div></div>
       </div>
     </div>
 
-    <!-- Convocar duelo -->
-    <div class="sec">
-      <div class="sec-t">⚡ CONVOCAR DUELO</div>
-      <div class="field">
-        <label class="field-label">DUELISTA EQUIPO AZUL</label>
-        <select class="field-sel" id="sel-a"><option value="">Selecciona jugador...</option></select>
+    <!-- BOTÓN PRINCIPAL: DUELO ALEATORIO AUTOMÁTICO -->
+    <button class="btn btn-green btn-big" id="btn-rand" onclick="dueloAleatorio()">🎲 DUELO ALEATORIO</button>
+    <button class="btn btn-outline btn-sm" onclick="tab('duelo');mostrarPickManual()">🎯 ELEGIR DUELISTAS A MANO</button>
+
+    <!-- SELECTOR MANUAL (oculto por defecto) -->
+    <div id="manual-pick" style="display:none">
+      <div class="sec">
+        <div class="sec-t">🎯 DUELISTAS</div>
+        <div style="margin-bottom:8px;">
+          <div style="font-family:'VT323',monospace;font-size:13px;letter-spacing:5px;color:var(--A);margin-bottom:4px;">EQUIPO AZUL</div>
+          <select id="sel-a" style="width:100%;background:rgba(0,0,0,.5);border:1px solid rgba(74,144,226,.3);color:var(--cream);font-family:'Share Tech Mono',monospace;font-size:14px;padding:8px;outline:none;"><option value="">Selecciona...</option></select>
+        </div>
+        <div>
+          <div style="font-family:'VT323',monospace;font-size:13px;letter-spacing:5px;color:var(--B);margin-bottom:4px;">EQUIPO ROJO</div>
+          <select id="sel-b" style="width:100%;background:rgba(0,0,0,.5);border:1px solid rgba(255,51,51,.3);color:var(--cream);font-family:'Share Tech Mono',monospace;font-size:14px;padding:8px;outline:none;"><option value="">Selecciona...</option></select>
+        </div>
       </div>
-      <div class="field">
-        <label class="field-label">DUELISTA EQUIPO ROJO</label>
-        <select class="field-sel" id="sel-b"><option value="">Selecciona jugador...</option></select>
+      <div class="sec">
+        <div class="sec-t">🎮 MINIJUEGO</div>
+        <div class="mj-sel" id="mj-sel"></div>
+        <button class="btn btn-outline btn-sm" onclick="selMjRandom()">🎲 Minijuego aleatorio</button>
       </div>
+      <button class="btn btn-blue" onclick="convocarManual()">⚡ CONVOCAR ESTE DUELO</button>
     </div>
 
-    <!-- Minijuego -->
-    <div class="sec">
-      <div class="sec-t">🎮 MINIJUEGO</div>
-      <div class="mini-grid" id="mini-grid"></div>
-      <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="miniRandom()">🎲 ALEATORIO</button>
-    </div>
-
-    <button class="btn btn-blue" onclick="convocarDuelo()">⚡ CONVOCAR DUELO</button>
-    <button class="btn btn-green" onclick="iniciarConteo()">▶ ¡INICIAR CONTEO!</button>
-
-    <!-- Declarar ganador -->
-    <div class="sec" id="sec-ganador" style="display:none">
-      <div class="sec-t">🏆 DECLARAR GANADOR</div>
-      <div class="winner-row">
-        <button class="w-btn a" onclick="declararGanador('A')">🥇 GANA<br>AZUL</button>
-        <button class="w-btn b" onclick="declararGanador('B')">🥇 GANA<br>ROJO</button>
-      </div>
-      <button class="btn btn-gold" onclick="finalizarTorneo()">🏆 FIN DEL TORNEO</button>
-    </div>
-
-    <!-- Acciones TV -->
-    <div class="sec">
+    <div class="sec" style="margin-top:8px">
       <div class="sec-t">📺 TV</div>
-      <button class="btn btn-gray btn-sm" onclick="enviar('lobby')">📺 LOBBY</button>
+      <button class="btn btn-gray btn-sm" onclick="cmd('lobby')">📺 LOBBY</button>
+      <button class="btn btn-gold btn-sm" onclick="finalizarTorneo()">🏆 FIN DEL TORNEO</button>
     </div>
   </div>
 
@@ -199,20 +191,20 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--cream);f
   <div class="tc" id="tc-jugadores">
     <div class="sec">
       <div class="sec-t">👥 TODOS LOS JUGADORES</div>
-      <div id="all-players"><div class="tcl-empty" style="padding:10px">Nadie aún</div></div>
+      <div id="all-pl"></div>
     </div>
     <div class="sec">
       <div class="sec-t">⚠️ ACCIONES</div>
       <button class="btn btn-gray btn-sm" onclick="kickAll()">🗑️ EXPULSAR TODOS</button>
-      <button class="btn btn-gray btn-sm" onclick="resetTorneo()">↺ RESET TORNEO</button>
+      <button class="btn btn-gray btn-sm" onclick="resetTorneo()">↺ RESET COMPLETO</button>
     </div>
   </div>
 
   <!-- TAB HISTORIAL -->
   <div class="tc" id="tc-historial">
     <div class="sec">
-      <div class="sec-t">📋 HISTORIAL</div>
-      <div class="hist-list" id="hist-list"><div class="tcl-empty" style="padding:10px;text-align:center">Sin rondas aún</div></div>
+      <div class="sec-t">📋 HISTORIAL DE RONDAS</div>
+      <div class="hl" id="hist-l"><div class="tl-e" style="padding:8px;text-align:center">Sin rondas aún</div></div>
     </div>
   </div>
 </div>
@@ -226,163 +218,214 @@ const PASS='grad2026';
 
 const MJS=[
   {id:'reflejos',n:'REFLEJOS',e:'⚡'},
-  {id:'piedra',n:'PIEDRA PAPEL TIJERA',e:'✂️'},
-  {id:'memoria',n:'MEMORIA FLASH',e:'🧠'},
-  {id:'pregunta',n:'PREGUNTA',e:'❓'},
   {id:'click',n:'CLICK LOCO',e:'🖱️'},
-  {id:'dado',n:'EL DADO',e:'🎲'},
-  {id:'adivinanza',n:'ADIVINANZA',e:'🔤'},
+  {id:'dado',n:'DADO',e:'🎲'},
+  {id:'piedra',n:'PIEDRA P.T.',e:'✂️'},
+  {id:'pregunta',n:'PREGUNTA',e:'❓'},
+  {id:'memoria',n:'MEMORIA',e:'🧠'},
   {id:'escalera',n:'ESCALERA',e:'🪜'},
 ];
 
-let selectedMj=null;
-let scoreA=0,scoreB=0,rondaActual=0,totalRondas=0;
-let historial=[];
-let dueloActivo=false;
-let jugsA=[],jugsB=[];
+const EMOJIS=Object.fromEntries(MJS.map(m=>[m.id,m.e]));
 
-// LOGIN
+let selMj=null,scoreA=0,scoreB=0,rondaActual=0,totalRondas=0,historial=[],dueloActivo=false;
+let jugsA=[],jugsB=[];
+let usadosA=[],usadosB=[]; // para rotar jugadores en aleatorio
+
 function tryLogin(){
-  const v=document.getElementById('pw').value;
-  if(v===PASS){document.getElementById('login').style.display='none';document.getElementById('panel').style.display='block';initAdmin();}
-  else{const e=document.getElementById('pw-err');e.style.display='block';setTimeout(()=>e.style.display='none',2000);}
+  if(document.getElementById('pw').value===PASS){
+    document.getElementById('login').style.display='none';
+    document.getElementById('panel').style.display='block';
+    initAdmin();
+  } else {
+    const e=document.getElementById('pw-e');e.style.display='block';
+    setTimeout(()=>e.style.display='none',2000);
+  }
 }
 
-// TABS
 function tab(id){
   document.querySelectorAll('.tab').forEach((t,i)=>{const ids=['duelo','jugadores','historial'];t.classList.toggle('on',ids[i]===id);});
   document.querySelectorAll('.tc').forEach(c=>c.classList.remove('on'));
   document.getElementById('tc-'+id).classList.add('on');
 }
 
-// INIT
 function initAdmin(){
-  renderMiniGrid();
+  renderMjSel();
+  // Listener principal
   RR.on('value',snap=>{
     const d=snap.val()||{};
     scoreA=d.scoreA||0;scoreB=d.scoreB||0;
     rondaActual=d.rondaActual||0;totalRondas=d.totalRondas||0;
-    historial=d.historial||[];
-    dueloActivo=!!d.dueloActivo;
+    historial=d.historial||[];dueloActivo=!!d.dueloActivo;
 
     document.getElementById('d-sa').textContent=scoreA;
     document.getElementById('d-sb').textContent=scoreB;
     document.getElementById('d-rnd').textContent='RONDA '+rondaActual+' / '+totalRondas;
-    document.getElementById('status-txt').textContent=d.status||'EN ESPERA';
-    document.getElementById('sec-ganador').style.display=dueloActivo?'block':'none';
+    document.getElementById('st-t').textContent=d.status||'EN ESPERA';
 
-    // Jugadores
     const jugs=d.jugadores?Object.values(d.jugadores):[];
     jugsA=jugs.filter(j=>j.equipo==='A');
     jugsB=jugs.filter(j=>j.equipo==='B');
-    renderJugadoresLive(jugsA,jugsB);
-    renderAllPlayers(jugs);
-    renderSelectores(jugsA,jugsB);
-    renderHistorial();
+    renderTeams();renderAllPlayers(jugs);renderSelects();renderHistorial();
 
     // Minijuego activo
-    if(d.minijuego&&d.minijuego!==selectedMj) selectMj(d.minijuego);
+    if(d.minijuego) seleccionarMj(d.minijuego);
+
+    // Duelo box
+    const box=document.getElementById('duelo-box');
+    if(dueloActivo&&d.jugadorA&&d.jugadorB){
+      box.style.display='block';
+      document.getElementById('db-pl').textContent=(d.jugadorA||'A').toUpperCase()+' VS '+(d.jugadorB||'B').toUpperCase();
+      document.getElementById('db-mj').textContent=(EMOJIS[d.minijuego]||'🎮')+' '+(MJS.find(m=>m.id===d.minijuego)?.n||d.minijuego||'');
+      document.getElementById('db-wait').style.display='block';
+      document.getElementById('db-gan').style.display='none';
+    } else {
+      box.style.display='none';
+    }
+
+    // ━━━ RESULTADO PENDIENTE (automático) ━━━
+    // El móvil del ganador escribe en retro/resultadoPendiente
+    if(d.resultadoPendiente&&dueloActivo){
+      const rp=d.resultadoPendiente;
+      // Limpiar pendiente inmediatamente para evitar doble procesado
+      RR.child('resultadoPendiente').remove();
+      procesarGanador(rp.ganadorEquipo,rp.ganadorNombre,d);
+    }
   });
 }
 
-function renderMiniGrid(){
-  document.getElementById('mini-grid').innerHTML=MJS.map(m=>`
-    <button class="mini-btn ${selectedMj===m.id?'on':''}" id="mb-${m.id}" onclick="selectMj('${m.id}')">
-      <span class="mini-e">${m.e}</span>${m.n}
+function procesarGanador(eq,nm,d){
+  const nA=scoreA+(eq==='A'?1:0);
+  const nB=scoreB+(eq==='B'?1:0);
+  const hist=[...(d.historial||[]),{ganador:eq,jugador:nm,minijuego:d.minijuego||'?',ronda:rondaActual}];
+  RR.update({
+    scoreA:nA,scoreB:nB,historial:hist,dueloActivo:false,
+    ganadorEquipo:eq,ganadorNombre:nm,
+    status:'GANADOR R'+rondaActual+': EQ.'+(eq==='A'?'AZUL':'ROJO'),
+    cmd:'ganador',timestamp:Date.now()
+  });
+  // Guardar en ranking global del hub
+  const ganNm='Equipo '+(eq==='A'?'Azul':'Rojo')+' (Retro)';
+  db.ref('hub/ranking/'+ganNm).transaction(v=>(v||0)+1);
+
+  // Actualizar UI del box
+  document.getElementById('db-wait').style.display='none';
+  const ganEl=document.getElementById('db-gan');
+  ganEl.textContent='🏆 '+nm.toUpperCase()+' (EQ.'+(eq==='A'?'AZUL':'ROJO')+')';
+  ganEl.style.display='block';
+}
+
+// ── DUELO ALEATORIO ──
+function dueloAleatorio(){
+  if(jugsA.length===0||jugsB.length===0){
+    alert('Necesitas al menos 1 jugador en cada equipo');return;
+  }
+  // Rotar: los que ya han jugado van al final
+  let poolA=[...jugsA.filter(j=>!usadosA.includes(j.nombre))];
+  let poolB=[...jugsB.filter(j=>!usadosB.includes(j.nombre))];
+  if(poolA.length===0){usadosA=[];poolA=[...jugsA];}
+  if(poolB.length===0){usadosB=[];poolB=[...jugsB];}
+  const ja=poolA[~~(Math.random()*poolA.length)].nombre;
+  const jb=poolB[~~(Math.random()*poolB.length)].nombre;
+  const mj=MJS[~~(Math.random()*MJS.length)].id;
+  usadosA.push(ja);usadosB.push(jb);
+  seleccionarMj(mj);
+  lanzarDuelo(ja,jb,mj);
+}
+
+function mostrarPickManual(){
+  const m=document.getElementById('manual-pick');
+  m.style.display=m.style.display==='none'?'block':'none';
+}
+
+function convocarManual(){
+  const ja=document.getElementById('sel-a').value;
+  const jb=document.getElementById('sel-b').value;
+  if(!ja||!jb){alert('Selecciona ambos duelistas');return;}
+  if(!selMj) seleccionarMj(MJS[~~(Math.random()*MJS.length)].id);
+  lanzarDuelo(ja,jb,selMj);
+  document.getElementById('manual-pick').style.display='none';
+}
+
+function lanzarDuelo(ja,jb,mj){
+  const ronda=rondaActual+1;
+  // Primero: anunciar el duelo y contar 4s antes de lanzar conteo
+  RR.update({
+    jugadorA:ja,jugadorB:jb,minijuego:mj,
+    ronda,rondaActual:ronda,totalRondas:Math.max(totalRondas,ronda),
+    dueloActivo:true,resultadoPendiente:null,
+    status:'DUELO R'+ronda+': '+ja+' VS '+jb,
+    cmd:'duelo',timestamp:Date.now()
+  });
+  // Después de 4s: conteo automático
+  setTimeout(()=>{
+    RR.update({cmd:'conteo',timestamp:Date.now()});
+  },4000);
+  // Después de 7s: flag jugando (por si acaso)
+  setTimeout(()=>{
+    RR.update({cmd:'jugando',timestamp:Date.now()});
+  },7500);
+}
+
+function finalizarTorneo(){
+  if(!confirm('¿Finalizar el torneo?'))return;
+  const campeon=scoreA>=scoreB?'A':'B';
+  RR.update({campeonEquipo:campeon,historial,dueloActivo:false,
+    status:'CAMPEONES EQ.'+(campeon==='A'?'AZUL':'ROJO'),
+    cmd:'campeones',timestamp:Date.now()});
+  // Puntos extra al campeón en ranking global
+  db.ref('hub/ranking/'+'Equipo '+(campeon==='A'?'Azul':'Rojo')+' (Retro)').transaction(v=>(v||0)+5);
+}
+
+function cmd(c){RR.update({cmd:c,status:c.toUpperCase(),timestamp:Date.now()});}
+
+function renderMjSel(){
+  document.getElementById('mj-sel').innerHTML=MJS.map(m=>`
+    <button class="ms-btn ${selMj===m.id?'on':''}" id="ms-${m.id}" onclick="seleccionarMj('${m.id}')">
+      <span class="ms-e">${m.e}</span>${m.n}
     </button>`).join('');
 }
-
-function selectMj(id){
-  selectedMj=id;
-  document.querySelectorAll('.mini-btn').forEach(b=>b.classList.toggle('on',b.id==='mb-'+id));
+function seleccionarMj(id){
+  selMj=id;
+  document.querySelectorAll('.ms-btn').forEach(b=>b.classList.toggle('on',b.id==='ms-'+id));
 }
+function selMjRandom(){seleccionarMj(MJS[~~(Math.random()*MJS.length)].id);}
 
-function miniRandom(){selectMj(MJS[~~(Math.random()*MJS.length)].id);}
-
-function renderJugadoresLive(a,b){
-  document.getElementById('cnt-a').textContent=a.length;
-  document.getElementById('cnt-b').textContent=b.length;
-  const rA=document.getElementById('list-a');
-  const rB=document.getElementById('list-b');
-  rA.innerHTML=a.length?a.map(j=>`<div class="tcl-member">${j.nombre}</div>`).join(''):'<div class="tcl-empty">Esperando...</div>';
-  rB.innerHTML=b.length?b.map(j=>`<div class="tcl-member">${j.nombre}</div>`).join(''):'<div class="tcl-empty">Esperando...</div>';
+function renderTeams(){
+  document.getElementById('cnt-a').textContent=jugsA.length;
+  document.getElementById('cnt-b').textContent=jugsB.length;
+  const r=(arr,id)=>{document.getElementById(id).innerHTML=arr.length?arr.map(j=>`<div class="tl-m">${j.nombre}</div>`).join(''):'<div class="tl-e">Esperando...</div>';};
+  r(jugsA,'tl-a');r(jugsB,'tl-b');
 }
 
 function renderAllPlayers(jugs){
-  document.getElementById('all-players').innerHTML=jugs.length?jugs.map(j=>`
-    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:'VT323',monospace;font-size:15px;">
-      <span style="color:${j.equipo==='A'?'var(--teamA)':'var(--teamB)'}">${j.nombre}</span>
-      <span style="opacity:.3;font-size:12px">EQ.${j.equipo==='A'?'AZUL':'ROJO'}</span>
-    </div>`).join(''):'<div class="tcl-empty" style="padding:10px">Nadie aún</div>';
+  document.getElementById('all-pl').innerHTML=jugs.length?jugs.map(j=>`
+    <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:'VT323',monospace;font-size:14px;">
+      <span style="color:${j.equipo==='A'?'var(--A)':'var(--B)'}">${j.nombre}</span>
+      <span style="opacity:.28;font-size:11px">EQ.${j.equipo==='A'?'AZUL':'ROJO'}</span>
+    </div>`).join(''):'<div class="tl-e" style="padding:8px">Nadie aún</div>';
 }
 
-function renderSelectores(a,b){
-  const sa=document.getElementById('sel-a');
-  const sb=document.getElementById('sel-b');
-  const vA=sa.value,vB=sb.value;
-  sa.innerHTML='<option value="">Selecciona jugador...</option>'+a.map(j=>`<option value="${j.nombre}">${j.nombre}</option>`).join('');
-  sb.innerHTML='<option value="">Selecciona jugador...</option>'+b.map(j=>`<option value="${j.nombre}">${j.nombre}</option>`).join('');
-  if(vA) sa.value=vA;
-  if(vB) sb.value=vB;
+function renderSelects(){
+  const sa=document.getElementById('sel-a'),sb=document.getElementById('sel-b');
+  const va=sa.value,vb=sb.value;
+  sa.innerHTML='<option value="">Selecciona...</option>'+jugsA.map(j=>`<option value="${j.nombre}">${j.nombre}</option>`).join('');
+  sb.innerHTML='<option value="">Selecciona...</option>'+jugsB.map(j=>`<option value="${j.nombre}">${j.nombre}</option>`).join('');
+  if(va)sa.value=va;if(vb)sb.value=vb;
 }
 
 function renderHistorial(){
-  if(!historial.length){document.getElementById('hist-list').innerHTML='<div class="tcl-empty" style="padding:10px;text-align:center">Sin rondas aún</div>';return;}
-  const EMOJIS={reflejos:'⚡',piedra:'✂️',memoria:'🧠',pregunta:'❓',click:'🖱️',dado:'🎲',adivinanza:'🔤',escalera:'🪜'};
-  document.getElementById('hist-list').innerHTML=historial.map((h,i)=>`
+  if(!historial.length){document.getElementById('hist-l').innerHTML='<div class="tl-e" style="padding:8px;text-align:center">Sin rondas aún</div>';return;}
+  document.getElementById('hist-l').innerHTML=historial.map((h,i)=>`
     <div class="hi">
       <span class="hi-r">R${i+1}</span>
-      <span class="hi-w ${h.ganador.toLowerCase()}">${(h.jugador||'').toUpperCase()} (${h.ganador==='A'?'AZUL':'ROJO'})</span>
+      <span class="hi-w ${h.ganador==='A'?'a':'b'}">${(h.jugador||'').toUpperCase()} (${h.ganador==='A'?'AZ':'RJ'})</span>
       <span class="hi-g">${EMOJIS[h.minijuego]||'🎮'}</span>
     </div>`).join('');
 }
 
-// ENVIAR CMD
-function enviar(cmd,extra={}){RR.update({cmd,status:cmd.toUpperCase(),...extra,timestamp:Date.now()});}
-
-function convocarDuelo(){
-  const ja=document.getElementById('sel-a').value;
-  const jb=document.getElementById('sel-b').value;
-  if(!ja){alert('Selecciona el duelista del Equipo Azul');return;}
-  if(!jb){alert('Selecciona el duelista del Equipo Rojo');return;}
-  if(!selectedMj){miniRandom();}
-  const ronda=rondaActual+1;
-  RR.update({
-    jugadorA:ja,jugadorB:jb,minijuego:selectedMj,
-    ronda,rondaActual:ronda,totalRondas:Math.max(totalRondas,ronda),
-    dueloActivo:true,
-    status:'DUELO R'+ronda+': '+ja+' VS '+jb,
-    cmd:'duelo',timestamp:Date.now()
-  });
-}
-
-function iniciarConteo(){
-  RR.update({cmd:'conteo',status:'¡CONTEO!',timestamp:Date.now()});
-}
-
-function declararGanador(equipo){
-  const ja=document.getElementById('sel-a').value||'Azul';
-  const jb=document.getElementById('sel-b').value||'Rojo';
-  const ganNombre=equipo==='A'?ja:jb;
-  const nA=scoreA+(equipo==='A'?1:0);
-  const nB=scoreB+(equipo==='B'?1:0);
-  const hist=[...historial,{ganador:equipo,jugador:ganNombre,minijuego:selectedMj,ronda:rondaActual}];
-  RR.update({
-    scoreA:nA,scoreB:nB,historial:hist,dueloActivo:false,
-    ganadorEquipo:equipo,ganadorNombre:ganNombre,
-    status:'GANADOR R'+rondaActual+': EQ.'+(equipo==='A'?'AZUL':'ROJO'),
-    cmd:'ganador',timestamp:Date.now()
-  });
-}
-
-function finalizarTorneo(){
-  if(!confirm('¿Finalizar el torneo y mostrar campeones?'))return;
-  const campeon=scoreA>=scoreB?'A':'B';
-  RR.update({campeonEquipo:campeon,historial,dueloActivo:false,status:'CAMPEONES EQ.'+(campeon==='A'?'AZUL':'ROJO'),cmd:'campeones',timestamp:Date.now()});
-}
-
-function kickAll(){if(!confirm('¿Expulsar a todos los jugadores del lobby?'))return;RR.child('jugadores').remove();}
-function resetTorneo(){if(!confirm('¿Reset completo del torneo?'))return;RR.set({scoreA:0,scoreB:0,rondaActual:0,totalRondas:0,historial:[],dueloActivo:false,status:'RESET',cmd:'lobby',timestamp:Date.now()});}
+function kickAll(){if(!confirm('¿Expulsar a todos?'))return;RR.child('jugadores').remove();}
+function resetTorneo(){if(!confirm('¿Reset completo?'))return;RR.set({scoreA:0,scoreB:0,rondaActual:0,totalRondas:0,historial:[],dueloActivo:false,status:'RESET',cmd:'lobby',timestamp:Date.now()});usadosA=[];usadosB=[];}
 </script>
 </body>
 </html>
