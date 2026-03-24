@@ -1,83 +1,63 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEÑAL G - TV</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #F5EDD6;
-            font-family: 'Courier New', monospace;
-            color: #2C3E6B;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        .container {
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background-image: 
-                linear-gradient(45deg, rgba(196,149,106,0.1) 25%, transparent 25%),
-                linear-gradient(-45deg, rgba(196,149,106,0.1) 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, rgba(196,149,106,0.1) 75%),
-                linear-gradient(-45deg, transparent 75%, rgba(196,149,106,0.1) 75%);
-            background-size: 20px 20px;
-            border: 8px solid #C4956A;
-        }
-        
-        .header {
-            background-color: #2C3E6B;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-bottom: 4px solid #C0392B;
-        }
-        
-        .header h1 {
-            margin: 0;
-            font-size: 3rem;
-            text-shadow: 3px 3px 0 #D4A017;
-            letter-spacing: 2px;
-        }
-        
-        .content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .qr-container {
-            background-color: white;
-            padding: 30px;
-            border: 3px dashed #2C3E6B;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
-        }
-        
-        .qr-code {
-            width: 300px;
-            height: 300px;
-            background-color: #2D6A4F;
-            margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        
-        .instructions {
-            font-size: 1.2rem;
-            margin-top: 20px;
-            background-color: rgba(255,255,255,0.8);
-            padding: 15px;
-            border-left: 5px solid #C0392B;
+  <meta charset="UTF-8">
+  <title>SEÑAL G – TV</title>
+
+  <!-- Font retro (Google Fonts) -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Courier+Prime:wght@400;700&display=swap"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/assets/js/tv.js" defer></script>
+</head>
+
+<body class="tv">
+  <div class="container">
+    <!-- HEADER -->
+    <header class="header">
+      <h1>🎬 SEÑAL G</h1>
+      <p class="subtitle">Programa de TV – 🎓 Graduación</p>
+    </header>
+
+    <!-- MAIN -->
+    <main class="content">
+
+      <!-- QR Code (para que los jugadores se unan) -->
+      <section class="qr-section">
+        <h2>Escanea y únete</h2>
+        <div id="qr-wrapper" class="qr-wrapper">
+          <!-- QR se genera dinámicamente en tv.js -->
+          <div class="qr-placeholder">Cargando QR…</div>
+        </div>
+        <p class="hint">Apunta la cámara del móvil a este código y escribe tu nombre.</p>
+      </section>
+
+      <!-- LISTA DE JUGADORES CON ESTADO -->
+      <section class="players-section">
+        <h2>Participantes (<span id="players-count">0</span>)</h2>
+        <ul id="players-list" class="players-list"></ul>
+      </section>
+
+      <!-- MARCADOR GLOBAL (visible entre juegos) -->
+      <section class="scoreboard-section">
+        <h2>Puntuación Global</h2>
+        <table id="global-scoreboard" class="scoreboard">
+          <thead>
+            <tr><th>Jugador</th><th>Puntos</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p id="game-phase" class="phase-indicator">Fase: <span>Lobby</span></p>
+      </section>
+
+    </main>
+
+    <!-- FOOTER con estilo “scrapbook” -->
+    <footer class="footer">
+      <p>📺 Señal G – Hecho a mano, con 🎞️ y ❤️</p>
+    </footer>
+  </div>
+</body>
+</html>
