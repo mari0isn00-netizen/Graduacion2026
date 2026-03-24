@@ -11,10 +11,8 @@
     :root{
       --bg:#050608;
       --crt:#16171F;
-      --crt-soft:#222435;
       --accent:#F5EDD6;
       --accent2:#C4956A;
-      --warn:#FF4C4C;
       --ink:#FDFDFD;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -96,66 +94,7 @@
       z-index:25;
     }
 
-    /* Glitch misterioso */
-    .glitch-overlay{
-      position:absolute;
-      inset:0;
-      background:linear-gradient(180deg,#000 0,#1b1b1b 50%,#000 100%);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      z-index:35;
-      animation:glitchIntro 3.5s ease-out forwards;
-      overflow:hidden;
-    }
-    .glitch-text{
-      font-family:'Press Start 2P',cursive;
-      font-size:1.1rem;
-      letter-spacing:.18em;
-      text-transform:uppercase;
-      text-align:center;
-      color:#f5f5f5;
-      position:relative;
-    }
-    .glitch-text::before,
-    .glitch-text::after{
-      content:attr(data-text);
-      position:absolute;
-      inset:0;
-      mix-blend-mode:screen;
-    }
-    .glitch-text::before{
-      color:#ff006e;
-      transform:translate(-2px,-1px);
-      clip-path:polygon(0 0,100% 0,100% 45%,0 50%);
-      animation:glitchSlice 1.5s infinite;
-    }
-    .glitch-text::after{
-      color:#00f5d4;
-      transform:translate(2px,1px);
-      clip-path:polygon(0 60%,100% 55%,100% 100%,0 100%);
-      animation:glitchSlice2 1.6s infinite;
-    }
-
-    @keyframes glitchIntro{
-      0%{opacity:1;transform:translateX(0);}
-      10%{transform:translateX(-3px);}
-      12%{transform:translateX(3px);}
-      15%{transform:translateX(-2px);}
-      25%{opacity:1;}
-      80%{opacity:1;}
-      100%{opacity:0;pointer-events:none;}
-    }
-    @keyframes glitchSlice{
-      0%,100%{clip-path:polygon(0 0,100% 0,100% 45%,0 50%);}
-      50%{clip-path:polygon(0 10%,100% 0,100% 35%,0 45%);}
-    }
-    @keyframes glitchSlice2{
-      0%,100%{clip-path:polygon(0 60%,100% 55%,100% 100%,0 100%);}
-      50%{clip-path:polygon(0 65%,100% 60%,100% 100%,0 95%);}
-    }
-
-    /* HEADER */
+    /* Cabecera fija ON AIR */
     .header{
       display:flex;
       align-items:center;
@@ -169,7 +108,6 @@
       position:relative;
       z-index:10;
     }
-
     .logo-block{
       display:flex;
       align-items:center;
@@ -201,7 +139,6 @@
       color:#d3d9ef;
       letter-spacing:.18em;
     }
-
     .onair{
       display:flex;
       align-items:center;
@@ -225,13 +162,12 @@
       animation:pulse 1s infinite;
     }
     @keyframes pulse{50%{opacity:.2}}
-
     .clock{
       font-size:.55rem;
       color:#9ca6d2;
     }
 
-    /* CUERPO PRINCIPAL */
+    /* cuerpo */
     .middle{
       flex:1;
       display:grid;
@@ -254,7 +190,6 @@
       position:relative;
       overflow:hidden;
     }
-
     .scan-mask{
       position:absolute;
       inset:-10%;
@@ -263,7 +198,6 @@
       pointer-events:none;
       opacity:.6;
     }
-
     .stage-top{
       display:flex;
       justify-content:space-between;
@@ -310,9 +244,9 @@
     .stage-center{
       text-align:center;
       z-index:5;
-      max-width:70%;
+      max-width:80%;
       opacity:0;
-      transform:scale(.98);
+      transform:scale(.96);
       transition:opacity .6s ease,transform .6s ease;
     }
     .stage-center.active{
@@ -333,7 +267,6 @@
       color:#d3d7eb;
     }
 
-    /* lateral marcador */
     .sidebar{
       background:radial-gradient(circle at 0 0,rgba(245,237,214,.16),transparent 55%),linear-gradient(180deg,#151822,#0b0c12);
       border-radius:10px;
@@ -366,40 +299,19 @@
       background:#252b3d;
       color:#f1f4ff;
     }
-
     .score-list{
-      margin-top:4px;
+      margin-top:6px;
       background:rgba(0,0,0,.85);
       border-radius:8px;
       border:1px solid rgba(255,255,255,.18);
-      overflow:hidden;
+      padding:10px;
+      font-size:.75rem;
+      color:#c3c8dd;
     }
-    .score-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:4px 8px;
-      font-size:.8rem;
-      border-bottom:1px solid rgba(255,255,255,.06);
-    }
-    .score-row:last-child{border-bottom:none;}
-    .score-pos{
-      width:18px;
+    .score-list.empty{
       text-align:center;
-      font-size:.7rem;
-      color:#7f8ab0;
-    }
-    .score-name{
-      flex:1;
-      margin:0 4px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .score-points{
-      font-family:'Press Start 2P',cursive;
-      font-size:.6rem;
-      color:#ffe3a3;
+      font-style:italic;
+      opacity:.8;
     }
 
     .footer-strip{
@@ -449,12 +361,6 @@
     <div class="screen">
       <div class="noise"></div>
 
-      <div class="glitch-overlay">
-        <div class="glitch-text" data-text="canal graduación">
-          CANAL GRADUACIÓN
-        </div>
-      </div>
-
       <header class="header">
         <div class="logo-block">
           <div class="logo-mark">FG</div>
@@ -474,8 +380,8 @@
           <div class="scan-mask"></div>
           <div class="stage-top">
             <div class="stage-top-left">
-              <span class="mode" id="mode-label">iniciando señal</span>
-              <h2 id="current-label">CALIBRACIÓN</h2>
+              <span class="mode" id="mode-label">esperando señal</span>
+              <h2 id="current-label">···</h2>
             </div>
             <div class="stage-top-right">
               Campo de Mario<br />Promoción 4º ESO
@@ -483,36 +389,45 @@
           </div>
 
           <div class="stage-main" id="stage-main">
-            <div class="stage-center active" id="screen-calibracion">
-              <h3>ajustando señal</h3>
+            <!-- distintas escenas -->
+            <div class="stage-center active" id="scene-static">
+              <h3>sin señal</h3>
               <p>
-                ↳ comprobad volumen, brillo y que todo el mundo ve la pantalla.
-                la emisión comenzará en unos segundos.
+                ruido de fondo. la pantalla parpadea. algo está a punto de interrumpir
+                la tranquilidad del porche.
               </p>
             </div>
 
-            <div class="stage-center" id="screen-bienvenida" style="display:none;">
+            <div class="stage-center" id="scene-calibracion" style="display:none;">
+              <h3>calibrando emisión</h3>
+              <p>
+                barras de color invisibles, pitidos de prueba y un técnico imaginario
+                ajustando la antena. comprobad volumen y que todos puedan ver.
+              </p>
+            </div>
+
+            <div class="stage-center" id="scene-titular" style="display:none;">
+              <h3>última hora</h3>
+              <p>
+                interrupción especial en la programación: la graduación de 4º ESO
+                se convierte por una noche en un programa de televisión en directo.
+              </p>
+            </div>
+
+            <div class="stage-center" id="scene-explica" style="display:none;">
               <h3>todos sois concursantes</h3>
               <p>
-                esta noche la graduación se convierte en un programa de televisión.
-                móviles listos, premios reales y pruebas que os van a perseguir en los memes
-                todo el verano.
+                móviles cargados, oído atento y cero vergüenza. undercover, la bomba,
+                adivina quién dijo, esconder objeto, escondite extremo y música y stop
+                decidirán quién se lleva los premios.
               </p>
             </div>
 
-            <div class="stage-center" id="screen-juegos" style="display:none;">
-              <h3>retos principales</h3>
-              <p>
-                undercover, la bomba, adivina quién dijo, esconder objeto,
-                escondite extremo y música y stop. en equipo, en pareja y en solitario.
-              </p>
-            </div>
-
-            <div class="stage-center" id="screen-porche" style="display:none;">
+            <div class="stage-center" id="scene-porche" style="display:none;">
               <h3>todos al porche</h3>
               <p>
-                en breves comenzamos la primera prueba. coged sitio, cargad el móvil
-                y preparaos para salir en todas las historias de esta noche.
+                la emisión está a punto de comenzar. coged sitio, mirad a la cámara
+                imaginaria y preparaos para la primera prueba de la noche.
               </p>
             </div>
           </div>
@@ -520,47 +435,27 @@
 
         <aside class="sidebar">
           <div class="board-head">
-            <span class="label">marcador general</span>
-            <span class="board-phase" id="phase-pill">lobby · esperando inicio</span>
+            <span class="label">estado de la emisión</span>
+            <span class="board-phase" id="phase-pill">standby</span>
           </div>
 
-          <div class="score-list" id="score-list">
-            <div class="score-row">
-              <span class="score-pos">1</span>
-              <span class="score-name">Lucía</span>
-              <span class="score-points">000 pts</span>
-            </div>
-            <div class="score-row">
-              <span class="score-pos">2</span>
-              <span class="score-name">Mario</span>
-              <span class="score-points">000 pts</span>
-            </div>
-            <div class="score-row">
-              <span class="score-pos">3</span>
-              <span class="score-name">Iván</span>
-              <span class="score-points">000 pts</span>
-            </div>
-            <div class="score-row">
-              <span class="score-pos">4</span>
-              <span class="score-name">Sofía</span>
-              <span class="score-points">000 pts</span>
-            </div>
+          <div class="score-list empty" id="score-list">
+            marcador todavía vacío · se activará cuando empiecen los juegos.
           </div>
         </aside>
       </div>
 
       <div class="footer-strip">
-        <div class="footer-label">challenges</div>
+        <div class="footer-label">canal graduación</div>
         <div class="footer-ticker">
           <span id="ticker">
-            bienvenidos a la noche de challenges de la graduación · premios para los 3
-            mejores jugadores · algunos juegos serán en exterior, otros con el móvil como mando ·
+            señal en pruebas · manteneos en el porche · algo especial va a ocurrir esta noche ·
           </span>
         </div>
       </div>
     </div>
 
-    <div class="bezel-label">fiesta graduación · special challenges · vhs edition</div>
+    <div class="bezel-label">fiesta graduación · canal especial · vhs edition</div>
   </div>
 
   <script>
@@ -578,51 +473,58 @@
     setInterval(updateClock,1000);
     updateClock();
 
+    const defaultTicker =
+      'señal en pruebas · manteneos en el porche · algo especial va a ocurrir esta noche ·';
+
     const mensajesTicker=[
-      'bienvenidos a la noche de challenges de la graduación ·',
-      'undercover, la bomba, adivina quién dijo y más pruebas del grupo ·',
-      'recordad: móviles cargados, cero vergüenza y muchas ganas de jugar ·'
+      defaultTicker,
+      'recordad subir el volumen de los altavoces ·',
+      'apagad distracciones · durante un rato sois parte del programa ·'
     ];
     let idxTicker=0;
     setInterval(()=>{
       idxTicker=(idxTicker+1)%mensajesTicker.length;
       document.getElementById('ticker').textContent=mensajesTicker[idxTicker];
-    },20000);
+    },25000);
 
-    const screens = {
+    const scenes = {
+      static : {
+        id:'scene-static',
+        mode:'esperando señal',
+        title:'···',
+        fase:'standby'
+      },
       calibracion : {
-        id:'screen-calibracion',
-        mode:'iniciando señal',
+        id:'scene-calibracion',
+        mode:'calibración',
         title:'CALIBRACIÓN',
-        fase:'lobby · preparando emisión'
+        fase:'ajustando emisión'
       },
-      bienvenida  : {
-        id:'screen-bienvenida',
-        mode:'bloque 1 · bienvenida',
-        title:'BIENVENIDOS',
-        fase:'bloque de bienvenida'
+      titular : {
+        id:'scene-titular',
+        mode:'boletín especial',
+        title:'ÚLTIMA HORA',
+        fase:'anuncio del programa'
       },
-      juegos      : {
-        id:'screen-juegos',
-        mode:'bloque 2 · presentación',
-        title:'LOS RETOS',
-        fase:'presentación de juegos'
+      explica : {
+        id:'scene-explica',
+        mode:'explicación',
+        title:'CHALLENGES NIGHT',
+        fase:'presentación de las reglas'
       },
-      porche      : {
-        id:'screen-porche',
-        mode:'en directo',
-        title:'PRÓXIMO · JUEGO 1',
-        fase:'a punto de empezar'
+      porche : {
+        id:'scene-porche',
+        mode:'directo',
+        title:'COMIENZA EN BREVE',
+        fase:'todos al porche'
       }
     };
 
-    let currentScreenId = 'calibracion';
-
-    function activateScreen(key, playSound=true){
-      const cfg = screens[key];
+    function activateScene(key, sound=true){
+      const cfg = scenes[key];
       if(!cfg) return;
 
-      Object.values(screens).forEach(s=>{
+      Object.values(scenes).forEach(s=>{
         const el=document.getElementById(s.id);
         if(!el) return;
         el.classList.remove('active');
@@ -637,51 +539,30 @@
       document.getElementById('current-label').textContent= cfg.title;
       document.getElementById('phase-pill').textContent   = cfg.fase;
 
-      if(playSound) {
+      if(sound){
         try { sfxWhoosh.currentTime=0; sfxWhoosh.play(); } catch(e){}
       }
-
-      currentScreenId = key;
     }
 
-    function startIntroSequence(){
-      activateScreen('calibracion', false);
-      setTimeout(()=>activateScreen('bienvenida'), 6000);
-      setTimeout(()=>activateScreen('juegos')    , 15000);
-      setTimeout(()=>activateScreen('porche')    , 24000);
-    }
-    setTimeout(startIntroSequence, 3500);
-
-    // API que el admin usará vía postMessage / socket
+    // API para el admin
     window.setTvState = function(state){
-      if(state.pantalla && screens[state.pantalla]){
-        activateScreen(state.pantalla);
+      if(state.escena && scenes[state.escena]){
+        activateScene(state.escena);
       }
-      if(state.ticker){
-        document.getElementById('ticker').textContent = state.ticker;
+      if(typeof state.ticker === 'string'){
+        document.getElementById('ticker').textContent = state.ticker || defaultTicker;
         try { sfxBeep.currentTime=0; sfxBeep.play(); } catch(e){}
-      }
-      if(Array.isArray(state.marcador)){
-        const list = document.getElementById('score-list');
-        list.innerHTML = '';
-        state.marcador.forEach((row, i)=>{
-          const div = document.createElement('div');
-          div.className = 'score-row';
-          div.innerHTML = `
-            <span class="score-pos">${i+1}</span>
-            <span class="score-name">${row.nombre}</span>
-            <span class="score-points">${String(row.puntos).padStart(3,'0')} pts</span>
-          `;
-          list.appendChild(div);
-        });
       }
     };
 
-    // Escuchar mensajes del admin (mock sin servidor)
+    // Mensajes desde admin (mock sin servidor)
     window.addEventListener('message',(ev)=>{
       if(!ev.data || ev.data.type!=='tv-state') return;
       window.setTvState(ev.data.payload || {});
     });
+
+    // Empezamos en pantalla de “sin señal”
+    activateScene('static', false);
   </script>
 </body>
 </html>
