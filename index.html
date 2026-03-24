@@ -96,7 +96,7 @@
       z-index:25;
     }
 
-    /* Glitch overlay para la intro */
+    /* Glitch misterioso */
     .glitch-overlay{
       position:absolute;
       inset:0;
@@ -449,14 +449,12 @@
     <div class="screen">
       <div class="noise"></div>
 
-      <!-- Glitch misterioso al encender -->
       <div class="glitch-overlay">
         <div class="glitch-text" data-text="canal graduación">
           CANAL GRADUACIÓN
         </div>
       </div>
 
-      <!-- CABECERA -->
       <header class="header">
         <div class="logo-block">
           <div class="logo-mark">FG</div>
@@ -471,9 +469,7 @@
         </div>
       </header>
 
-      <!-- CUERPO PRINCIPAL -->
       <div class="middle">
-        <!-- ESCENARIO -->
         <section class="stage">
           <div class="scan-mask"></div>
           <div class="stage-top">
@@ -487,7 +483,6 @@
           </div>
 
           <div class="stage-main" id="stage-main">
-            <!-- pantallas de la intro -->
             <div class="stage-center active" id="screen-calibracion">
               <h3>ajustando señal</h3>
               <p>
@@ -523,7 +518,6 @@
           </div>
         </section>
 
-        <!-- MARCADOR -->
         <aside class="sidebar">
           <div class="board-head">
             <span class="label">marcador general</span>
@@ -555,7 +549,6 @@
         </aside>
       </div>
 
-      <!-- BARRA INFERIOR -->
       <div class="footer-strip">
         <div class="footer-label">challenges</div>
         <div class="footer-ticker">
@@ -571,7 +564,9 @@
   </div>
 
   <script>
-    // Reloj en vivo
+    const sfxBeep   = new Audio('https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg');
+    const sfxWhoosh = new Audio('https://actions.google.com/sounds/v1/cartoon/air_woosh_underwater.ogg');
+
     function updateClock(){
       const el=document.getElementById('clock');
       const d=new Date();
@@ -583,7 +578,6 @@
     setInterval(updateClock,1000);
     updateClock();
 
-    // Ticker inferior rotando mensajes
     const mensajesTicker=[
       'bienvenidos a la noche de challenges de la graduación ·',
       'undercover, la bomba, adivina quién dijo y más pruebas del grupo ·',
@@ -595,69 +589,99 @@
       document.getElementById('ticker').textContent=mensajesTicker[idxTicker];
     },20000);
 
-    // Secuencia de bienvenida (pantallas del escenario)
-    const screens=[
-      {
+    const screens = {
+      calibracion : {
         id:'screen-calibracion',
         mode:'iniciando señal',
         title:'CALIBRACIÓN',
-        fase:'lobby · preparando emisión',
-        dur:6000
+        fase:'lobby · preparando emisión'
       },
-      {
+      bienvenida  : {
         id:'screen-bienvenida',
         mode:'bloque 1 · bienvenida',
         title:'BIENVENIDOS',
-        fase:'bloque de bienvenida',
-        dur:9000
+        fase:'bloque de bienvenida'
       },
-      {
+      juegos      : {
         id:'screen-juegos',
         mode:'bloque 2 · presentación',
         title:'LOS RETOS',
-        fase:'presentación de juegos',
-        dur:9000
+        fase:'presentación de juegos'
       },
-      {
+      porche      : {
         id:'screen-porche',
         mode:'en directo',
         title:'PRÓXIMO · JUEGO 1',
-        fase:'a punto de empezar',
-        dur:12000
+        fase:'a punto de empezar'
       }
-    ];
+    };
 
-    let currentScreenIndex=0;
+    let currentScreenId = 'calibracion';
 
-    function showScreen(index){
-      const prevId = screens[currentScreenIndex]?.id;
-      if(prevId){
-        const prevEl=document.getElementById(prevId);
-        if(prevEl){
-          prevEl.classList.remove('active');
-          prevEl.style.display='none';
-        }
-      }
+    function activateScreen(key, playSound=true){
+      const cfg = screens[key];
+      if(!cfg) return;
 
-      const sc = screens[index];
-      const el=document.getElementById(sc.id);
+      Object.values(screens).forEach(s=>{
+        const el=document.getElementById(s.id);
+        if(!el) return;
+        el.classList.remove('active');
+        el.style.display='none';
+      });
+
+      const el=document.getElementById(cfg.id);
       el.style.display='block';
       requestAnimationFrame(()=>el.classList.add('active'));
 
-      document.getElementById('mode-label').textContent = sc.mode;
-      document.getElementById('current-label').textContent = sc.title;
-      document.getElementById('phase-pill').textContent = sc.fase;
+      document.getElementById('mode-label').textContent   = cfg.mode;
+      document.getElementById('current-label').textContent= cfg.title;
+      document.getElementById('phase-pill').textContent   = cfg.fase;
 
-      currentScreenIndex=index;
-
-      const nextIndex = (index+1 < screens.length) ? index+1 : index;
-      if(nextIndex!==index){
-        setTimeout(()=>showScreen(nextIndex), sc.dur);
+      if(playSound) {
+        try { sfxWhoosh.currentTime=0; sfxWhoosh.play(); } catch(e){}
       }
+
+      currentScreenId = key;
     }
 
-    // Iniciar secuencia después del glitch (3.5s)
-    setTimeout(()=>showScreen(0),3500);
+    function startIntroSequence(){
+      activateScreen('calibracion', false);
+      setTimeout(()=>activateScreen('bienvenida'), 6000);
+      setTimeout(()=>activateScreen('juegos')    , 15000);
+      setTimeout(()=>activateScreen('porche')    , 24000);
+    }
+    setTimeout(startIntroSequence, 3500);
+
+    // API que el admin usará vía postMessage / socket
+    window.setTvState = function(state){
+      if(state.pantalla && screens[state.pantalla]){
+        activateScreen(state.pantalla);
+      }
+      if(state.ticker){
+        document.getElementById('ticker').textContent = state.ticker;
+        try { sfxBeep.currentTime=0; sfxBeep.play(); } catch(e){}
+      }
+      if(Array.isArray(state.marcador)){
+        const list = document.getElementById('score-list');
+        list.innerHTML = '';
+        state.marcador.forEach((row, i)=>{
+          const div = document.createElement('div');
+          div.className = 'score-row';
+          div.innerHTML = `
+            <span class="score-pos">${i+1}</span>
+            <span class="score-name">${row.nombre}</span>
+            <span class="score-points">${String(row.puntos).padStart(3,'0')} pts</span>
+          `;
+          list.appendChild(div);
+        });
+      }
+    };
+
+    // Escuchar mensajes del admin (mock sin servidor)
+    window.addEventListener('message',(ev)=>{
+      if(!ev.data || ev.data.type!=='tv-state') return;
+      window.setTvState(ev.data.payload || {});
+    });
   </script>
 </body>
 </html>
