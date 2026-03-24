@@ -4,43 +4,47 @@
   <meta charset="UTF-8">
   <title>SEÑAL G – TV</title>
 
-  <!-- Font retro (Google Fonts) -->
+  <!-- Tipografías -->
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Courier+Prime:wght@400;700&display=swap"
         rel="stylesheet">
 
+  <!-- Hoja de estilos (root‑relative) -->
   <link rel="stylesheet" href="/assets/css/main.css">
-  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- Socket.IO (CDN – funciona en GitHub Pages) -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+  <!-- Lógica de la TV (root‑relative) -->
   <script src="/assets/js/tv.js" defer></script>
 </head>
 
 <body class="tv">
   <div class="container">
-    <!-- HEADER -->
     <header class="header">
       <h1>🎬 SEÑAL G</h1>
       <p class="subtitle">Programa de TV – 🎓 Graduación</p>
     </header>
 
-    <!-- MAIN -->
     <main class="content">
 
-      <!-- QR Code (para que los jugadores se unan) -->
       <section class="qr-section">
         <h2>Escanea y únete</h2>
-        <div id="qr-wrapper" class="qr-wrapper">
-          <!-- QR se genera dinámicamente en tv.js -->
+
+        <div class="qr-wrapper">
+          <!-- El QR se genera dinámicamente en /assets/js/tv.js -->
           <div class="qr-placeholder">Cargando QR…</div>
         </div>
-        <p class="hint">Apunta la cámara del móvil a este código y escribe tu nombre.</p>
+
+        <p class="hint">
+          Apunta la cámara del móvil a este código y escribe tu nombre.
+        </p>
       </section>
 
-      <!-- LISTA DE JUGADORES CON ESTADO -->
       <section class="players-section">
         <h2>Participantes (<span id="players-count">0</span>)</h2>
         <ul id="players-list" class="players-list"></ul>
       </section>
 
-      <!-- MARCADOR GLOBAL (visible entre juegos) -->
       <section class="scoreboard-section">
         <h2>Puntuación Global</h2>
         <table id="global-scoreboard" class="scoreboard">
@@ -49,12 +53,14 @@
           </thead>
           <tbody></tbody>
         </table>
-        <p id="game-phase" class="phase-indicator">Fase: <span>Lobby</span></p>
+
+        <p id="game-phase" class="phase-indicator">
+          Fase: <span>Lobby</span>
+        </p>
       </section>
 
     </main>
 
-    <!-- FOOTER con estilo “scrapbook” -->
     <footer class="footer">
       <p>📺 Señal G – Hecho a mano, con 🎞️ y ❤️</p>
     </footer>
