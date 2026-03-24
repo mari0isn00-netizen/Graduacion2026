@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SEÑAL G – Jugador</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Courier+Prime:wght@400;700&display=swap"
+        rel="stylesheet">
+  <link rel="stylesheet" href="/Graduacion2026/assets/css/main.css">
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/Graduacion2026/assets/js/player.js" defer></script>
+</head>
+<body class="player">
+  <div class="container">
+
+    <header class="header"><h1>🎮 Jugador</h1></header>
+
+    <div class="ticker"><span id="player-ticker">Esperando…</span></div>
+
+    <main class="content">
+
+      <!-- registro -->
+      <section id="register-section" class="panel">
+        <h2>¡Únete al programa!</h2>
+        <label for="player-name">Tu nombre:</label>
+        <input type="text" id="player-name" placeholder="Ej: Carlos">
+        <button id="player-register-btn">Entrar</button>
+      </section>
+
+      <!-- área del juego -->
+      <section id="game-area" class="panel hidden">
+        <h2 id="current-game-title">Esperando al admin…</h2>
+        <div id="game-body"></div>
+
+        <div id="status-bar" class="status-bar">
+          <p>HP: <span id="player-hp">?</span> | Equipo: <span id="player-team">—</span></p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer"><p>📱 Conectado a SEÑAL G</p></footer>
+  </div>
+</body>
+</html>
