@@ -138,141 +138,98 @@
       color:#9da3b8;
       margin-top:.3rem;
     }
-
-    .list{
-      margin-top:.3rem;
-      max-height:110px;
-      overflow:auto;
-      font-size:.78rem;
-    }
-    .list div{
-      padding:2px 0;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      display:flex;
-      justify-content:space-between;
-      gap:.4rem;
-    }
   </style>
 </head>
 <body>
   <div class="panel">
     <h1>Fiesta Graduación – Admin</h1>
-    <p class="subtitle">Controla lo que aparece en la TV en cada momento.</p>
+    <p class="subtitle">
+      Secuencia misteriosa, paso a paso. Cada botón cambia la TV.
+    </p>
 
     <div class="grid">
       <section class="card">
-        <h2>Pantalla principal</h2>
-        <label for="pantalla-select">Modo de TV</label>
-        <select id="pantalla-select">
-          <option value="calibracion">Calibración</option>
-          <option value="bienvenida">Bienvenida</option>
-          <option value="juegos">Presentación de juegos</option>
-          <option value="porche">Todos al porche</option>
-        </select>
-        <button id="btn-aplicar-pantalla">ENVIAR A TV</button>
+        <h2>1 · Señal misteriosa</h2>
+        <button id="btn-static">Pantalla sin señal</button>
         <p class="small">
-          Abre <strong>tv.html</strong> en otra ventana o dispositivo. Este panel
-          envía cambios de estado a la pantalla principal.
+          Úsalo al principio: solo ruido, sin explicación. Deja unos segundos
+          para que la gente se pregunte qué está pasando.
         </p>
       </section>
 
       <section class="card">
-        <h2>Barra inferior</h2>
-        <label for="ticker-input">Texto para el ticker</label>
+        <h2>2 · Calibración</h2>
+        <button id="btn-calibracion">Calibración de emisión</button>
+        <p class="small">
+          Pasa a la pantalla de prueba con texto de “calibrando”. Ideal cuando
+          ya todo el mundo mira la TV.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>3 · Titular especial</h2>
+        <button id="btn-titular">Boletín “última hora”</button>
+        <p class="small">
+          Anuncia que la graduación se interrumpe por un programa especial.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>4 · Explicación</h2>
+        <button id="btn-explica">Explicar que todos juegan</button>
+        <p class="small">
+          Pantalla que cuenta rápidamente que todos son concursantes y qué tipo
+          de pruebas habrá.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>5 · Llamada al porche</h2>
+        <button id="btn-porche">“Todos al porche”</button>
+        <p class="small">
+          Mensaje final antes de la primera prueba. Puedes repetirlo si hace
+          falta para gente rezagada.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>Ticker inferior</h2>
+        <label for="ticker-input">Texto</label>
         <textarea id="ticker-input" placeholder="Mensaje corto para la cinta inferior…"></textarea>
-        <button id="btn-aplicar-ticker">ACTUALIZAR TICKER</button>
+        <button id="btn-ticker">Actualizar ticker</button>
         <p class="small">
-          Ideal para anunciar el siguiente juego, dar instrucciones o hacer
-          chistes internos del grupo.
-        </p>
-      </section>
-
-      <section class="card">
-        <h2>Marcador rápido</h2>
-        <label>Nombre</label>
-        <input id="score-nombre" type="text" placeholder="Jugador" />
-        <label>Puntos (acumulados)</label>
-        <input id="score-puntos" type="number" placeholder="Ej: 5" />
-        <button id="btn-add-score">AÑADIR / ACTUALIZAR</button>
-        <p class="small">Por ahora es solo local; luego lo conectaremos a los móviles.</p>
-        <div class="list" id="score-list-admin"></div>
-      </section>
-
-      <section class="card">
-        <h2>Atajos de escena</h2>
-        <button id="btn-secuencia">Reproducir intro completa</button>
-        <p class="small">
-          Úsalo al principio de la noche: lanza la secuencia de calibración,
-          bienvenida, explicación de juegos y llamada al porche.
+          Cambia la frase que recorre la parte de abajo de la TV.
         </p>
       </section>
     </div>
   </div>
 
   <script>
-    // En local, usamos postMessage al otro tab/ventana con tv.html
     function sendToTv(payload){
-      // broadcast (cuando haya servidor/socket, esto cambiará)
       window.opener?.postMessage({type:'tv-state',payload},'*');
       window.parent?.postMessage({type:'tv-state',payload},'*');
     }
 
-    const selectPantalla = document.getElementById('pantalla-select');
-    const btnPantalla    = document.getElementById('btn-aplicar-pantalla');
-    const inpTicker      = document.getElementById('ticker-input');
-    const btnTicker      = document.getElementById('btn-aplicar-ticker');
-    const inpNombre      = document.getElementById('score-nombre');
-    const inpPuntos      = document.getElementById('score-puntos');
-    const btnScore       = document.getElementById('btn-add-score');
-    const listScore      = document.getElementById('score-list-admin');
-    const btnSecuencia   = document.getElementById('btn-secuencia');
+    document.getElementById('btn-static').onclick = () =>
+      sendToTv({escena:'static'});
 
-    const marcador = [];
+    document.getElementById('btn-calibracion').onclick = () =>
+      sendToTv({escena:'calibracion'});
 
-    function renderMarcador(){
-      listScore.innerHTML = '';
-      marcador.sort((a,b)=>b.puntos-a.puntos);
-      marcador.forEach(j=>{
-        const row=document.createElement('div');
-        row.innerHTML=`<span>${j.nombre}</span><span>${j.puntos} pts</span>`;
-        listScore.appendChild(row);
-      });
-      sendToTv({marcador});
-    }
+    document.getElementById('btn-titular').onclick = () =>
+      sendToTv({escena:'titular'});
 
-    btnPantalla.addEventListener('click',()=>{
-      const pantalla = selectPantalla.value;
-      sendToTv({pantalla});
-    });
+    document.getElementById('btn-explica').onclick = () =>
+      sendToTv({escena:'explica'});
 
-    btnTicker.addEventListener('click',()=>{
-      const txt = (inpTicker.value || '').trim();
+    document.getElementById('btn-porche').onclick = () =>
+      sendToTv({escena:'porche'});
+
+    document.getElementById('btn-ticker').onclick = () => {
+      const txt = (document.getElementById('ticker-input').value || '').trim();
       if(!txt) return;
       sendToTv({ticker:txt});
-    });
-
-    btnScore.addEventListener('click',()=>{
-      const nombre = (inpNombre.value || '').trim();
-      const pts    = parseInt(inpPuntos.value,10);
-      if(!nombre || isNaN(pts)) return;
-
-      let j = marcador.find(x=>x.nombre.toLowerCase()===nombre.toLowerCase());
-      if(!j){
-        j = {nombre,puntos:pts};
-        marcador.push(j);
-      } else {
-        j.puntos = pts;
-      }
-      inpNombre.value='';
-      inpPuntos.value='';
-      renderMarcador();
-    });
-
-    btnSecuencia.addEventListener('click',()=>{
-      // forzamos a que TV repita su secuencia interna empezando por calibración
-      sendToTv({pantalla:'calibracion', ticker:'ajustando señal · la emisión comienza en breves…'});
-      // luego el propio tv.html hace su intro automática
-    });
+    };
   </script>
 </body>
 </html>
