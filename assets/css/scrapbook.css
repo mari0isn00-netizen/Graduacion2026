@@ -1,0 +1,220 @@
+/* -------------------------------------------------
+   SEÑAL G – SCRAPBOOK + TV STYLE
+   ------------------------------------------------- */
+
+/* ---------- VARIABLES ---------- */
+:root {
+  /* COLORS (paleta de “scrapbook retro”) */
+  --bg-cream       : #F5EDD6;   /* papel base */
+  --bg-kraft       : #C4956A;   /* fondo kraft */
+  --red-vintage    : #C0392B;   /* acento rojo */
+  --blue-slate     : #2C3E6B;   /* azul pizarra (texto) */
+  --yellow-mustard : #D4A017;   /* amarillento */
+  --green-dark     : #2D6A4F;   /* verde oscuro */
+  --paper-shadow  : rgba(0,0,0,.1);
+}
+
+/* ---------- RESETEO ---------- */
+*,
+*::before,
+*::after { box-sizing:border-box; margin:0; padding:0; }
+
+/* ---------- BODY ---------- */
+html,body {
+  height:100%;
+  font-family:'Courier Prime',monospace;
+  background:var(--bg-cream);
+  color:var(--blue-slate);
+  overflow-x:hidden;
+}
+
+/* ---------- CONTENEDOR PRINCIPAL ---------- */
+.container {
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  background-image:
+    linear-gradient(45deg,rgba(196,149,106,.08) 25%,transparent 25%),
+    linear-gradient(-45deg,rgba(196,149,106,.08) 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,rgba(196,149,106,.08) 75%),
+    linear-gradient(-45deg,transparent 75%,rgba(196,149,106,.08) 75%);
+  background-size:20px 20px;
+}
+
+/* ---------- ENCABEZADO (ON AIR) ---------- */
+.header {
+  background:var(--red-vintage);
+  color:#fff;
+  text-align:center;
+  padding:.8rem 0;
+  position:relative;
+  font-family:'Press Start 2P',cursive;
+  box-shadow:0 3px 5px var(--paper-shadow);
+}
+.header::after {
+  content:'ON AIR';
+  position:absolute;
+  right:1rem;
+  top:50%;
+  transform:translateY(-50%);
+  background:var(--yellow-mustard);
+  color:var(--blue-slate);
+  padding:.15rem .6rem;
+  border-radius:3px;
+  font-size:.9rem;
+  font-family:'Press Start 2P',cursive;
+}
+.header h1 {
+  font-size:2.2rem;
+  margin:.2rem 0;
+  text-shadow:2px 2px 0 var(--bg-kraft);
+}
+
+/* ---------- SUBTÍTULO ---------- */
+.subtitle { font-size:.9rem; color:var(--yellow-mustard); }
+
+/* ---------- TICKER ---------- */
+.ticker {
+  background:var(--blue-slate);
+  color:#fff;
+  font-family:'Press Start 2P',cursive;
+  font-size:.9rem;
+  padding:.3rem 0;
+  overflow:hidden;
+  white-space:nowrap;
+  position:relative;
+}
+.ticker span {
+  display:inline-block;
+  padding-left:100%;
+  animation:ticker 20s linear infinite;
+}
+@keyframes ticker{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-100%);}
+}
+
+/* ---------- MAIN CONTENT ---------- */
+.content {
+  flex:1;
+  padding:1.5rem;
+  display:flex;
+  flex-direction:column;
+  gap:1.5rem;
+}
+
+/* ---------- SCRAP “PAPER” WRAPPER (para cada bloque) ---------- */
+.paper {
+  background:#fff;
+  padding:1rem;
+  margin:0.5rem 0;
+  border:2px solid var(--bg-kraft);
+  border-radius:6px;
+  box-shadow:2px 2px 5px var(--paper-shadow);
+  position:relative;
+}
+
+/* sombra “hand‑torn” (pseudo‑element) */
+.paper::before,
+.paper::after {
+  content:"";
+  position:absolute;
+  width:100%;
+  height:12px;
+  left:0;
+  background:inherit;
+}
+.paper::before{
+  top:-12px;
+  clip-path:polygon(0% 100%, 5% 0%, 10% 100%, 15% 0%, 20% 100%, 25% 0%, 30% 100%, 35% 0%, 40% 100%, 45% 0%, 50% 100%, 55% 0%, 60% 100%, 65% 0%, 70% 100%, 75% 0%, 80% 100%, 85% 0%, 90% 100%, 95% 0%, 100% 100%);
+}
+.paper::after{
+  bottom:-12px;
+  clip-path:polygon(0% 0%, 5% 100%, 10% 0%, 15% 100%, 20% 0%, 25% 100%, 30% 0%, 35% 100%, 40% 0%, 45% 100%, 50% 0%, 55% 100%, 60% 0%, 65% 100%, 70% 0%, 75% 100%, 80% 0%, 85% 100%, 90% 0%, 95% 100%, 100% 0%);
+}
+
+/* ---------- QR SECTION ---------- */
+.qr-section { text-align:center; }
+.qr-section h2 { margin-bottom:.5rem; }
+.qr-wrapper {
+  margin:1rem auto;
+  width:300px; height:300px;
+  background:var(--green-dark);
+  border:4px dashed var(--blue-slate);
+  border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 8px var(--paper-shadow);
+}
+.qr-placeholder { color:#fff; font-weight:bold; font-size:1.2rem; }
+.hint { font-size:.9rem; color:var(--red-vintage); margin-top:.4rem; }
+
+/* ---------- PLAYERS LIST ---------- */
+.players-section h2 { margin-bottom:.5rem; }
+.players-list {
+  list-style:none;
+  padding-left:0;
+}
+.players-list li {
+  background:rgba(255,255,255,.9);
+  margin:4px 0;
+  padding:6px 10px;
+  border-left:4px solid var(--red-vintage);
+}
+
+/* ---------- SCOREBOARD ---------- */
+.scoreboard-section h2 { margin-bottom:.5rem; }
+.scoreboard {
+  width:100%;
+  border-collapse:collapse;
+}
+.scoreboard th,
+.scoreboard td {
+  border:1px solid var(--bg-kraft);
+  padding:6px 8px;
+  background:rgba(255,255,255,.9);
+}
+.phase-indicator {
+  margin-top:.5rem;
+  font-weight:bold;
+  color:var(--red-vintage);
+}
+
+/* ---------- FOOTER ---------- */
+.footer {
+  text-align:center;
+  padding:.7rem;
+  background:var(--bg-kraft);
+  color:#fff;
+  font-size:.85rem;
+}
+
+/* ---------- SCAN‑LINES (TV effect) ---------- */
+body::after {
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:repeating-linear-gradient(
+    to bottom,
+    rgba(0,0,0,.04) 0,
+    rgba(0,0,0,.04) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  z-index:999;
+}
+
+/* ---------- BUTTONS (broadcast style) ---------- */
+button, .big-btn {
+  background:var(--red-vintage);
+  color:#fff;
+  border:none;
+  padding:.6rem 1.2rem;
+  font-family:'Press Start 2P',cursive;
+  font-size:1rem;
+  cursor:pointer;
+  margin-top:.5rem;
+  border-radius:4px;
+  transition:transform .1s;
+}
+button:hover, .big-btn:hover { transform:scale(1.05); }
