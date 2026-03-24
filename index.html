@@ -5,16 +5,16 @@
   <title>Fiesta Graduación – Emisión en directo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=DM+Serif+Display&family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet" />
 
   <style>
     :root{
-      --bg:#111317;
-      --panel:#1E222B;
+      --bg:#050608;
+      --crt:#16171F;
+      --crt-soft:#222435;
       --accent:#F5EDD6;
       --accent2:#C4956A;
-      --warn:#E74C3C;
-      --ok:#2ECC71;
+      --warn:#FF4C4C;
       --ink:#FDFDFD;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -22,105 +22,141 @@
 
     body{
       font-family:'DM Sans',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-      background:radial-gradient(circle at 0 0,#252b3a,transparent 55%),radial-gradient(circle at 100% 100%,#141722,transparent 55%),#05060a;
+      background:radial-gradient(circle at 0 0,#31353f,transparent 55%),radial-gradient(circle at 100% 100%,#151823,transparent 55%),#000;
       color:var(--ink);
       display:flex;
       justify-content:center;
       align-items:center;
-      padding:1.5rem;
+      padding:0;
+      overflow:hidden;
     }
 
     .frame{
-      width:100%;
-      max-width:1200px;
-      aspect-ratio:16/9;
+      /* más grande, casi pantalla completa */
+      width:100vw;
+      height:100vh;
+      max-width:1400px;
+      max-height:800px;
       background:#000;
-      border-radius:18px;
-      box-shadow:0 0 0 4px #000,0 22px 40px rgba(0,0,0,.9);
+      border-radius:26px;
+      box-shadow:
+        0 0 0 8px #000,
+        0 0 0 12px #1b1b1b,
+        0 40px 80px rgba(0,0,0,.95);
       position:relative;
       overflow:hidden;
     }
 
-    /* scanlines + ligero glow */
-    .frame::after{
+    .bezel-label{
+      position:absolute;
+      left:50%;
+      bottom:6px;
+      transform:translateX(-50%);
+      font-family:'Press Start 2P',cursive;
+      font-size:.55rem;
+      letter-spacing:.2em;
+      color:#b0b0b0;
+      text-transform:uppercase;
+      opacity:.7;
+    }
+
+    .screen{
+      position:absolute;
+      inset:16px 20px 26px;
+      background:radial-gradient(circle at 50% 0,#2a3146,#111319);
+      border-radius:16px;
+      padding:10px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      box-shadow:inset 0 0 40px rgba(0,0,0,.9);
+    }
+
+    /* scanlines + distorsión CRT */
+    .screen::after{
       content:"";
       position:absolute;
       inset:0;
       pointer-events:none;
       background:
-        repeating-linear-gradient(to bottom,rgba(255,255,255,.02) 0,rgba(255,255,255,.02) 1px,transparent 1px,transparent 3px),
-        radial-gradient(circle at 50% -20%,rgba(255,255,255,.14),transparent 60%);
+        repeating-linear-gradient(to bottom,rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 1px,transparent 1px,transparent 3px),
+        radial-gradient(circle at 50% -10%,rgba(255,255,255,.25),transparent 60%);
       mix-blend-mode:screen;
-      opacity:.6;
-      z-index:20;
+      opacity:.65;
+      z-index:30;
     }
 
-    .screen{
+    .noise{
       position:absolute;
-      inset:10px 14px;
-      background:radial-gradient(circle at 50% 0,#31384a,#12141a);
-      border-radius:12px;
-      padding:10px 12px 12px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
+      inset:0;
+      mix-blend-mode:soft-light;
+      opacity:.13;
+      background-image:url('https://grainy-gradients.vercel.app/noise.svg');
+      pointer-events:none;
+      z-index:25;
     }
 
-    /* Header ON AIR */
+    /* HEADER retro */
     .header{
       display:flex;
       align-items:center;
       justify-content:space-between;
       padding:6px 10px;
-      background:linear-gradient(90deg,#0c0f16,#232733);
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,.05);
+      background:linear-gradient(#111216,#252835);
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.15);
+      box-shadow:0 2px 0 rgba(0,0,0,.7);
       font-size:.8rem;
+      position:relative;
+      z-index:10;
     }
+
     .logo-block{
       display:flex;
       align-items:center;
       gap:10px;
     }
     .logo-mark{
-      width:32px;
-      height:32px;
-      border-radius:8px;
-      background:conic-gradient(from 210deg,#F5EDD6,#C4956A,#E67E22,#F5EDD6);
+      width:36px;
+      height:28px;
+      border-radius:6px;
+      background:linear-gradient(135deg,#F5EDD6,#C4956A);
       display:flex;
       align-items:center;
       justify-content:center;
       font-family:'Press Start 2P',cursive;
       font-size:.6rem;
-      color:#222;
-      box-shadow:0 0 0 2px rgba(0,0,0,.7);
+      color:#2b1f15;
+      box-shadow:0 0 0 2px #000;
     }
-    .logo-text h1{
-      font-family:'DM Serif Display',serif;
-      font-size:1.05rem;
-      line-height:1.1;
+    .logo-text{
+      font-family:'Press Start 2P',cursive;
+      font-size:.6rem;
+      line-height:1.4;
+      text-transform:uppercase;
+      letter-spacing:.16em;
     }
     .logo-text span{
-      font-size:.65rem;
-      color:#c7d0e0;
-      letter-spacing:.16em;
-      text-transform:uppercase;
+      display:block;
+      font-size:.5rem;
+      color:#d3d9ef;
+      letter-spacing:.18em;
     }
 
     .onair{
       display:flex;
       align-items:center;
-      gap:10px;
+      gap:12px;
       font-family:'Press Start 2P',cursive;
-      font-size:.6rem;
+      font-size:.55rem;
     }
     .onair-badge{
-      background:#E53935;
+      background:#c20b0b;
       color:#fff;
-      padding:4px 8px;
+      padding:4px 10px;
       border-radius:999px;
-      letter-spacing:.18em;
-      box-shadow:0 0 10px rgba(229,57,53,.8);
+      letter-spacing:.22em;
+      box-shadow:0 0 16px rgba(255,0,0,.9);
       position:relative;
     }
     .onair-badge::before{
@@ -129,129 +165,143 @@
       color:#ffeb3b;
       animation:pulse 1s infinite;
     }
-    @keyframes pulse{50%{opacity:.3}}
+    @keyframes pulse{50%{opacity:.2}}
 
     .clock{
-      font-family:'Press Start 2P',cursive;
-      font-size:.54rem;
-      color:#9ca6c1;
+      font-size:.55rem;
+      color:#9ca6d2;
     }
 
-    /* Zona central: izquierda juego / derecha marcador */
+    /* CUERPO PRINCIPAL */
     .middle{
       flex:1;
       display:grid;
-      grid-template-columns:3fr 1.7fr;
+      grid-template-columns:2.6fr 1.7fr;
       gap:10px;
       margin-top:4px;
     }
     @media(max-width:900px){
-      .middle{grid-template-columns:1.7fr 1.3fr;}
+      .middle{grid-template-columns:1.8fr 1.2fr;}
     }
 
     .stage{
-      background:radial-gradient(circle at 50% -40%,rgba(245,237,214,.18),transparent 65%),linear-gradient(135deg,#202330,#14151d);
+      background:radial-gradient(circle at 50% -40%,rgba(245,237,214,.12),transparent 60%),linear-gradient(135deg,#191b26,#101017);
       border-radius:10px;
-      border:1px solid rgba(255,255,255,.08);
-      padding:10px 10px 8px;
+      border:1px solid rgba(255,255,255,.12);
+      padding:8px 9px 6px;
       display:flex;
       flex-direction:column;
       gap:6px;
       position:relative;
       overflow:hidden;
     }
-    .stage-title{
+
+    .scan-mask{
+      position:absolute;
+      inset:-10%;
+      border-radius:50%;
+      box-shadow:0 0 80px rgba(0,0,0,.9) inset;
+      pointer-events:none;
+      opacity:.6;
+    }
+
+    .stage-top{
       display:flex;
       justify-content:space-between;
       align-items:center;
-      font-size:.8rem;
-      color:#d5dde9;
+      font-size:.7rem;
+      color:#d3dae9;
     }
-    .stage-title span.label{
-      letter-spacing:.18em;
+    .stage-top-left span.mode{
+      font-family:'Press Start 2P',cursive;
+      font-size:.55rem;
+      letter-spacing:.2em;
       text-transform:uppercase;
-      font-size:.65rem;
-      color:#9099b4;
+      color:#9aa4c9;
     }
-    .stage-title span.game-name{
-      font-weight:600;
+    .stage-top-left h2{
+      margin-top:4px;
       font-size:.9rem;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+    .stage-top-right{
+      text-align:right;
+      font-size:.65rem;
+      color:#a3aec9;
     }
 
     .stage-main{
       flex:1;
-      border-radius:8px;
-      background:repeating-linear-gradient(
-        135deg,
-        rgba(245,237,214,.08) 0,
-        rgba(245,237,214,.08) 18px,
-        transparent 18px,
-        transparent 36px
-      );
-      border:1px solid rgba(255,255,255,.05);
+      margin-top:4px;
+      border-radius:9px;
+      border:1px solid rgba(255,255,255,.06);
+      background:
+        radial-gradient(circle at 10% 0,rgba(245,237,214,.14),transparent 55%),
+        repeating-linear-gradient(135deg,rgba(80,90,120,.2) 0,rgba(80,90,120,.2) 18px,transparent 18px,transparent 36px);
       display:flex;
       align-items:center;
       justify-content:center;
       position:relative;
       overflow:hidden;
     }
-    .stage-overlay{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      background:radial-gradient(circle at 50% 100%,rgba(0,0,0,.45),transparent 60%);
-      opacity:.7;
-    }
-    .stage-center-text{
+
+    .stage-center{
       text-align:center;
-      z-index:1;
+      z-index:5;
+      max-width:70%;
     }
-    .stage-center-text h2{
-      font-family:'DM Serif Display',serif;
-      font-size:1.6rem;
-      margin-bottom:.2rem;
+    .stage-center h3{
+      font-family:'Press Start 2P',cursive;
+      font-size:.8rem;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:#f5efd8;
+      margin-bottom:.5rem;
     }
-    .stage-center-text p{
+    .stage-center p{
       font-size:.9rem;
-      color:#d0d6e4;
+      line-height:1.5;
+      color:#d3d7eb;
     }
 
-    /* marcador lateral */
+    /* lateral marcador */
     .sidebar{
-      background:linear-gradient(180deg,#1b212e,#131722);
+      background:radial-gradient(circle at 0 0,rgba(245,237,214,.16),transparent 55%),linear-gradient(180deg,#151822,#0b0c12);
       border-radius:10px;
-      border:1px solid rgba(255,255,255,.08);
-      padding:8px 9px;
+      border:1px solid rgba(255,255,255,.15);
+      padding:7px 8px;
       display:flex;
       flex-direction:column;
       gap:6px;
       font-size:.8rem;
     }
-    .board-header{
+    .board-head{
       display:flex;
       justify-content:space-between;
       align-items:center;
     }
-    .board-header span.label{
+    .board-head span.label{
+      font-family:'Press Start 2P',cursive;
+      font-size:.55rem;
       letter-spacing:.18em;
       text-transform:uppercase;
-      font-size:.65rem;
-      color:#9aa3be;
+      color:#a9b3d5;
     }
-    .board-header span.phase{
-      font-size:.7rem;
-      padding:3px 7px;
+    .board-phase{
+      font-family:'Press Start 2P',cursive;
+      font-size:.55rem;
+      padding:4px 8px;
       border-radius:999px;
-      background:#263043;
-      color:#e2e7f3;
+      background:#252b3d;
+      color:#f1f4ff;
     }
 
     .score-list{
       margin-top:4px;
+      background:rgba(0,0,0,.85);
       border-radius:8px;
-      background:rgba(4,6,12,.8);
-      border:1px solid rgba(255,255,255,.06);
-      padding:4px 0;
+      border:1px solid rgba(255,255,255,.18);
       overflow:hidden;
     }
     .score-row{
@@ -259,15 +309,15 @@
       align-items:center;
       justify-content:space-between;
       padding:4px 8px;
-      font-size:.78rem;
-      border-bottom:1px solid rgba(255,255,255,.03);
+      font-size:.8rem;
+      border-bottom:1px solid rgba(255,255,255,.06);
     }
     .score-row:last-child{border-bottom:none;}
     .score-pos{
       width:18px;
       text-align:center;
-      color:#8d96b2;
       font-size:.7rem;
+      color:#7f8ab0;
     }
     .score-name{
       flex:1;
@@ -277,29 +327,31 @@
       text-overflow:ellipsis;
     }
     .score-points{
-      font-weight:600;
-      color:#f5d59b;
-      font-size:.8rem;
+      font-family:'Press Start 2P',cursive;
+      font-size:.6rem;
+      color:#ffe3a3;
     }
 
     .footer-strip{
-      height:40px;
-      margin-top:6px;
+      height:38px;
+      margin-top:4px;
       border-radius:8px;
       overflow:hidden;
-      border:1px solid rgba(255,255,255,.08);
-      background:#05060d;
+      border:1px solid rgba(255,255,255,.18);
+      background:#05060c;
       display:flex;
       align-items:center;
+      position:relative;
+      z-index:10;
     }
     .footer-label{
-      flex:0 0 120px;
+      flex:0 0 130px;
       height:100%;
       background:linear-gradient(135deg,#C4956A,#F5EDD6);
-      color:#2f2417;
+      color:#2b1f15;
       font-family:'Press Start 2P',cursive;
-      font-size:.52rem;
-      letter-spacing:.16em;
+      font-size:.55rem;
+      letter-spacing:.18em;
       text-transform:uppercase;
       display:flex;
       align-items:center;
@@ -310,7 +362,7 @@
       overflow:hidden;
       white-space:nowrap;
       color:#e0e5f5;
-      font-size:.7rem;
+      font-size:.72rem;
       padding-left:10px;
       position:relative;
     }
@@ -325,13 +377,15 @@
 <body>
   <div class="frame">
     <div class="screen">
+      <div class="noise"></div>
+
       <!-- CABECERA -->
       <header class="header">
         <div class="logo-block">
           <div class="logo-mark">FG</div>
           <div class="logo-text">
-            <h1>Fiesta Graduación</h1>
-            <span>Special Challenges Night</span>
+            FIESTA GRADUACIÓN
+            <span>special challenges night</span>
           </div>
         </div>
         <div class="onair">
@@ -342,58 +396,58 @@
 
       <!-- CUERPO PRINCIPAL -->
       <div class="middle">
-        <!-- Zona “plato” -->
+        <!-- ESCENARIO -->
         <section class="stage">
-          <div class="stage-title">
-            <div>
-              <span class="label">ahora · bienvenidos</span><br />
-              <span class="game-name" id="current-label">Presentación del programa</span>
+          <div class="scan-mask"></div>
+          <div class="stage-top">
+            <div class="stage-top-left">
+              <span class="mode">ahora · bienvenida</span>
+              <h2 id="current-label">NOCHE DE RETOS</h2>
             </div>
-            <div style="text-align:right;font-size:.7rem;color:#b7c1da;">
-              Campo de Mario<br />Promoción 2026
+            <div class="stage-top-right">
+              Campo de Mario<br />Promoción 4º ESO
             </div>
           </div>
 
           <div class="stage-main">
-            <div class="stage-center-text">
-              <h2>Noche de retos</h2>
+            <div class="stage-center">
+              <h3>todos sois concursantes</h3>
               <p id="stage-sub">
-                Todos los invitados son concursantes. Preparad móviles, risas y algo de
-                valor para sobrevivir a las pruebas.
+                Preparad el móvil, las risas y un poco de valor. Esta noche
+                Undercover, La Bomba, Adivina Quién Dijo y más pruebas decidirán
+                quién se lleva los premios finales.
               </p>
             </div>
-            <div class="stage-overlay"></div>
           </div>
         </section>
 
-        <!-- Marcador lateral -->
+        <!-- MARCADOR -->
         <aside class="sidebar">
-          <div class="board-header">
+          <div class="board-head">
             <span class="label">marcador general</span>
-            <span class="phase" id="phase-pill">Lobby · Esperando inicio</span>
+            <span class="board-phase" id="phase-pill">Lobby · Esperando inicio</span>
           </div>
 
           <div class="score-list" id="score-list">
-            <!-- filas de ejemplo estáticas -->
             <div class="score-row">
               <span class="score-pos">1</span>
               <span class="score-name">Lucía</span>
-              <span class="score-points">0 pts</span>
+              <span class="score-points">000 pts</span>
             </div>
             <div class="score-row">
               <span class="score-pos">2</span>
               <span class="score-name">Mario</span>
-              <span class="score-points">0 pts</span>
+              <span class="score-points">000 pts</span>
             </div>
             <div class="score-row">
               <span class="score-pos">3</span>
               <span class="score-name">Iván</span>
-              <span class="score-points">0 pts</span>
+              <span class="score-points">000 pts</span>
             </div>
             <div class="score-row">
               <span class="score-pos">4</span>
               <span class="score-name">Sofía</span>
-              <span class="score-points">0 pts</span>
+              <span class="score-points">000 pts</span>
             </div>
           </div>
         </aside>
@@ -410,32 +464,32 @@
         </div>
       </div>
     </div>
+
+    <div class="bezel-label">fiesta graduación · special challenges · vhs edition</div>
   </div>
 
   <script>
-    // Reloj en la esquina
-    function updateClock() {
-      const el = document.getElementById('clock');
-      const d = new Date();
-      const hh = String(d.getHours()).padStart(2,'0');
-      const mm = String(d.getMinutes()).padStart(2,'0');
-      const ss = String(d.getSeconds()).padStart(2,'0');
-      el.textContent = `${hh}:${mm}:${ss}`;
+    function updateClock(){
+      const el=document.getElementById('clock');
+      const d=new Date();
+      const hh=String(d.getHours()).padStart(2,'0');
+      const mm=String(d.getMinutes()).padStart(2,'0');
+      const ss=String(d.getSeconds()).padStart(2,'0');
+      el.textContent=`${hh}:${mm}:${ss}`;
     }
     setInterval(updateClock,1000);
     updateClock();
 
-    // Mensajes de ticker rotando
-    const mensajes = [
+    const mensajes=[
       'Bienvenidos a la noche de Challenges de la graduación ·',
-      'Undercover, La Bomba, Adivina Quién Dijo y más pruebas por equipos ·',
-      'Recordad: móviles cargados, ganas de jugar y cero vergüenza en el porche ·'
+      'Undercover, La Bomba, Adivina Quién Dijo y más pruebas del grupo ·',
+      'Recordad: móviles cargados, cero vergüenza y muchas ganas de jugar ·'
     ];
-    let idx = 0;
+    let idx=0;
     setInterval(()=>{
-      idx = (idx+1)%mensajes.length;
-      document.getElementById('ticker').textContent = mensajes[idx];
-    }, 20000);
+      idx=(idx+1)%mensajes.length;
+      document.getElementById('ticker').textContent=mensajes[idx];
+    },20000);
   </script>
 </body>
 </html>
