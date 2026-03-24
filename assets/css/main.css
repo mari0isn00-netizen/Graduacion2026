@@ -1,0 +1,95 @@
+﻿/* SEÑAL G - CSS Principal */
+:root {
+  --bg-cream: #F5EDD6;
+  --bg-kraft: #C4956A;
+  --red-vintage: #C0392B;
+  --blue-slate: #2C3E6B;
+  --yellow-mustard: #D4A017;
+  --green-dark: #2D6A4F;
+}
+
+body {
+  font-family: 'Courier Prime', monospace;
+  background: var(--bg-cream);
+  color: var(--blue-slate);
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  min-height: 100vh;
+  background-image: 
+    linear-gradient(45deg, rgba(196,149,106,0.08) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(196,149,106,0.08) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(196,149,106,0.08) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(196,149,106,0.08) 75%);
+  background-size: 20px 20px;
+}
+
+.header, .footer {
+  text-align: center;
+  padding: 1rem;
+  background: var(--blue-slate);
+  color: white;
+}
+
+.header h1 {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 2.2rem;
+  letter-spacing: 2px;
+  text-shadow: 2px 2px 0 var(--red-vintage);
+  margin-bottom: 0.2rem;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: var(--yellow-mustard);
+}
+
+.content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.qr-section { text-align: center; }
+.qr-wrapper {
+  margin: 1rem auto;
+  width: 300px;
+  height: 300px;
+  background: var(--green-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.players-list {
+  list-style: none;
+  padding-left: 0;
+}
+.players-list li {
+  background: rgba(255,255,255,0.8);
+  margin: 4px 0;
+  padding: 6px 10px;
+  border-left: 4px solid var(--red-vintage);
+}
+
+.scoreboard {
+  width: 100%;
+  border-collapse: collapse;
+}
+.scoreboard th, .scoreboard td {
+  border: 1px solid var(--bg-kraft);
+  padding: 6px 8px;
+  text-align: left;
+  background: rgba(255,255,255,0.9);
+}
+.phase-indicator {
+  margin-top: 0.5rem;
+  font-weight: bold;
+  color: var(--red-vintage);
+}

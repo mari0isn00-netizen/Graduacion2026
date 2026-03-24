@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SEÑAL G – Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/assets/js/admin.js" defer></script>
+</head>
+<body class="admin">
+  <div class="container">
+    <header class="header"><h1>👑 Panel admin – SEÑAL G</h1></header>
+    <main class="content">
+      <section id="register-section" class="panel">
+        <h2>¡Bienvenido!</h2>
+        <label for="admin-name">Tu nombre:</label>
+        <input type="text" id="admin-name" placeholder="Ej: Laura">
+        <button id="admin-register-btn">Entrar como Admin</button>
+      </section>
+      <section id="control-panel" class="panel hidden">
+        <h2>Control de la noche</h2>
+        <div class="subsection">
+          <h3>Jugadores (<span id="admin-players-count">0</span>)</h3>
+          <ul id="admin-players-list" class="players-list"></ul>
+        </div>
+        <div class="subsection">
+          <h3>Equipos (2 vs 2)</h3>
+          <div class="teams">
+            <div class="team" id="team-1"><h4>Equipo 1</h4><ul class="team-list"></ul></div>
+            <div class="team" id="team-2"><h4>Equipo 2</h4><ul class="team-list"></ul></div>
+          </div>
+          <button id="auto-assign-btn">Asignar aleatoriamente</button>
+        </div>
+        <div class="subsection">
+          <h3>Juego activo</h3>
+          <select id="game-select">
+            <option value="">-- Selecciona juego --</option>
+            <option value="musica-stop">🎵 Música y Stop</option>
+            <option value="la-bomba">💣 La Bomba</option>
+            <option value="undercover">🕵️ Undercover</option>
+            <option value="quien-lo-dijo">💬 ¿Quién lo dijo?</option>
+            <option value="esconder-objeto">🫙 Esconder Objeto</option>
+            <option value="telefono-roto">📞 Teléfono Roto</option>
+            <option value="escondite-extremo">🏃 Escondite Extremo</option>
+            <option value="soga-digital">🪢 Soga Digital</option>
+          </select>
+          <button id="start-game-btn">Iniciar juego</button>
+        </div>
+        <div class="subsection">
+          <h3>Eventos del sistema</h3>
+          <ul id="event-log" class="event-log"></ul>
+        </div>
+      </section>
+    </main>
+    <footer class="footer"><p>🛠️ Herramientas para la diversión</p></footer>
+  </div>
+</body>
+</html>
