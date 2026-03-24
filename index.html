@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>SEÑAL G – TV Lobby</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Fuentes -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-cream:#F5EDD6;
+      --bg-kraft:#C4956A;
+      --red:#C0392B;
+      --blue:#2C3E6B;
+      --yellow:#D4A017;
+      --green:#2D6A4F;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+    html,body{
+      height:100%;
+      font-family:'Courier Prime',monospace;
+      background:var(--bg-cream);
+      color:var(--blue);
+    }
+
+    .container{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      background-image:
+        linear-gradient(45deg,rgba(196,149,106,.08)25%,transparent25%),
+        linear-gradient(-45deg,rgba(196,149,106,.08)25%,transparent25%),
+        linear-gradient(45deg,transparent75%,rgba(196,149,106,.08)75%),
+        linear-gradient(-45deg,transparent75%,rgba(196,149,106,.08)75%);
+      background-size:20px 20px;
+      position:relative;
+    }
+
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,.04)0,
+        rgba(0,0,0,.04)1px,
+        transparent 1px,
+        transparent 3px
+      );
+      z-index:10;
+    }
+
+    .header{
+      background:var(--red);
+      color:#fff;
+      text-align:center;
+      padding:.8rem 1rem;
+      position:relative;
+      box-shadow:0 4px 0 rgba(0,0,0,.25);
+    }
+    .header::before{
+      content:"● REC";
+      position:absolute;
+      left:1rem;
+      top:50%;
+      transform:translateY(-50%);
+      font-family:'Press Start 2P',cursive;
+      font-size:.6rem;
+      color:var(--yellow);
+      animation:blink 1s step-end infinite;
+    }
+    .header::after{
+      content:"ON AIR";
+      position:absolute;
+      right:1rem;
+      top:50%;
+      transform:translateY(-50%);
+      font-family:'Press Start 2P',cursive;
+      font-size:.7rem;
+      background:var(--yellow);
+      color:var(--blue);
+      padding:.2rem .6rem;
+      border-radius:3px;
+      box-shadow:0 0 4px rgba(0,0,0,.4);
+    }
+    @keyframes blink{50%{opacity:0}}
+
+    .header h1{
+      font-family:'Press Start 2P',cursive;
+      font-size:clamp(1.4rem,4vw,2.4rem);
+      text-shadow:3px 3px 0 var(--bg-kraft),5px 5px 0 rgba(0,0,0,.3);
+      letter-spacing:.08em;
+    }
+    .subtitle{
+      font-size:.8rem;
+      color:var(--yellow);
+      margin-top:.3rem;
+    }
+
+    .ticker{
+      background:var(--blue);
+      color:#fff;
+      font-family:'Press Start 2P',cursive;
+      font-size:.7rem;
+      padding:.3rem 0;
+      overflow:hidden;
+      white-space:nowrap;
+    }
+    .ticker span{
+      display:inline-block;
+      padding-left:100%;
+      animation:ticker 22s linear infinite;
+    }
+    @keyframes ticker{to{transform:translateX(-200%)}}
+
+    .content{
+      flex:1;
+      padding:1.5rem;
+      display:flex;
+      flex-direction:column;
+      gap:1.5rem;
+      position:relative;
+      z-index:1;
+    }
+
+    section{
+      background:rgba(255,255,255,.9);
+      border:2px solid var(--bg-kraft);
+      border-radius:6px;
+      padding:1rem;
+      box-shadow:3px 3px 0 rgba(0,0,0,.2);
+    }
+    section h2{
+      font-family:'Press Start 2P',cursive;
+      font-size:.9rem;
+      color:var(--red);
+      margin-bottom:.7rem;
+      border-bottom:2px dashed var(--bg-kraft);
+      padding-bottom:.4rem;
+    }
+
+    .qr-section{text-align:center;}
+    .qr-wrapper{
+      margin:1rem auto;
+      width:260px;
+      height:260px;
+      background:var(--green);
+      border:4px dashed var(--blue);
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-weight:bold;
+      position:relative;
+    }
+    .qr-wrapper::before{
+      content:"nota de producción";
+      position:absolute;
+      top:-12px;
+      left:-8px;
+      background:var(--yellow);
+      color:var(--blue);
+      padding:2px 6px;
+      font-size:.6rem;
+      transform:rotate(-6deg);
+      box-shadow:0 2px 0 rgba(0,0,0,.25);
+    }
+    .hint{
+      font-size:.8rem;
+      color:var(--red);
+      margin-top:.4rem;
+    }
+
+    .players-list{list-style:none;padding-left:0;}
+    .players-list li{
+      background:rgba(255,255,255,.85);
+      margin:3px 0;
+      padding:5px 10px;
+      border-left:4px solid var(--red);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size:.9rem;
+    }
+    .badge-role{
+      font-size:.7rem;
+      font-family:'Press Start 2P',cursive;
+      background:var(--blue);
+      color:#fff;
+      padding:2px 5px;
+      border-radius:3px;
+    }
+
+    .scoreboard{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.9rem;
+    }
+    .scoreboard th,
+    .scoreboard td{
+      padding:6px 8px;
+      border:1px solid var(--bg-kraft);
+      background:rgba(255,255,255,.95);
+    }
+    .scoreboard th{
+      background:var(--blue);
+      color:#fff;
+      font-size:.75rem;
+    }
+    .scoreboard tr:nth-child(1) td{background:#ffeaa7;font-weight:bold;}
+    .scoreboard tr:nth-child(2) td{background:#dfe6e9;}
+    .scoreboard tr:nth-child(3) td{background:#fab1a0;}
+
+    .panel-reg{
+      position:fixed;
+      right:1rem;
+      bottom:1rem;
+      width:220px;
+      background:rgba(255,255,255,.96);
+      border:2px solid var(--bg-kraft);
+      border-radius:6px;
+      padding:.8rem;
+      box-shadow:3px 3px 0 rgba(0,0,0,.25);
+      z-index:20;
+    }
+    .panel-reg h3{
+      font-family:'Press Start 2P',cursive;
+      font-size:.7rem;
+      margin-bottom:.4rem;
+      color:var(--red);
+    }
+    .panel-reg input,.panel-reg select{
+      width:100%;
+      margin:.3rem 0;
+      padding:.4rem .5rem;
+      border:2px solid var(--blue);
+      border-radius:3px;
+      font-family:'Courier Prime',monospace;
+      font-size:.85rem;
+      background:var(--bg-cream);
+    }
+    .panel-reg button{
+      width:100%;
+      margin-top:.3rem;
+      padding:.5rem;
+      border:none;
+      cursor:pointer;
+      background:var(--red);
+      color:#fff;
+      font-family:'Press Start 2P',cursive;
+      font-size:.7rem;
+      border-radius:3px;
+      box-shadow:2px 2px 0 rgba(0,0,0,.3);
+    }
+    .panel-reg button:hover{transform:translate(-1px,-1px);}
+    .footer{
+      text-align:center;
+      padding:.6rem;
+      background:var(--bg-kraft);
+      color:#fff;
+      font-size:.8rem;
+      z-index:1;
+    }
+    @media(max-width:768px){
+      .panel-reg{position:static;width:auto;margin:0 1rem 1rem;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>SEÑAL G</h1>
+      <p class="subtitle">Señal de Graduación · Lobby TV</p>
+    </header>
+
+    <div class="ticker">
+      <span id="ticker-text">Bienvenidos a SEÑAL G — El programa de TV más caótico de la graduación —</span>
+    </div>
+
+    <main class="content">
+      <section class="qr-section">
+        <h2>Escanea y únete</h2>
+        <div class="qr-wrapper">
+          <div>
+            <p style="font-size:.8rem;line-height:1.4">
+              Aquí irá un QR gigante<br>
+              con la URL real,<br>
+              pero por ahora<br>
+              abre <strong>/player</strong> en el móvil.
+            </p>
+          </div>
+        </div>
+        <p class="hint">Versión prototipo: solo lobby visual sin servidor.</p>
+      </section>
+
+      <section>
+        <h2>Participantes (<span id="players-count">0</span>)</h2>
+        <ul id="players-list" class="players-list"></ul>
+      </section>
+
+      <section>
+        <h2>Puntuación global</h2>
+        <table class="scoreboard">
+          <thead>
+            <tr><th>#</th><th>Jugador</th><th>Puntos</th></tr>
+          </thead>
+          <tbody id="scores-body"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <footer class="footer">
+      SEÑAL G · Scrapbook Retro Broadcast · 2026
+    </footer>
+
+    <div class="panel-reg">
+      <h3>Simular jugador</h3>
+      <input type="text" id="inp-nombre" placeholder="Nombre" />
+      <select id="sel-tipo">
+        <option value="jugador">Jugador</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button id="btn-add">Añadir al lobby</button>
+
+      <hr style="margin:.6rem 0;border:none;border-top:1px dashed var(--bg-kraft)" />
+
+      <h3>Sumar puntos</h3>
+      <select id="sel-jugador"></select>
+      <input type="number" id="inp-puntos" placeholder="+/- puntos" />
+      <button id="btn-sumar">Aplicar</button>
+    </div>
+  </div>
+
+  <script>
+    const listaJugadores = [];
+    const ulPlayers  = document.getElementById('players-list');
+    const spanCount  = document.getElementById('players-count');
+    const tbodyScores= document.getElementById('scores-body');
+
+    const inpNombre  = document.getElementById('inp-nombre');
+    const selTipo    = document.getElementById('sel-tipo');
+    const btnAdd     = document.getElementById('btn-add');
+    const selJugador = document.getElementById('sel-jugador');
+    const inpPuntos  = document.getElementById('inp-puntos');
+    const btnSumar   = document.getElementById('btn-sumar');
+
+    function renderLobby(){
+      ulPlayers.innerHTML = '';
+      listaJugadores.forEach(j=>{
+        const li=document.createElement('li');
+        li.innerHTML=`<span>${j.nombre}</span><span class="badge-role">${j.tipo==='admin'?'ADMIN':'JUG'}</span>`;
+        ulPlayers.appendChild(li);
+      });
+      spanCount.textContent = listaJugadores.length;
+
+      selJugador.innerHTML = listaJugadores
+        .map((j,i)=>`<option value="${i}">${j.nombre}</option>`)
+        .join('');
+
+      const orden=[...listaJugadores].sort((a,b)=>b.puntos-a.puntos);
+      tbodyScores.innerHTML = orden.map((j,i)=>`
+        <tr>
+          <td>${i+1}</td>
+          <td>${j.nombre}</td>
+          <td>${j.puntos}</td>
+        </tr>`).join('');
+    }
+
+    btnAdd.addEventListener('click',()=>{
+      const nombre=(inpNombre.value||'').trim()||`Invitado ${listaJugadores.length+1}`;
+      const tipo=selTipo.value;
+      listaJugadores.push({nombre,tipo,puntos:0});
+      inpNombre.value='';
+      renderLobby();
+    });
+
+    btnSumar.addEventListener('click',()=>{
+      const idx=parseInt(selJugador.value,10);
+      const pts=parseInt(inpPuntos.value,10);
+      if(isNaN(idx)||isNaN(pts))return;
+      listaJugadores[idx].puntos+=pts;
+      inpPuntos.value='';
+      renderLobby();
+    });
+
+    const mensajes=[
+      'Bienvenidos a SEÑAL G — El programa de TV más caótico de la graduación —',
+      'Ajustad bien el volumen… las alarmas sonarán fuerte —',
+      'Premios para los 3 mejores jugadores de la noche —',
+      'Retro, analógico y digital al mismo tiempo — SEÑAL G —'
+    ];
+    const spanTicker=document.getElementById('ticker-text');
+    let ti=0;
+    setInterval(()=>{
+      ti=(ti+1)%mensajes.length;
+      spanTicker.textContent=mensajes[ti];
+    },15000);
+  </script>
+</body>
+</html>
