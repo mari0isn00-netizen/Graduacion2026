@@ -1,0 +1,20 @@
+name: Move public → root
+on:
+  push:
+    branches: [main]   # o la rama que uses
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Move public files
+        run: |
+          shopt -s dotglob
+          cp -r public/* .
+      - name: Commit moved files
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "Copy public/* → root (GitHub Action)" || echo "No changes"
+          git push
