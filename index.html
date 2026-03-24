@@ -27,12 +27,10 @@
       display:flex;
       justify-content:center;
       align-items:center;
-      padding:0;
       overflow:hidden;
     }
 
     .frame{
-      /* más grande, casi pantalla completa */
       width:100vw;
       height:100vh;
       max-width:1400px;
@@ -58,6 +56,8 @@
       color:#b0b0b0;
       text-transform:uppercase;
       opacity:.7;
+      pointer-events:none;
+      z-index:40;
     }
 
     .screen{
@@ -70,9 +70,9 @@
       flex-direction:column;
       gap:8px;
       box-shadow:inset 0 0 40px rgba(0,0,0,.9);
+      overflow:hidden;
     }
 
-    /* scanlines + distorsión CRT */
     .screen::after{
       content:"";
       position:absolute;
@@ -96,7 +96,66 @@
       z-index:25;
     }
 
-    /* HEADER retro */
+    /* Glitch overlay para la intro */
+    .glitch-overlay{
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg,#000 0,#1b1b1b 50%,#000 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:35;
+      animation:glitchIntro 3.5s ease-out forwards;
+      overflow:hidden;
+    }
+    .glitch-text{
+      font-family:'Press Start 2P',cursive;
+      font-size:1.1rem;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      text-align:center;
+      color:#f5f5f5;
+      position:relative;
+    }
+    .glitch-text::before,
+    .glitch-text::after{
+      content:attr(data-text);
+      position:absolute;
+      inset:0;
+      mix-blend-mode:screen;
+    }
+    .glitch-text::before{
+      color:#ff006e;
+      transform:translate(-2px,-1px);
+      clip-path:polygon(0 0,100% 0,100% 45%,0 50%);
+      animation:glitchSlice 1.5s infinite;
+    }
+    .glitch-text::after{
+      color:#00f5d4;
+      transform:translate(2px,1px);
+      clip-path:polygon(0 60%,100% 55%,100% 100%,0 100%);
+      animation:glitchSlice2 1.6s infinite;
+    }
+
+    @keyframes glitchIntro{
+      0%{opacity:1;transform:translateX(0);}
+      10%{transform:translateX(-3px);}
+      12%{transform:translateX(3px);}
+      15%{transform:translateX(-2px);}
+      25%{opacity:1;}
+      80%{opacity:1;}
+      100%{opacity:0;pointer-events:none;}
+    }
+    @keyframes glitchSlice{
+      0%,100%{clip-path:polygon(0 0,100% 0,100% 45%,0 50%);}
+      50%{clip-path:polygon(0 10%,100% 0,100% 35%,0 45%);}
+    }
+    @keyframes glitchSlice2{
+      0%,100%{clip-path:polygon(0 60%,100% 55%,100% 100%,0 100%);}
+      50%{clip-path:polygon(0 65%,100% 60%,100% 100%,0 95%);}
+    }
+
+    /* HEADER */
     .header{
       display:flex;
       align-items:center;
@@ -211,6 +270,8 @@
       align-items:center;
       font-size:.7rem;
       color:#d3dae9;
+      z-index:5;
+      position:relative;
     }
     .stage-top-left span.mode{
       font-family:'Press Start 2P',cursive;
@@ -250,6 +311,13 @@
       text-align:center;
       z-index:5;
       max-width:70%;
+      opacity:0;
+      transform:scale(.98);
+      transition:opacity .6s ease,transform .6s ease;
+    }
+    .stage-center.active{
+      opacity:1;
+      transform:scale(1);
     }
     .stage-center h3{
       font-family:'Press Start 2P',cursive;
@@ -275,6 +343,8 @@
       flex-direction:column;
       gap:6px;
       font-size:.8rem;
+      position:relative;
+      z-index:5;
     }
     .board-head{
       display:flex;
@@ -379,6 +449,13 @@
     <div class="screen">
       <div class="noise"></div>
 
+      <!-- Glitch misterioso al encender -->
+      <div class="glitch-overlay">
+        <div class="glitch-text" data-text="canal graduación">
+          CANAL GRADUACIÓN
+        </div>
+      </div>
+
       <!-- CABECERA -->
       <header class="header">
         <div class="logo-block">
@@ -401,21 +478,46 @@
           <div class="scan-mask"></div>
           <div class="stage-top">
             <div class="stage-top-left">
-              <span class="mode">ahora · bienvenida</span>
-              <h2 id="current-label">NOCHE DE RETOS</h2>
+              <span class="mode" id="mode-label">iniciando señal</span>
+              <h2 id="current-label">CALIBRACIÓN</h2>
             </div>
             <div class="stage-top-right">
               Campo de Mario<br />Promoción 4º ESO
             </div>
           </div>
 
-          <div class="stage-main">
-            <div class="stage-center">
+          <div class="stage-main" id="stage-main">
+            <!-- pantallas de la intro -->
+            <div class="stage-center active" id="screen-calibracion">
+              <h3>ajustando señal</h3>
+              <p>
+                ↳ comprobad volumen, brillo y que todo el mundo ve la pantalla.
+                la emisión comenzará en unos segundos.
+              </p>
+            </div>
+
+            <div class="stage-center" id="screen-bienvenida" style="display:none;">
               <h3>todos sois concursantes</h3>
-              <p id="stage-sub">
-                Preparad el móvil, las risas y un poco de valor. Esta noche
-                Undercover, La Bomba, Adivina Quién Dijo y más pruebas decidirán
-                quién se lleva los premios finales.
+              <p>
+                esta noche la graduación se convierte en un programa de televisión.
+                móviles listos, premios reales y pruebas que os van a perseguir en los memes
+                todo el verano.
+              </p>
+            </div>
+
+            <div class="stage-center" id="screen-juegos" style="display:none;">
+              <h3>retos principales</h3>
+              <p>
+                undercover, la bomba, adivina quién dijo, esconder objeto,
+                escondite extremo y música y stop. en equipo, en pareja y en solitario.
+              </p>
+            </div>
+
+            <div class="stage-center" id="screen-porche" style="display:none;">
+              <h3>todos al porche</h3>
+              <p>
+                en breves comenzamos la primera prueba. coged sitio, cargad el móvil
+                y preparaos para salir en todas las historias de esta noche.
               </p>
             </div>
           </div>
@@ -425,7 +527,7 @@
         <aside class="sidebar">
           <div class="board-head">
             <span class="label">marcador general</span>
-            <span class="board-phase" id="phase-pill">Lobby · Esperando inicio</span>
+            <span class="board-phase" id="phase-pill">lobby · esperando inicio</span>
           </div>
 
           <div class="score-list" id="score-list">
@@ -458,8 +560,8 @@
         <div class="footer-label">challenges</div>
         <div class="footer-ticker">
           <span id="ticker">
-            Bienvenidos a la noche de Challenges de la graduación · Premios para los 3
-            mejores jugadores · Algunos juegos serán en exterior, otros con el móvil como mando ·
+            bienvenidos a la noche de challenges de la graduación · premios para los 3
+            mejores jugadores · algunos juegos serán en exterior, otros con el móvil como mando ·
           </span>
         </div>
       </div>
@@ -469,6 +571,7 @@
   </div>
 
   <script>
+    // Reloj en vivo
     function updateClock(){
       const el=document.getElementById('clock');
       const d=new Date();
@@ -480,16 +583,81 @@
     setInterval(updateClock,1000);
     updateClock();
 
-    const mensajes=[
-      'Bienvenidos a la noche de Challenges de la graduación ·',
-      'Undercover, La Bomba, Adivina Quién Dijo y más pruebas del grupo ·',
-      'Recordad: móviles cargados, cero vergüenza y muchas ganas de jugar ·'
+    // Ticker inferior rotando mensajes
+    const mensajesTicker=[
+      'bienvenidos a la noche de challenges de la graduación ·',
+      'undercover, la bomba, adivina quién dijo y más pruebas del grupo ·',
+      'recordad: móviles cargados, cero vergüenza y muchas ganas de jugar ·'
     ];
-    let idx=0;
+    let idxTicker=0;
     setInterval(()=>{
-      idx=(idx+1)%mensajes.length;
-      document.getElementById('ticker').textContent=mensajes[idx];
+      idxTicker=(idxTicker+1)%mensajesTicker.length;
+      document.getElementById('ticker').textContent=mensajesTicker[idxTicker];
     },20000);
+
+    // Secuencia de bienvenida (pantallas del escenario)
+    const screens=[
+      {
+        id:'screen-calibracion',
+        mode:'iniciando señal',
+        title:'CALIBRACIÓN',
+        fase:'lobby · preparando emisión',
+        dur:6000
+      },
+      {
+        id:'screen-bienvenida',
+        mode:'bloque 1 · bienvenida',
+        title:'BIENVENIDOS',
+        fase:'bloque de bienvenida',
+        dur:9000
+      },
+      {
+        id:'screen-juegos',
+        mode:'bloque 2 · presentación',
+        title:'LOS RETOS',
+        fase:'presentación de juegos',
+        dur:9000
+      },
+      {
+        id:'screen-porche',
+        mode:'en directo',
+        title:'PRÓXIMO · JUEGO 1',
+        fase:'a punto de empezar',
+        dur:12000
+      }
+    ];
+
+    let currentScreenIndex=0;
+
+    function showScreen(index){
+      const prevId = screens[currentScreenIndex]?.id;
+      if(prevId){
+        const prevEl=document.getElementById(prevId);
+        if(prevEl){
+          prevEl.classList.remove('active');
+          prevEl.style.display='none';
+        }
+      }
+
+      const sc = screens[index];
+      const el=document.getElementById(sc.id);
+      el.style.display='block';
+      requestAnimationFrame(()=>el.classList.add('active'));
+
+      document.getElementById('mode-label').textContent = sc.mode;
+      document.getElementById('current-label').textContent = sc.title;
+      document.getElementById('phase-pill').textContent = sc.fase;
+
+      currentScreenIndex=index;
+
+      const nextIndex = (index+1 < screens.length) ? index+1 : index;
+      if(nextIndex!==index){
+        setTimeout(()=>showScreen(nextIndex), sc.dur);
+      }
+    }
+
+    // Iniciar secuencia después del glitch (3.5s)
+    setTimeout(()=>showScreen(0),3500);
   </script>
 </body>
 </html>
