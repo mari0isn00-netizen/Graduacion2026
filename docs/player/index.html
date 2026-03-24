@@ -4,10 +4,17 @@
   <meta charset="UTF-8">
   <title>SEÑAL G – Jugador</title>
 
+  <!-- Tipografías -->
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Courier+Prime:wght@400;700&display=swap"
         rel="stylesheet">
+
+  <!-- Hoja de estilos -->
   <link rel="stylesheet" href="/assets/css/main.css">
-  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- Socket.IO (CDN) -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+  <!-- Lógica del jugador -->
   <script src="/assets/js/player.js" defer></script>
 </head>
 
@@ -27,11 +34,11 @@
         <button id="player-register-btn">Entrar</button>
       </section>
 
-      <!-- Área principal del juego (se llenará dinámicamente) -->
+      <!-- Área principal del juego (se rellenará dinámicamente) -->
       <section id="game-area" class="panel hidden">
         <h2 id="current-game-title">Esperando al admin…</h2>
 
-        <!-- Cada juego insertará su propio HTML aquí -->
+        <!-- Cada juego inyectará su propio HTML aquí -->
         <div id="game-body"></div>
 
         <div id="status-bar" class="status-bar">
