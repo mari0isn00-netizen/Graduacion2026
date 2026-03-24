@@ -1,32 +1,40 @@
-﻿/* SEÑAL G - CSS COMPLETO */
+﻿@* -------------------------------------------------
+   SEÑAL G – STYLE (broadcast TV look)
+   ------------------------------------------------- *@
+
 :root {
-  --bg-cream: #F5EDD6;
-  --bg-kraft: #C4956A;
-  --red-vintage: #C0392B;
-  --blue-slate: #2C3E6B;
-  --yellow-mustard: #D4A017;
-  --green-dark: #2D6A4F;
+  --bg-cream       : #F5EDD6;
+  --bg-kraft       : #C4956A;
+  --red-vintage    : #C0392B;
+  --blue-slate     : #2C3E6B;
+  --yellow-mustard : #D4A017;
+  --green-dark     : #2D6A4F;
 }
 
-* {
+/* reset */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* global */
 html, body {
   height: 100%;
   font-family: 'Courier Prime', monospace;
   background: var(--bg-cream);
   color: var(--blue-slate);
-  line-height: 1.5;
+  overflow-x: hidden;
 }
 
+/* kraft texture */
 .container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-image: 
+  background-image:
     linear-gradient(45deg, rgba(196,149,106,0.08) 25%, transparent 25%),
     linear-gradient(-45deg, rgba(196,149,106,0.08) 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, rgba(196,149,106,0.08) 75%),
@@ -34,26 +42,40 @@ html, body {
   background-size: 20px 20px;
 }
 
-.header, .footer {
+/* header – ON AIR bar */
+.header {
+  background: var(--red-vintage);
+  color: #fff;
   text-align: center;
-  padding: 0.8rem;
-  background: var(--blue-slate);
-  color: white;
+  padding: .8rem 0;
+  position: relative;
 }
-
+.header::after {
+  content: "ON AIR";
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Press Start 2P', cursive;
+  font-size: .9rem;
+  background: var(--yellow-mustard);
+  color: var(--blue-slate);
+  padding: .15rem .5rem;
+  border-radius: 3px;
+  box-shadow: 0 0 4px rgba(0,0,0,.3);
+}
 .header h1 {
   font-family: 'Press Start 2P', cursive;
   font-size: 2.2rem;
-  letter-spacing: 2px;
-  text-shadow: 2px 2px 0 var(--red-vintage);
-  margin-bottom: 0.2rem;
+  text-shadow: 2px 2px 0 var(--bg-kraft);
+  margin-bottom: .2rem;
 }
-
 .subtitle {
-  font-size: 0.9rem;
+  font-size: .9rem;
   color: var(--yellow-mustard);
 }
 
+/* main content */
 .content {
   flex: 1;
   padding: 1.5rem;
@@ -62,125 +84,111 @@ html, body {
   gap: 1.5rem;
 }
 
-.qr-section { 
-  text-align: center; 
-}
-
+/* QR section */
+.qr-section { text-align:center; }
+.qr-section h2 { margin-bottom:.5rem; }
 .qr-wrapper {
-  margin: 1rem auto;
-  width: 300px;
-  height: 300px;
-  background: var(--green-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 1.5rem;
-  border: 3px dashed var(--blue-slate);
-  border-radius: 10px;
+  margin:1rem auto;
+  width:320px;
+  height:320px;
+  background:var(--green-dark);
+  border:4px dashed var(--blue-slate);
+  border-radius:6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
+.qr-placeholder { color:#fff; font-weight:bold; font-size:1.2rem; }
+.hint { font-size:.9rem; color:var(--red-vintage); }
 
-.hint { 
-  font-size: 0.9rem; 
-  color: var(--red-vintage); 
-  margin-top: 1rem;
-}
-
+/* players list */
+.players-section h2 { margin-bottom:.5rem; }
 .players-list {
-  list-style: none;
-  padding-left: 0;
+  list-style:none;
+  padding-left:0;
 }
-
 .players-list li {
-  background: rgba(255,255,255,0.8);
-  margin: 4px 0;
-  padding: 6px 10px;
-  border-left: 4px solid var(--red-vintage);
-  font-weight: 500;
+  background:rgba(255,255,255,.9);
+  margin:4px 0;
+  padding:6px 10px;
+  border-left:4px solid var(--red-vintage);
 }
 
+/* scoreboard */
+.scoreboard-section h2 { margin-bottom:.5rem; }
 .scoreboard {
-  width: 100%;
-  border-collapse: collapse;
+  width:100%;
+  border-collapse:collapse;
 }
-
 .scoreboard th,
 .scoreboard td {
-  border: 1px solid var(--bg-kraft);
-  padding: 6px 8px;
-  text-align: left;
-  background: rgba(255,255,255,0.9);
+  border:1px solid var(--bg-kraft);
+  padding:6px 8px;
+  background:rgba(255,255,255,.9);
 }
-
 .phase-indicator {
-  margin-top: 0.5rem;
-  font-weight: bold;
-  color: var(--red-vintage);
+  margin-top:.5rem;
+  font-weight:bold;
+  color:var(--red-vintage);
 }
 
-/* Efecto TV scanlines */
+/* ticker (news scroll) */
+.ticker {
+  background:var(--blue-slate);
+  color:#fff;
+  font-family:'Press Start 2P', cursive;
+  font-size:.9rem;
+  padding:.3rem 0;
+  overflow:hidden;
+  white-space:nowrap;
+  position:relative;
+}
+.ticker span {
+  display:inline-block;
+  padding-left:100%;
+  animation:ticker 20s linear infinite;
+}
+@keyframes ticker {
+  0%   { transform:translateX(0); }
+  100% { transform:translateX(-100%); }
+}
+
+/* buttons */
+button, .big-btn {
+  background:var(--red-vintage);
+  color:#fff;
+  border:none;
+  padding:.6rem 1.2rem;
+  font-family:'Press Start 2P', cursive;
+  font-size:1rem;
+  cursor:pointer;
+  margin-top:.5rem;
+  border-radius:4px;
+  transition:transform .1s;
+}
+button:hover, .big-btn:hover { transform:scale(1.05); }
+
+/* footer */
+.footer {
+  text-align:center;
+  padding:.7rem;
+  background:var(--bg-kraft);
+  color:#fff;
+  font-size:.85rem;
+}
+
+/* scan‑lines (tv effect) */
 body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:repeating-linear-gradient(
     to bottom,
-    rgba(0,0,0,0.04) 0,
-    rgba(0,0,0,0.04) 1px,
+    rgba(0,0,0,.04) 0,
+    rgba(0,0,0,.04) 1px,
     transparent 1px,
     transparent 2px
   );
-  z-index: 999;
-}
-
-.panel {
-  background: rgba(255,255,255,0.9);
-  padding: 1rem;
-  border: 3px dashed var(--blue-slate);
-  border-radius: 8px;
-}
-
-.hidden { 
-  display: none !important; 
-}
-
-.teams {
-  display: flex;
-}
-
-.team {
-  flex: 1;
-  margin: 0 0.5rem;
-}
-
-.team-color {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  margin-left: 4px;
-  vertical-align: middle;
-}
-
-.event-log {
-  max-height: 150px;
-  overflow-y: auto;
-  background: rgba(255,255,255,0.7);
-  padding: 0.5rem;
-  font-size: 0.85rem;
-}
-
-.status-bar {
-  margin-top: 1rem;
-  background: var(--bg-kraft);
-  color: white;
-  padding: 0.5rem;
-  border-radius: 4px;
-  font-family: 'Press Start 2P', cursive;
-}
-
-.qr-code-img {
-  max-width: 100%;
-  height: auto;
+  z-index:999;
 }

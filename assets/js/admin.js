@@ -1,10 +1,9 @@
-﻿// admin.js - Lógica del admin
-const socket = io();
+﻿const socket = io();
 
 const registerSection = document.getElementById('register-section');
-const controlPanel = document.getElementById('control-panel');
-const nameInput = document.getElementById('admin-name');
-const registerBtn = document.getElementById('admin-register-btn');
+const controlPanel    = document.getElementById('control-panel');
+const nameInput       = document.getElementById('admin-name');
+const registerBtn    = document.getElementById('admin-register-btn');
 
 registerBtn.addEventListener('click', () => {
     const name = nameInput.value.trim() || 'Admin';
@@ -14,14 +13,13 @@ registerBtn.addEventListener('click', () => {
 });
 
 socket.on('game-state-update', (state) => {
-    const playersList = document.getElementById('admin-players-list');
-    const countEl = document.getElementById('admin-players-count');
-    
-    playersList.innerHTML = '';
+    const list = document.getElementById('admin-players-list');
+    const cnt  = document.getElementById('admin-players-count');
+    list.innerHTML = '';
     (state.players || []).forEach(p => {
         const li = document.createElement('li');
         li.textContent = p.name;
-        playersList.appendChild(li);
+        list.appendChild(li);
     });
-    countEl.textContent = (state.players || []).length;
+    cnt.textContent = (state.players || []).length;
 });

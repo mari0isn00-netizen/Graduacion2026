@@ -3,27 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <title>SEÑAL G – Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Courier+Prime:wght@400;700&display=swap"
+        rel="stylesheet">
   <link rel="stylesheet" href="/Graduacion2026/assets/css/main.css">
+
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script src="/Graduacion2026/assets/js/admin.js" defer></script>
 </head>
 <body class="admin">
   <div class="container">
+
     <header class="header"><h1>👑 Panel admin – SEÑAL G</h1></header>
+
+    <div class="ticker"><span id="admin-ticker">Próximamente…</span></div>
+
     <main class="content">
+
+      <!-- registro admin -->
       <section id="register-section" class="panel">
         <h2>¡Bienvenido!</h2>
         <label for="admin-name">Tu nombre:</label>
         <input type="text" id="admin-name" placeholder="Ej: Laura">
         <button id="admin-register-btn">Entrar como Admin</button>
       </section>
+
+      <!-- panel de control -->
       <section id="control-panel" class="panel hidden">
         <h2>Control de la noche</h2>
+
+        <!-- jugadores -->
         <div class="subsection">
           <h3>Jugadores (<span id="admin-players-count">0</span>)</h3>
           <ul id="admin-players-list" class="players-list"></ul>
         </div>
+
+        <!-- equipos -->
         <div class="subsection">
           <h3>Equipos (2 vs 2)</h3>
           <div class="teams">
@@ -32,6 +47,8 @@
           </div>
           <button id="auto-assign-btn">Asignar aleatoriamente</button>
         </div>
+
+        <!-- juego activo -->
         <div class="subsection">
           <h3>Juego activo</h3>
           <select id="game-select">
@@ -47,12 +64,15 @@
           </select>
           <button id="start-game-btn">Iniciar juego</button>
         </div>
+
+        <!-- log -->
         <div class="subsection">
           <h3>Eventos del sistema</h3>
           <ul id="event-log" class="event-log"></ul>
         </div>
       </section>
     </main>
+
     <footer class="footer"><p>🛠️ Herramientas para la diversión</p></footer>
   </div>
 </body>
