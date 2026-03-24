@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEÑAL G - TV</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #F5EDD6;
+            font-family: 'Courier New', monospace;
+            color: #2C3E6B;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                linear-gradient(45deg, rgba(196,149,106,0.1) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(196,149,106,0.1) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, rgba(196,149,106,0.1) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(196,149,106,0.1) 75%);
+            background-size: 20px 20px;
+            border: 8px solid #C4956A;
+        }
+        
+        .header {
+            background-color: #2C3E6B;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 4px solid #C0392B;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 3rem;
+            text-shadow: 3px 3px 0 #D4A017;
+            letter-spacing: 2px;
+        }
+        
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .qr-container {
+            background-color: white;
+            padding: 30px;
+            border: 3px dashed #2C3E6B;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+        
+        .qr-code {
+            width: 300px;
+            height: 300px;
+            background-color: #2D6A4F;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .instructions {
+            font-size: 1.2rem;
+            margin-top: 20px;
+            background-color: rgba(255,255,255,0.8);
+            padding: 15px;
+            border-left: 5px solid #C0392B;
