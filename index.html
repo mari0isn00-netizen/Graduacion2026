@@ -1,0 +1,25 @@
+if (-not (Test-Path .\index.html)) {
+  Set-Content -Path .\index.html -Encoding UTF8 -Value @"
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SEÑAL G – Redirección</title>
+  <meta http-equiv="refresh" content="0;url=tv/">
+  <style>
+    body{font-family:sans-serif;background:#F5EDD6;color:#2C3E6B;
+         text-align:center;padding-top:5rem}
+    a{color:#C0392B}
+  </style>
+</head>
+<body>
+  <h1>⏳ Redirigiendo a la TV…</h1>
+  <p>Si no eres redirigido automáticamente, <a href="tv/">haz click aquí</a>.</p>
+</body>
+</html>
+"@
+  # Añadir al stage, commit y push
+  git add index.html
+  git commit -m "Add home page that redirects to /tv/"
+  git push origin main
+}
