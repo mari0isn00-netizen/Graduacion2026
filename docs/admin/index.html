@@ -2,24 +2,30 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>SEÑAL G – Admin</title>
+  <title>SEÑAL G – Panel admin</title>
 
+  <!-- Tipografías -->
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Courier+Prime:wght@400;700&display=swap"
         rel="stylesheet">
+
+  <!-- Hoja de estilos -->
   <link rel="stylesheet" href="/assets/css/main.css">
-  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- Socket.IO (CDN) -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+  <!-- Lógica del admin -->
   <script src="/assets/js/admin.js" defer></script>
 </head>
 
 <body class="admin">
   <div class="container">
     <header class="header">
-      <h1>👑 Admin – SEÑAL G</h1>
+      <h1>👑 Panel admin – SEÑAL G</h1>
     </header>
 
     <main class="content">
-
-      <!-- Registro de Admin (solo la primera vez) -->
+      <!-- Registro del admin (solo la primera vez) -->
       <section id="register-section" class="panel">
         <h2>¡Bienvenido!</h2>
         <label for="admin-name">Tu nombre:</label>
@@ -29,18 +35,17 @@
 
       <!-- Panel de control (oculto hasta que te registres) -->
       <section id="control-panel" class="panel hidden">
+        <h2>Control de la noche</h2>
 
-        <h2>Control de la Noche</h2>
-
-        <!-- LISTA DE JUGADORES -->
+        <!-- Lista de jugadores -->
         <div class="subsection">
           <h3>Jugadores (<span id="admin-players-count">0</span>)</h3>
           <ul id="admin-players-list" class="players-list"></ul>
         </div>
 
-        <!-- EQUIPOS -->
+        <!-- Equipos -->
         <div class="subsection">
-          <h3>Equipos (2vs2)</h3>
+          <h3>Equipos (2 vs 2)</h3>
           <div class="teams">
             <div class="team" id="team-1">
               <h4>Equipo 1 <span class="team-color" style="background:#C0392B;"></span></h4>
@@ -54,7 +59,7 @@
           <button id="auto-assign-btn">Asignar aleatoriamente</button>
         </div>
 
-        <!-- SELECCIÓN DE JUEGO -->
+        <!-- Selección de juego -->
         <div class="subsection">
           <h3>Juego activo</h3>
           <select id="game-select">
@@ -71,12 +76,11 @@
           <button id="start-game-btn">Iniciar juego</button>
         </div>
 
-        <!-- LOG DE EVENTOS -->
+        <!-- Log de eventos -->
         <div class="subsection">
-          <h3>Eventos del Sistema</h3>
+          <h3>Eventos del sistema</h3>
           <ul id="event-log" class="event-log"></ul>
         </div>
-
       </section>
     </main>
 
