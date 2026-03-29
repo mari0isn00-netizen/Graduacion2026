@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Admin · La Ultima Tarde</title>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Special+Elite&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #e8dcc4;
+  --page:    #dfd0ae;
+  --card:    #d8c89a;
+  --aged:    #c9b87c;
+  --ink:     #1a1006;
+  --brown:   #5c3a1a;
+  --sepia:   #8c6030;
+  --rust:    #7a2810;
+  --coffee:  #6b4020;
+  --fade:    #a08448;
+  --border:  rgba(80,45,10,0.28);
+  --tape:    rgba(210,190,140,0.7);
+  --shadow:  rgba(60,30,5,0.22);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; overflow:hidden; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Special Elite', serif;
+}
+
+/* AGED PAPER GRAIN — heavy */
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='500' height='500' filter='url(%23n)' opacity='0.11'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+/* EDGE DARKENING — like a foxed old book */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 55%, rgba(60,30,5,0.18) 100%),
+    radial-gradient(ellipse 60% 40% at 0%   0%,   rgba(80,45,10,0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 45% at 100% 100%, rgba(80,45,10,0.12) 0%, transparent 55%);
+}
+
+/* COFFEE STAIN RINGS — fixed decorations */
+.stain {
+  position:fixed; border-radius:50%; pointer-events:none; z-index:0;
+}
+.stain-1 {
+  width:130px; height:130px;
+  top:-30px; right:-20px;
+  background: radial-gradient(circle, transparent 62%, rgba(90,50,15,0.16) 68%, rgba(90,50,15,0.09) 74%, transparent 80%);
+}
+.stain-2 {
+  width:95px; height:85px;
+  top:28px; right:35px;
+  background: radial-gradient(ellipse, transparent 58%, rgba(80,45,12,0.12) 64%, rgba(80,45,12,0.07) 70%, transparent 76%);
+  transform: rotate(15deg);
+}
+.stain-3 {
+  width:200px; height:180px;
+  bottom:-60px; left:-50px;
+  background: radial-gradient(ellipse, transparent 60%, rgba(85,48,12,0.13) 66%, rgba(85,48,12,0.07) 73%, transparent 79%);
+  transform: rotate(-8deg);
+}
+.stain-4 {
+  width:80px; height:80px;
+  bottom:120px; right:10px;
+  background: radial-gradient(circle, transparent 60%, rgba(80,45,10,0.10) 66%, transparent 73%);
+}
+/* Small inner ring on stain-3 */
+.stain-3b {
+  width:100px; height:90px;
+  bottom:-10px; left:10px;
+  background: radial-gradient(ellipse, transparent 58%, rgba(80,45,12,0.10) 64%, transparent 70%);
+  transform: rotate(-5deg);
+}
+
+/* INK BLOT — top left corner */
+.inkblot {
+  position:fixed; pointer-events:none; z-index:0; opacity:0.12;
+}
+.inkblot-tl { top:-15px; left:-18px; }
+.inkblot-br { bottom:-12px; right:-14px; transform:scale(-1,-1) rotate(20deg); }
+
+#login, #app { position:relative; z-index:1; }
+
+/* ═══════════════════════════
+   LOGIN
+═══════════════════════════ */
+#login {
+  height:100vh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:0; padding:2rem;
+  position:relative;
+}
+
+.login-card {
+  background: var(--page);
+  border: 1.5px solid rgba(80,45,10,0.35);
+  padding: 2.2rem 1.8rem 2rem;
+  width:100%; max-width:296px;
+  position:relative;
+  transform: rotate(-0.6deg);
+  box-shadow:
+    5px 7px 0 rgba(60,30,5,0.2),
+    0 18px 45px rgba(60,30,5,0.16);
+}
+
+/* Worn top edge */
+.login-card::before {
+  content:'';
+  position:absolute; top:-2px; left:0; right:0; height:3px;
+  background: repeating-linear-gradient(90deg,
+    transparent 0, transparent 3px,
+    rgba(80,45,10,0.15) 3px, rgba(80,45,10,0.15) 5px,
+    transparent 5px, transparent 10px);
+}
+
+/* MASKING TAPE — top, worn, not cute */
+.tape-h {
+  position:absolute; top:-12px; left:50%; transform:translateX(-50%);
+  width:88px; height:20px;
+  background: linear-gradient(180deg, rgba(210,195,155,0.82) 0%, rgba(195,178,128,0.75) 100%);
+  border-radius:1px;
+}
+.tape-h::before {
+  content:''; position:absolute; inset:0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='20'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='88' height='20' filter='url(%23n)' opacity='0.18'/%3E%3C/svg%3E");
+  opacity:0.5; border-radius:1px;
+}
+
+/* Small coffee stain on the card itself */
+.card-stain {
+  position:absolute; border-radius:50%; pointer-events:none;
+}
+.cs1 {
+  width:58px; height:52px; bottom:22px; right:12px;
+  background: radial-gradient(ellipse, transparent 60%, rgba(80,45,10,0.14) 67%, rgba(80,45,10,0.08) 73%, transparent 80%);
+  transform:rotate(8deg);
+}
+.cs2 {
+  width:32px; height:29px; bottom:30px; right:28px;
+  background: radial-gradient(ellipse, transparent 58%, rgba(80,45,10,0.12) 65%, transparent 73%);
+  transform:rotate(-5deg);
+}
+
+/* STAMP — top right */
+.login-stamp {
+  position:absolute; top:14px; right:14px; opacity:0.55;
+  transform:rotate(8deg); pointer-events:none;
+}
+
+/* HANDSTAMP on card corner */
+.corner-stamp {
+  position:absolute; bottom:14px; left:14px;
+  opacity:0.22; transform:rotate(-6deg); pointer-events:none;
+  font-family:'Special Elite',serif; font-size:6.5px;
+  color:var(--ink); letter-spacing:1.5px; line-height:1.5;
+  text-transform:uppercase;
+  border:1.5px solid rgba(30,10,3,0.38); padding:3px 6px;
+}
+
+.login-title {
+  font-family:'UnifrakturMaguntia',cursive;
+  font-size:2.8rem; color:var(--ink);
+  text-align:center; line-height:1;
+  margin-bottom:0.25rem;
+}
+.login-sub {
+  font-family:'Caveat',cursive; font-size:0.78rem;
+  color:var(--sepia); text-align:center;
+  letter-spacing:3.5px; text-transform:uppercase;
+  margin-bottom:0.9rem;
+}
+
+/* Rule line — like a ruled notebook */
+.ruled-line {
+  width:100%; height:1px; margin-bottom:1rem;
+  background: repeating-linear-gradient(90deg,
+    transparent 0, transparent 4px,
+    rgba(80,45,10,0.32) 4px, rgba(80,45,10,0.32) 6px,
+    transparent 6px, transparent 12px);
+}
+
+.pin-box {
+  font-family:'Caveat',cursive; font-size:2.8rem; font-weight:700;
+  letter-spacing:16px;
+  background: rgba(255,252,242,0.7);
+  border:none;
+  border-bottom: 2.5px solid rgba(80,45,10,0.55);
+  padding:0.5rem 0.7rem; text-align:center; color:var(--ink);
+  margin-bottom:1rem;
+}
+.pin-err { color:var(--rust)!important; animation:shake .35s ease; }
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-5px)} 40%{transform:translateX(5px)}
+  60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
+}
+
+.keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:0.32rem; }
+.key {
+  background: rgba(255,252,240,0.6);
+  border:1.5px solid rgba(80,45,10,0.28);
+  color:var(--ink); font-family:'Special Elite',serif;
+  font-size:1.35rem; font-weight:400; padding:0.85rem;
+  cursor:pointer; text-align:center;
+  box-shadow:2px 3px 0 rgba(60,30,5,0.18);
+  transition:all 0.08s; user-select:none;
+  position:relative;
+}
+.key:active { transform:translate(2px,3px); box-shadow:none; background:var(--card); }
+.key.del { color:var(--rust); font-family:'Caveat',cursive; font-weight:700; font-size:1rem; }
+.key.ok  {
+  background: var(--brown); color:var(--bg);
+  border-color:var(--coffee); font-family:'Caveat',cursive; font-size:1rem; font-weight:700;
+  letter-spacing:2px;
+}
+.key.ok:active { background:#3d2410; }
+
+/* ═══════════════════════════
+   APP
+═══════════════════════════ */
+#app { height:100vh; display:none; flex-direction:column; }
+
+/* TOPBAR — like a newspaper masthead */
+.topbar {
+  background: var(--ink);
+  padding:0.6rem 1rem 0.75rem;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0; position:relative; overflow:hidden;
+}
+/* Newspaper rule lines */
+.topbar::before {
+  content:''; position:absolute; bottom:4px; left:0; right:0; height:1px;
+  background:rgba(200,170,100,0.35);
+}
+.topbar::after {
+  content:''; position:absolute; bottom:7px; left:0; right:0; height:1px;
+  background:rgba(200,170,100,0.20);
+}
+.topbar-title {
+  font-family:'UnifrakturMaguntia',cursive;
+  font-size:1.6rem; color:#e8dcc4; letter-spacing:0.3px;
+}
+.topbar-r { display:flex; align-items:center; gap:0.6rem; }
+.clk { font-family:'Caveat',cursive; font-size:1.1rem; color:#b09060; font-weight:700; }
+.dot { width:6px; height:6px; border-radius:50%; background:#6a9840; animation:blink 2.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* TABS — typewriter feel */
+.tabs {
+  display:flex; background:var(--card);
+  border-bottom:2px solid rgba(80,45,10,0.30);
+  flex-shrink:0; overflow-x:auto;
+}
+.tabs::-webkit-scrollbar { display:none; }
+.tab {
+  flex:1; min-width:52px;
+  padding:0.55rem 0.1rem;
+  text-align:center;
+  font-family:'Special Elite',serif; font-size:0.72rem;
+  letter-spacing:0.5px; text-transform:uppercase;
+  color:var(--sepia); cursor:pointer;
+  border-bottom:3px solid transparent;
+  border-right:1px solid rgba(80,45,10,0.15);
+  transition:all 0.15s; white-space:nowrap;
+}
+.tab:last-child { border-right:none; }
+.tab.active {
+  color:var(--ink); border-bottom-color:var(--rust);
+  background: var(--page);
+}
+
+/* CONTENT */
+.content { flex:1; overflow-y:auto; padding:1rem; background:var(--bg); }
+.content::-webkit-scrollbar { width:3px; }
+.content::-webkit-scrollbar-thumb { background:rgba(80,45,10,0.22); border-radius:2px; }
+.panel { display:none; }
+.panel.active { display:block; }
+
+/* SCRAPBOOK CARDS — journal pages */
+.scard {
+  background:var(--page);
+  border:1.5px solid rgba(80,45,10,0.28);
+  padding:1rem; margin-bottom:1.1rem;
+  box-shadow:4px 5px 0 rgba(60,30,5,0.18), 0 8px 24px rgba(60,30,5,0.07);
+  position:relative; transform:rotate(var(--tilt,0deg));
+  overflow:hidden;
+}
+
+/* Paper lines inside card — ruled notebook */
+.scard::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0, transparent 31px,
+    rgba(80,45,10,0.07) 31px, rgba(80,45,10,0.07) 32px
+  );
+  top:52px;
+}
+
+/* Masking tape strip on card */
+.scard::after {
+  content:''; position:absolute; top:-8px; left:var(--tl,12px);
+  width:56px; height:18px;
+  background:linear-gradient(180deg, rgba(210,195,150,0.78) 0%, rgba(192,175,120,0.70) 100%);
+  border-radius:1px;
+  transform:rotate(var(--tr,-0.8deg));
+}
+.scard:nth-child(2n)  { --tilt:0.35deg; --tl:24px; --tr:1.5deg; }
+.scard:nth-child(3n)  { --tilt:-0.3deg; --tl:40px; --tr:-1.8deg; }
+.scard:nth-child(4n)  { --tl:8px; --tr:0.6deg; }
+.scard:nth-child(5n)  { --tilt:0.2deg; --tl:30px; }
+
+/* Small coffee ring on some cards */
+.scard:nth-child(odd)::before {
+  /* override line with combination */
+  background:
+    radial-gradient(ellipse 54px 46px at calc(100% + 16px) 78%, transparent 58%, rgba(80,45,10,0.11) 65%, rgba(80,45,10,0.07) 72%, transparent 79%),
+    repeating-linear-gradient(180deg,
+      transparent 0, transparent 31px,
+      rgba(80,45,10,0.07) 31px, rgba(80,45,10,0.07) 32px
+    );
+  top:52px;
+}
+
+.scard-label {
+  font-family:'Special Elite',serif; font-size:0.72rem;
+  letter-spacing:3px; text-transform:uppercase; color:var(--sepia);
+  margin-bottom:0.65rem; display:flex; align-items:center; gap:0.5rem;
+  padding-bottom:0.42rem;
+  border-bottom:1px solid rgba(80,45,10,0.28);
+}
+
+/* BUTTONS */
+.btn {
+  width:100%; padding:0.82rem 1rem;
+  border:2px solid var(--border);
+  font-family:'Caveat',cursive; font-size:1.22rem; font-weight:700;
+  cursor:pointer; margin-bottom:0.38rem;
+  letter-spacing:0.5px; transition:all 0.08s;
+  box-shadow:3px 3px 0 rgba(60,30,5,0.20);
+  text-transform:none; position:relative; overflow:hidden;
+}
+.btn:active { transform:translate(3px,3px); box-shadow:none; }
+.btn-ink   { background:var(--ink);  color:var(--bg);   border-color:var(--ink); }
+.btn-rust  { background:var(--rust); color:#f0e4cc;     border-color:var(--rust); }
+.btn-amber { background:var(--coffee); color:#f0e4cc;   border-color:var(--coffee); }
+.btn-green { background:#3a5a18; color:#f0e4cc;         border-color:#2c4410; }
+.btn-paper {
+  background:rgba(255,252,240,0.7); color:var(--ink);
+  border-color:rgba(80,45,10,0.32);
+  box-shadow:2px 2px 0 rgba(60,30,5,0.14);
+}
+.btn-2col { display:grid; grid-template-columns:1fr 1fr; gap:0.35rem; margin-bottom:0.38rem; }
+.btn-2col .btn { margin-bottom:0; }
+
+/* FLOW STEPS */
+.flow-step {
+  display:flex; align-items:flex-start; gap:0.7rem;
+  padding:0.65rem 0.7rem;
+  background:rgba(255,252,238,0.55);
+  border:1px solid rgba(80,45,10,0.12);
+  margin-bottom:0.25rem; opacity:0.3; transition:all 0.3s; position:relative;
+  border-left:3px solid transparent;
+}
+.flow-step.active {
+  opacity:1; border-left:3px solid var(--rust);
+  background:rgba(255,252,238,0.85);
+}
+.flow-step.done { opacity:0.15; }
+.flow-step.done::after {
+  content:'✓'; position:absolute; right:0.7rem; top:50%;
+  transform:translateY(-50%);
+  font-family:'Caveat',cursive; font-size:1.1rem; color:#3a5a18;
+}
+.sn {
+  font-family:'UnifrakturMaguntia',cursive; font-size:1.65rem;
+  color:var(--sepia); min-width:1.7rem; line-height:1;
+}
+.st { font-family:'Special Elite',serif; font-size:0.84rem; font-weight:400; color:var(--ink); }
+.sd { font-family:'Caveat',cursive; font-size:0.84rem; color:var(--fade); margin-top:0.08rem; }
+
+/* GAME GRID */
+.game-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.38rem; margin-bottom:0.65rem; }
+.game-btn {
+  background:rgba(255,252,238,0.65);
+  border:1.5px solid rgba(80,45,10,0.26);
+  padding:0.68rem 0.3rem; text-align:center; cursor:pointer;
+  box-shadow:2px 2px 0 rgba(60,30,5,0.14); transition:all 0.1s;
+}
+.game-btn:active { transform:translate(2px,2px); box-shadow:none; }
+.game-btn.selected { background:var(--ink); border-color:var(--ink); }
+.game-btn .gi { font-size:1.5rem; display:block; }
+.game-btn .gn { font-family:'Caveat',cursive; font-size:0.88rem; font-weight:700; margin-top:0.12rem; color:var(--ink); }
+.game-btn.selected .gn { color:var(--bg); }
+
+/* PLAYERS */
+.prow { display:flex; align-items:center; padding:0.48rem 0; border-bottom:1px dashed rgba(80,45,10,0.2); gap:0.4rem; }
+.pname { font-family:'Caveat',cursive; font-size:1.05rem; flex:1; color:var(--ink); }
+.pscore { font-size:0.95rem; font-weight:700; color:var(--sepia); min-width:3rem; text-align:right; font-family:'Special Elite',serif; }
+.sbtns { display:flex; gap:0.12rem; }
+.sbtn {
+  background:rgba(255,252,238,0.7); border:1.5px solid rgba(80,45,10,0.26);
+  color:var(--ink); font-family:'Caveat',cursive; font-size:0.85rem; padding:0.16rem 0.38rem; cursor:pointer;
+}
+.sbtn:active { background:var(--card); }
+
+/* MISSIONS */
+.mitem {
+  background:rgba(255,252,238,0.55);
+  border-left:4px solid var(--sepia); padding:0.5rem 0.7rem; margin-bottom:0.28rem;
+}
+.mtxt  { font-family:'Caveat',cursive; font-size:0.96rem; color:var(--ink); font-style:italic; }
+.mmins { font-family:'Special Elite',serif; font-size:0.65rem; color:var(--fade); margin-top:0.1rem; letter-spacing:1px; }
+
+.album-n { font-family:'UnifrakturMaguntia',cursive; font-size:3rem; color:var(--sepia); text-align:center; padding:0.6rem 0; }
+
+input[type=text] {
+  width:100%; background:rgba(255,252,238,0.7);
+  border:none; border-bottom:2px solid rgba(80,45,10,0.4);
+  color:var(--ink); padding:0.6rem; font-family:'Caveat',cursive; font-size:1.05rem;
+  margin-bottom:0.4rem; outline:none;
+  background-image: repeating-linear-gradient(180deg,
+    transparent 0, transparent 24px,
+    rgba(80,45,10,0.08) 24px, rgba(80,45,10,0.08) 25px);
+}
+input:focus { border-bottom-color:var(--rust); }
+
+.sep {
+  height:1px;
+  background: repeating-linear-gradient(90deg, transparent 0, transparent 4px, rgba(80,45,10,0.22) 4px, rgba(80,45,10,0.22) 6px, transparent 6px, transparent 12px);
+  margin:0.5rem 0;
+}
+
+/* TOAST */
+#toast {
+  position:fixed; bottom:1.2rem; left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:var(--ink); color:var(--bg);
+  padding:0.4rem 1.4rem;
+  font-family:'Special Elite',serif; font-size:0.95rem;
+  letter-spacing:1px; text-transform:uppercase;
+  opacity:0; transition:all 0.22s; pointer-events:none;
+  white-space:nowrap; z-index:9999;
+  box-shadow:4px 4px 0 rgba(60,30,5,0.28);
+  border-bottom:3px solid var(--rust);
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* MODAL */
+#modal {
+  position:fixed; inset:0;
+  background:rgba(15,7,2,0.72);
+  display:none; align-items:flex-end; justify-content:center; z-index:9998;
+}
+#modal.show { display:flex; }
+.mbox {
+  background:var(--page); border-top:4px solid var(--ink);
+  padding:1.5rem; width:100%; max-width:480px;
+  position:relative;
+  box-shadow:0 -6px 30px rgba(60,30,5,0.18);
+}
+.mbox::before {
+  content:''; position:absolute; top:-12px; left:18px;
+  width:68px; height:20px;
+  background:linear-gradient(180deg, rgba(210,195,150,0.82) 0%, rgba(192,175,120,0.72) 100%);
+  border-radius:1px;
+}
+.mbox-title { font-family:'Special Elite',serif; font-size:1.1rem; letter-spacing:1px; text-transform:uppercase; margin-bottom:0.3rem; color:var(--ink); }
+.mbox-desc  { font-family:'Caveat',cursive; font-size:1rem; color:var(--sepia); font-style:italic; margin-bottom:0.9rem; }
+</style>
+</head>
+<body>
+
+<!-- COFFEE STAINS (fixed background) -->
+<div class="stain stain-1"></div>
+<div class="stain stain-2"></div>
+<div class="stain stain-3"></div>
+<div class="stain stain-3b"></div>
+<div class="stain stain-4"></div>
+
+<!-- INK BLOTS -->
+<div class="inkblot inkblot-tl">
+  <svg width="140" height="130" viewBox="0 0 140 130" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10,5 C18,2 28,0 38,8 C50,17 44,32 36,40 C30,46 22,48 16,55 C8,64 10,80 18,88 C26,96 36,92 42,86 C52,76 50,62 58,54 C66,46 80,46 88,52 C98,60 96,76 88,84 C82,90 72,92 66,98 C60,104 60,116 68,122" 
+          fill="none" stroke="#1a1006" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+    <ellipse cx="12" cy="6" rx="10" ry="7" transform="rotate(-15 12 6)" fill="#1a1006" opacity="0.7"/>
+    <circle cx="68" cy="122" r="6" fill="#1a1006" opacity="0.65"/>
+    <ellipse cx="90" cy="54" rx="5" ry="4" fill="#1a1006" opacity="0.5"/>
+    <!-- splatter dots -->
+    <circle cx="30" cy="18" r="2" fill="#1a1006" opacity="0.4"/>
+    <circle cx="52" cy="12" r="1.5" fill="#1a1006" opacity="0.35"/>
+    <circle cx="20" cy="70" r="1.8" fill="#1a1006" opacity="0.3"/>
+    <circle cx="82" cy="90" r="1.4" fill="#1a1006" opacity="0.35"/>
+    <circle cx="44" cy="100" r="1.2" fill="#1a1006" opacity="0.3"/>
+  </svg>
+</div>
+<div class="inkblot inkblot-br">
+  <svg width="110" height="100" viewBox="0 0 110 100" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="55" cy="50" rx="40" ry="30" transform="rotate(-10 55 50)" fill="#1a1006" opacity="0.55"/>
+    <ellipse cx="65" cy="42" rx="26" ry="16" transform="rotate(5 65 42)" fill="#1a1006" opacity="0.55"/>
+    <ellipse cx="42" cy="60" rx="20" ry="12" transform="rotate(-20 42 60)" fill="#1a1006" opacity="0.5"/>
+    <circle cx="88" cy="36" r="6" fill="#1a1006" opacity="0.45"/>
+    <circle cx="22" cy="72" r="4" fill="#1a1006" opacity="0.4"/>
+    <circle cx="100" cy="55" r="3" fill="#1a1006" opacity="0.35"/>
+    <circle cx="30" cy="38" r="2" fill="#1a1006" opacity="0.3"/>
+    <circle cx="78" cy="78" r="2.5" fill="#1a1006" opacity="0.35"/>
+  </svg>
+</div>
+
+<!-- ══════════════════════════════════
+     LOGIN
+══════════════════════════════════ -->
+<div id="login">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="tape-h"></div>
+      <div class="card-stain cs1"></div>
+      <div class="card-stain cs2"></div>
+
+      <!-- Rubber stamp top-right -->
+      <div class="login-stamp">
+        <svg viewBox="0 0 78 78" width="66" height="66" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="70" height="70" fill="none" stroke="#5c3a1a" stroke-width="2" stroke-dasharray="4,2" opacity="0.5"/>
+          <rect x="10" y="10" width="58" height="58" fill="none" stroke="#5c3a1a" stroke-width="1" opacity="0.35"/>
+          <text x="39" y="30" text-anchor="middle" font-family="Special Elite,serif" font-size="7.5" fill="#5c3a1a" opacity="0.8" letter-spacing="2.5" text-transform="uppercase">SHOWTIME</text>
+          <line x1="14" y1="36" x2="64" y2="36" stroke="#5c3a1a" stroke-width="0.8" opacity="0.4"/>
+          <text x="39" y="48" text-anchor="middle" font-family="Special Elite,serif" font-size="11" fill="#5c3a1a" opacity="0.7" letter-spacing="1" font-weight="bold">2026</text>
+          <line x1="14" y1="54" x2="64" y2="54" stroke="#5c3a1a" stroke-width="0.8" opacity="0.4"/>
+          <text x="39" y="63" text-anchor="middle" font-family="Special Elite,serif" font-size="5.5" fill="#5c3a1a" opacity="0.6" letter-spacing="1">CHAVES NOGALES</text>
+        </svg>
+      </div>
+
+      <!-- Corner text stamp -->
+      <div class="corner-stamp">
+        IES · Coria del Río<br>Graduación 2026
+      </div>
+
+      <h1 class="login-title">La Ultima Tarde</h1>
+      <p class="login-sub">Panel de control</p>
+      <div class="ruled-line"></div>
+      <div class="pin-box" id="pin-box">. . . .</div>
+      <div class="keypad" id="keypad"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     APP
+══════════════════════════════════ -->
+<div id="app">
+  <div class="topbar">
+    <span class="topbar-title">La Ultima Tarde</span>
+    <div class="topbar-r">
+      <span class="clk" id="clock">--:--</span>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="flujo">Flujo</div>
+    <div class="tab" data-tab="directo">Directo</div>
+    <div class="tab" data-tab="fotos">Fotos</div>
+    <div class="tab" data-tab="gente">Gente</div>
+    <div class="tab" data-tab="puntos">Puntos</div>
+  </div>
+
+  <div class="content">
+
+    <div class="panel active" id="panel-flujo">
+      <div class="scard">
+        <div class="scard-label">Guion de la noche</div>
+        <div id="flow-steps">
+          <div class="flow-step active"><div class="sn">I</div><div><div class="st">Standby</div><div class="sd">TVs en espera. La gente va llegando.</div></div></div>
+          <div class="flow-step"><div class="sn">II</div><div><div class="st">Intro Cinematográfica</div><div class="sd">TV interior: secuencia SHOWTIME + audio.</div></div></div>
+          <div class="flow-step"><div class="sn">III</div><div><div class="st">Speech</div><div class="sd">Vosotros hablais. La TV queda en standby.</div></div></div>
+          <div class="flow-step"><div class="sn">IV</div><div><div class="st">Alarma de reunión</div><div class="sd">Elige dónde se reúnen todos.</div></div></div>
+          <div class="flow-step"><div class="sn">V</div><div><div class="st">Todos listos</div><div class="sd">Pulsa cuando estén reunidos.</div></div></div>
+          <div class="flow-step"><div class="sn">VI</div><div><div class="st">Juegos</div><div class="sd">Lanza juegos desde la pestaña Directo.</div></div></div>
+          <div class="flow-step"><div class="sn">VII</div><div><div class="st">Final</div><div class="sd">Ranking + showcase de fotos.</div></div></div>
+        </div>
+      </div>
+      <div id="btn-bienvenida-wrap"><button class="btn btn-ink" id="btn-bienvenida">🎬 Lanzar Intro (TV Interior)</button></div>
+      <div id="btn-speech-wrap" style="display:none">
+        <p style="font-family:Caveat,cursive;font-size:0.9rem;color:var(--sepia);text-align:center;margin-bottom:0.4rem;font-style:italic">Intro lanzada. Cuando terminéis el speech:</p>
+        <button class="btn btn-paper" id="btn-speech-done">✓ Speech terminado — Poner Standby</button>
+      </div>
+      <div id="card-reunion" style="display:none">
+        <div class="btn-2col">
+          <button class="btn btn-amber" id="btn-ext">Exterior</button>
+          <button class="btn btn-paper" id="btn-int">Interior</button>
+        </div>
+      </div>
+      <button class="btn btn-green" id="btn-cont" style="display:none;font-size:1.25rem;padding:1rem">Todos listos — Continuar</button>
+      <div class="sep"></div>
+      <button class="btn btn-paper" id="btn-show1">Lanzar Showcase Final</button>
+    </div>
+
+    <div class="panel" id="panel-directo">
+      <div class="scard">
+        <div class="scard-label">Alarma rapida</div>
+        <div class="btn-2col">
+          <button class="btn btn-amber" id="btn-ext2">Exterior</button>
+          <button class="btn btn-paper" id="btn-int2">Interior</button>
+        </div>
+        <button class="btn btn-green" id="btn-cont2" style="display:none">Continuar</button>
+      </div>
+      <div class="scard">
+        <div class="scard-label">Elegir juego</div>
+        <div class="game-grid" id="game-grid"></div>
+        <button class="btn btn-ink" id="btn-launch">Lanzar juego elegido</button>
+        <button class="btn btn-paper" id="btn-ruleta">Ruleta aleatoria</button>
+      </div>
+      <div class="scard">
+        <div class="scard-label">Controles generales</div>
+        <button class="btn btn-paper" data-cmd="STANDBY">Standby todas las TVs</button>
+        <button class="btn btn-paper" data-cmd="RANKING">Mostrar ranking</button>
+        <button class="btn btn-paper" data-cmd="WELCOME">Bienvenida / Jugadores</button>
+      </div>
+      <div class="scard">
+        <div class="scard-label">Timers</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.35rem">
+          <button class="btn btn-paper" style="margin:0" data-timer="720">12 min</button>
+          <button class="btn btn-paper" style="margin:0" data-timer="600">10 min</button>
+          <button class="btn btn-paper" style="margin:0" data-timer="360">6 min</button>
+          <button class="btn btn-paper" style="margin:0" data-timer="300">5 min</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-fotos">
+      <div class="scard">
+        <div class="scard-label">Misiones de foto</div>
+        <p style="font-family:Caveat,cursive;font-size:0.92rem;color:var(--fade);font-style:italic;margin-bottom:0.7rem">Cada invitado recibe una mision diferente con timer visible.</p>
+        <div id="missions-list"></div>
+        <div class="sep"></div>
+        <button class="btn btn-ink" id="btn-missions">Enviar misiones ahora</button>
+      </div>
+      <div class="scard">
+        <div class="scard-label">Album en vivo</div>
+        <div class="album-n" id="album-n">0 fotos</div>
+        <button class="btn btn-paper" id="btn-ver">Ver album en TV interior</button>
+        <button class="btn btn-rust" id="btn-show2">Lanzar showcase</button>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-gente">
+      <div class="scard">
+        <div class="scard-label">Jugadores conectados</div>
+        <div id="plist"><span style="font-family:Caveat,cursive;color:var(--fade);font-style:italic">Ningun jugador aun.</span></div>
+      </div>
+      <div class="scard">
+        <div class="scard-label">Anadir jugador</div>
+        <input type="text" id="pname" placeholder="Nombre...">
+        <button class="btn btn-ink" id="btn-add">+ Anadir</button>
+      </div>
+      <div class="scard">
+        <div class="scard-label">Equipos</div>
+        <button class="btn btn-paper" id="btn-teams">Hacer equipos al azar</button>
+        <div id="teams-out" style="font-family:Caveat,cursive;font-size:1rem;margin-top:0.5rem;line-height:1.6"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-puntos">
+      <div class="scard">
+        <div class="scard-label">Ranking</div>
+        <div id="ranking"></div>
+      </div>
+      <div class="scard">
+        <div class="scard-label">Ajustar puntos</div>
+        <div id="pts-adj"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="modal">
+  <div class="mbox">
+    <div class="mbox-title" id="m-title"></div>
+    <div class="mbox-desc"  id="m-desc"></div>
+    <button class="btn btn-ink"   id="m-ok">Confirmar</button>
+    <button class="btn btn-paper" id="m-cancel">Cancelar</button>
+  </div>
+</div>
+
+<script>
+var FB = "https://graduacion2026-a2d40-default-rtdb.europe-west1.firebasedatabase.app";
+// Sin prefijo global — cada ruta va directamente a su nodo
+var PIN = "2026";
+var JUEGOS = [
+  {id:"UNDERCOVER", name:"Undercover",      icon:"🕵️"},
+  {id:"BOMBA",      name:"Bomba",           icon:"💣"},
+  {id:"ADIVINA",    name:"¿Quién lo dijo?", icon:"📺"},
+  {id:"INFORMANTE", name:"El Informante",   icon:"🔍"},
+  {id:"ESCONDITE",  name:"Escondite",       icon:"🌑"},
+  {id:"NINTENDO",   name:"Nintendo Quests", icon:"🎮"},
+  {id:"MUSICA",     name:"Música & Stop",   icon:"🎵"}
+];
+var MISIONES = [
+  {texto:"Foto con alguien que te ha sorprendido esta noche", mins:4},
+  {texto:"Captura el momento mas caotico que veas ahora mismo", mins:3},
+  {texto:"Foto haciendo algo ridiculo con dos personas mas", mins:4},
+  {texto:"Foto con quien mas vas a echar de menos", mins:5},
+  {texto:"El selfie mas feo posible con alguien", mins:3},
+  {texto:"Foto de algo que solo exista esta noche", mins:4},
+  {texto:"Foto con alguien a quien nunca le has dicho lo importante que es", mins:5},
+  {texto:"Captura una carcajada real", mins:3},
+  {texto:"Foto del cielo de esta noche", mins:2},
+  {texto:"El grupo completo, como sea", mins:6}
+];
+
+var pin="", selGame=null, players={}, alarmaDest="exterior", mCb=null;
+
+// Rutas absolutas: hub/cmd, hub/jugadores, fotos, album, misiones
+function fbPatch(path,data){fetch(FB+"/"+path+".json",{method:"PATCH",body:JSON.stringify(data),headers:{"Content-Type":"application/json"}});}
+function fbPut(path,data){fetch(FB+"/"+path+".json",{method:"PUT",body:JSON.stringify(data),headers:{"Content-Type":"application/json"}});}
+function fbPost(path,data){fetch(FB+"/"+path+".json",{method:"POST",body:JSON.stringify(data),headers:{"Content-Type":"application/json"}});}
+function sendCmd(data){fbPut("hub/cmd",Object.assign({},data,{ts:Date.now()}));}
+
+function toast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(window._tt);window._tt=setTimeout(function(){t.classList.remove("show");},2000);}
+function showModal(title,desc,cb){document.getElementById("m-title").textContent=title;document.getElementById("m-desc").textContent=desc;mCb=cb;document.getElementById("modal").classList.add("show");}
+
+function tick(){var n=new Date();document.getElementById("clock").textContent=(n.getHours()<10?"0":"")+n.getHours()+":"+(n.getMinutes()<10?"0":"")+n.getMinutes();}
+
+function setStep(n){
+  var steps=document.querySelectorAll(".flow-step");
+  for(var i=0;i<steps.length;i++){steps[i].classList.toggle("active",i===n);steps[i].classList.toggle("done",i<n);}
+  document.getElementById("btn-bienvenida-wrap").style.display=n===0?"block":"none";
+  document.getElementById("card-reunion").style.display=n===3?"block":"none";
+  document.getElementById("btn-cont").style.display=n===4?"block":"none";
+}
+
+function renderPlayers(){
+  var arr=Object.values(players);
+  document.getElementById("plist").innerHTML=arr.length
+    ?arr.map(function(p){return '<div class="prow"><span class="pname">'+(p.nombre||p.id)+'</span><span class="pscore">'+(p.puntos||0)+' pts</span></div>';}).join("")
+    :'<span style="font-family:Caveat,cursive;color:var(--fade);font-style:italic">Ningun jugador aun.</span>';
+}
+function renderRanking(){
+  var arr=Object.values(players).sort(function(a,b){return (b.puntos||0)-(a.puntos||0);});
+  document.getElementById("ranking").innerHTML=arr.map(function(p,i){
+    return '<div class="prow"><span style="font-size:0.85rem;color:var(--fade);min-width:1.4rem">'+(i+1)+'.</span><span class="pname" style="flex:1">'+(p.nombre||p.id)+'</span><span class="pscore">'+(p.puntos||0)+'</span></div>';
+  }).join("");
+  document.getElementById("pts-adj").innerHTML=arr.map(function(p){
+    return '<div class="prow"><span class="pname" style="flex:1">'+(p.nombre||p.id)+'</span><div class="sbtns">'+
+      '<button class="sbtn" data-id="'+p.id+'" data-d="-5">-5</button>'+
+      '<button class="sbtn" data-id="'+p.id+'" data-d="1">+1</button>'+
+      '<button class="sbtn" data-id="'+p.id+'" data-d="5">+5</button>'+
+      '<button class="sbtn" data-id="'+p.id+'" data-d="10">+10</button>'+
+    '</div></div>';
+  }).join("");
+  document.querySelectorAll(".sbtn").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var p=players[btn.dataset.id];if(!p)return;
+      fbPatch("hub/jugadores/"+btn.dataset.id,{puntos:Math.max(0,(p.puntos||0)+parseInt(btn.dataset.d))});
+      toast((parseInt(btn.dataset.d)>0?"+":"")+btn.dataset.d);
+    });
+  });
+}
+
+function listenFB(path,cb){
+  var es=new EventSource(FB+"/"+path+".json");
+  es.addEventListener("put",function(e){try{cb(JSON.parse(e.data).data);}catch(err){}});
+  es.addEventListener("patch",function(e){try{cb(JSON.parse(e.data).data);}catch(err){}});
+}
+
+function initApp(){
+  tick(); setInterval(tick,15000);
+
+  var gg=document.getElementById("game-grid");
+  gg.innerHTML=JUEGOS.map(function(j,i){return '<div class="game-btn" data-i="'+i+'"><span class="gi">'+j.icon+'</span><span class="gn">'+j.name+'</span></div>';}).join("");
+  gg.querySelectorAll(".game-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      selGame=parseInt(btn.dataset.i);
+      gg.querySelectorAll(".game-btn").forEach(function(b){b.classList.remove("selected");});
+      btn.classList.add("selected");
+    });
+  });
+
+  document.getElementById("missions-list").innerHTML=MISIONES.map(function(m){
+    return '<div class="mitem"><div class="mtxt">"'+m.texto+'"</div><div class="mmins">'+m.mins+' min</div></div>';
+  }).join("");
+
+  listenFB("hub/jugadores",function(data){
+    players={};
+    if(data) Object.keys(data).forEach(function(id){players[id]=Object.assign({},data[id],{id:id});});
+    renderPlayers();renderRanking();
+  });
+  listenFB("fotos",function(data){
+    var c=data?Object.keys(data).length:0;
+    document.getElementById("album-n").textContent=c+(c===1?" foto":" fotos");
+  });
+
+  document.querySelectorAll(".tab").forEach(function(t){
+    t.addEventListener("click",function(){
+      document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active");});
+      t.classList.add("active");
+      document.querySelectorAll(".panel").forEach(function(p){p.classList.remove("active");});
+      document.getElementById("panel-"+t.dataset.tab).classList.add("active");
+    });
+  });
+
+  document.getElementById("btn-bienvenida").addEventListener("click",function(){
+    sendCmd({cmd:"DTMF_INTRO"});
+    toast("🎬 Intro lanzada");
+    setStep(1);
+    document.getElementById("btn-speech-wrap").style.display="block";
+  });
+  document.getElementById("btn-speech-done").addEventListener("click",function(){
+    sendCmd({cmd:"STANDBY"});
+    toast("Standby — listo para speech");
+    document.getElementById("btn-speech-wrap").style.display="none";
+    setStep(2);
+    document.getElementById("card-reunion").style.display="none";
+    // Mostrar el bloque de alarma
+    setTimeout(function(){setStep(3);document.getElementById("card-reunion").style.display="block";},100);
+  });
+  function alarma(dest){alarmaDest=dest;sendCmd({cmd:"ALERT",zona:dest});toast("Alarma "+dest);document.getElementById("btn-cont").style.display="block";document.getElementById("btn-cont2").style.display="block";setStep(4);}
+  function continuar(){sendCmd({cmd:"WELCOME"});toast("¡Todos listos!");document.getElementById("btn-cont").style.display="none";document.getElementById("btn-cont2").style.display="none";setStep(5);}
+  document.getElementById("btn-ext").addEventListener("click",function(){alarma("exterior");});
+  document.getElementById("btn-int").addEventListener("click",function(){alarma("interior");});
+  document.getElementById("btn-cont").addEventListener("click",continuar);
+  document.getElementById("btn-ext2").addEventListener("click",function(){alarma("exterior");});
+  document.getElementById("btn-int2").addEventListener("click",function(){alarma("interior");});
+  document.getElementById("btn-cont2").addEventListener("click",continuar);
+  document.getElementById("btn-show1").addEventListener("click",doShowcase);
+  document.getElementById("btn-show2").addEventListener("click",doShowcase);
+
+  document.getElementById("btn-launch").addEventListener("click",function(){
+    if(selGame===null){toast("Elige un juego");return;}
+    var j=JUEGOS[selGame];
+    showModal(j.name,"Se lanzará en la TV interior.",function(){sendCmd({cmd:"GAME_START",game:j.id,nombre:j.name});toast(j.name);setStep(4);});
+  });
+  document.getElementById("btn-ruleta").addEventListener("click",function(){sendCmd({cmd:"RULETA"});toast("Ruleta lanzada");setStep(4);});
+  document.querySelectorAll("[data-cmd]").forEach(function(btn){btn.addEventListener("click",function(){sendCmd({cmd:btn.dataset.cmd.toUpperCase()});toast(btn.dataset.cmd);});});
+  document.querySelectorAll("[data-timer]").forEach(function(btn){btn.addEventListener("click",function(){sendCmd({cmd:"TIMER_START",secs:parseInt(btn.dataset.timer)});toast(btn.dataset.timer+"s");});});
+
+  document.getElementById("btn-missions").addEventListener("click",function(){
+    var arr=Object.values(players);if(!arr.length){toast("No hay jugadores");return;}
+    var s=MISIONES.slice().sort(function(){return Math.random()-0.5;});
+    var obj={};arr.forEach(function(p,i){var m=s[i%s.length];obj[p.id]={texto:m.texto,mins:m.mins,ts:Date.now()};});
+    fbPatch("misiones",obj);sendCmd({cmd:"MISION",count:arr.length});toast("Misiones enviadas");
+  });
+  document.getElementById("btn-ver").addEventListener("click",function(){sendCmd({cmd:"ALBUM_LIVE"});toast("Album en TV interior");});
+
+  document.getElementById("btn-add").addEventListener("click",function(){
+    var n=document.getElementById("pname").value.trim();if(!n)return;
+    fbPost("hub/jugadores",{nombre:n,puntos:0,equipo:""});
+    document.getElementById("pname").value="";toast("+"+n);
+  });
+  document.getElementById("btn-teams").addEventListener("click",function(){
+    var arr=Object.values(players);if(arr.length<2){toast("Necesitas mas jugadores");return;}
+    arr=arr.sort(function(){return Math.random()-0.5;});
+    var m=Math.ceil(arr.length/2),A=arr.slice(0,m),B=arr.slice(m);
+    A.forEach(function(p){fbPatch("hub/jugadores/"+p.id,{equipo:"A"});});
+    B.forEach(function(p){fbPatch("hub/jugadores/"+p.id,{equipo:"B"});});
+    document.getElementById("teams-out").innerHTML='<span style="color:var(--sepia)">Equipo A:</span> '+A.map(function(p){return p.nombre||p.id;}).join(", ")+"<br>"+'<span style="color:#3a5a18">Equipo B:</span> '+B.map(function(p){return p.nombre||p.id;}).join(", ");
+    toast("Equipos hechos");
+  });
+
+  document.getElementById("m-ok").addEventListener("click",function(){document.getElementById("modal").classList.remove("show");if(mCb)mCb();});
+  document.getElementById("m-cancel").addEventListener("click",function(){document.getElementById("modal").classList.remove("show");});
+}
+
+function doShowcase(){
+  showModal("Showcase Final","Lanzar el reveal de todas las fotos?",function(){
+    sendCmd({cmd:"FINALE"});fbPatch("album",{fase:"showcase",ts:Date.now()});toast("Showcase lanzado");setStep(5);
+  });
+}
+
+(function(){
+  var kp=document.getElementById("keypad");
+  var keys=[1,2,3,4,5,6,7,8,9,"X",0,"OK"];
+  keys.forEach(function(k){
+    var btn=document.createElement("div");
+    btn.className="key"+(k==="X"?" del":k==="OK"?" ok":"");
+    btn.textContent=k;
+    btn.addEventListener("click",function(){
+      if(k==="X"){
+        pin=pin.slice(0,-1);
+      } else if(k==="OK"){
+        tryPin();
+      } else {
+        if(pin.length<4){
+          pin+=String(k);
+          if(pin.length===4) setTimeout(tryPin,150);
+        }
+      }
+      var pb=document.getElementById("pin-box");
+      pb.textContent=pin.length===0?". . . .":pin.split("").map(function(){return "*";}).join(" ");
+    });
+    kp.appendChild(btn);
+  });
+
+  function tryPin(){
+    if(pin===PIN){
+      document.getElementById("login").style.display="none";
+      document.getElementById("app").style.display="flex";
+      initApp();
+    } else {
+      pin="";
+      var pb=document.getElementById("pin-box");
+      pb.textContent=". . . .";
+      pb.classList.add("pin-err");
+      setTimeout(function(){pb.classList.remove("pin-err");},700);
+    }
+  }
+})();
+
+tick();
+</script>
+</body>
+</html>
