@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>Admin — La Última Tarde</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Special+Elite&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0b06;
+  --page:#dfd0ae;
+  --ink:#1a1006;
+  --sepia:#8c6030;
+  --rust:#7a2810;
+  --fade:#a08448;
+  --cream:#e8dcc4;
+  --gold:#d4a820;
+}
+html,body{
+  width:100%;min-height:100vh;
+  background:var(--bg);
+  font-family:'Special Elite',serif;
+  color:var(--cream);
+  overflow-x:hidden;
+}
+
+/* ── PIN ── */
+#pin-lock{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:999;gap:16px;padding:24px;
+}
+.pin-titulo{
+  font-family:'UnifrakturMaguntia',serif;
+  font-size:clamp(30px,8vw,52px);
+  color:var(--cream);text-align:center;
+}
+.pin-sub{
+  font-family:'Caveat',cursive;
+  font-size:clamp(13px,4vw,18px);
+  color:var(--sepia);letter-spacing:3px;text-align:center;
+}
+.pin-display{display:flex;gap:14px;margin:8px 0}
+.pin-dot{
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid rgba(140,96,48,0.45);
+  background:transparent;transition:background 0.2s;
+}
+.pin-dot.filled{background:var(--sepia)}
+.pin-pad{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+  width:min(270px,80vw);
+}
+.pin-btn{
+  background:rgba(140,96,48,0.1);
+  border:1px solid rgba(140,96,48,0.2);
+  color:var(--cream);
+  font-family:'Special Elite',serif;
+  font-size:clamp(20px,5vw,26px);
+  padding:16px 0;
+  cursor:pointer;
+  transition:background 0.12s;
+  letter-spacing:2px;
+}
+.pin-btn:active{background:rgba(140,96,48,0.3)}
+.pin-error{
+  font-family:'Caveat',cursive;
+  font-size:clamp(13px,4vw,17px);
+  color:var(--rust);text-align:center;min-height:1.5em;
+}
+
+/* ── MAIN ── */
+#admin-main{display:none;min-height:100vh;flex-direction:column}
+
+.admin-header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(13,11,6,0.97);
+  border-bottom:1px solid rgba(140,96,48,0.14);
+  padding:12px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.admin-logo{
+  font-family:'Caveat',cursive;
+  font-size:clamp(14px,4vw,18px);
+  color:var(--sepia);letter-spacing:2px;
+}
+.admin-status{display:flex;align-items:center;gap:8px}
+.status-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:rgba(122,40,16,0.6);
+  transition:background 0.4s;
+}
+.status-dot.online{background:#4a8;box-shadow:0 0 8px #4a8}
+#statusText{font-family:'Special Elite',serif;font-size:12px;letter-spacing:2px;color:var(--fade)}
+
+.admin-body{padding:16px;display:flex;flex-direction:column;gap:14px;max-width:520px;margin:0 auto;width:100%}
+
+/* ── SECTIONS ── */
+.section{
+  background:rgba(223,208,174,0.04);
+  border:1px solid rgba(140,96,48,0.15);
+  padding:16px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.section-title{
+  font-family:'Caveat',cursive;
+  font-size:clamp(14px,4vw,18px);
+  color:var(--sepia);letter-spacing:3px;
+  border-bottom:1px solid rgba(140,96,48,0.12);
+  padding-bottom:8px;margin-bottom:4px;
+}
+
+/* ── BUTTONS ── */
+.cmd-btn{
+  display:flex;align-items:center;gap:14px;
+  background:rgba(140,96,48,0.08);
+  border:1px solid rgba(140,96,48,0.2);
+  color:var(--cream);
+  padding:14px 16px;
+  cursor:pointer;
+  transition:background 0.12s,transform 0.08s;
+  width:100%;text-align:left;
+}
+.cmd-btn:active{background:rgba(140,96,48,0.22);transform:scale(0.98)}
+.cmd-btn.primary{background:rgba(140,96,48,0.14);border-color:rgba(140,96,48,0.3)}
+.cmd-btn.danger{background:rgba(122,40,16,0.14);border-color:rgba(122,40,16,0.3)}
+.cmd-btn.mision-preset{
+  background:rgba(74,128,64,0.08);border-color:rgba(74,128,64,0.2);
+  padding:12px 14px;
+}
+.cmd-btn.mision-preset:active{background:rgba(74,128,64,0.2)}
+.btn-icon{font-size:22px;flex-shrink:0;line-height:1}
+.btn-text{
+  font-family:'Special Elite',serif;
+  font-size:clamp(13px,3.5vw,16px);
+  letter-spacing:1px;
+  display:flex;flex-direction:column;gap:2px;
+}
+.btn-sub{
+  font-family:'Caveat',cursive;
+  font-size:clamp(11px,3vw,14px);
+  color:var(--fade);letter-spacing:0px;
+  display:block;
+}
+
+/* ── INPUTS ── */
+.input-row{display:flex;gap:8px;align-items:stretch}
+.admin-input{
+  flex:1;
+  background:rgba(223,208,174,0.05);
+  border:1px solid rgba(140,96,48,0.2);
+  border-bottom:2px solid rgba(140,96,48,0.3);
+  color:var(--cream);
+  font-family:'Caveat',cursive;
+  font-size:clamp(15px,4vw,18px);
+  padding:10px 12px;outline:none;
+}
+.admin-input::placeholder{color:rgba(160,132,72,0.3)}
+.admin-input:focus{border-bottom-color:rgba(140,96,48,0.6)}
+.send-btn{
+  background:rgba(140,96,48,0.18);
+  border:1px solid rgba(140,96,48,0.3);
+  color:var(--cream);
+  font-family:'Special Elite',serif;
+  font-size:clamp(13px,3.5vw,16px);
+  padding:10px 14px;cursor:pointer;letter-spacing:1px;
+  transition:background 0.12s;
+  white-space:nowrap;
+}
+.send-btn:active{background:rgba(140,96,48,0.35)}
+
+/* ── DESTINO ALARMA ── */
+.destino-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.destino-btn{
+  background:rgba(140,96,48,0.07);
+  border:1px solid rgba(140,96,48,0.18);
+  color:var(--fade);
+  font-family:'Caveat',cursive;
+  font-size:clamp(14px,4vw,18px);
+  padding:12px;cursor:pointer;
+  transition:background 0.12s,color 0.12s;letter-spacing:1px;
+}
+.destino-btn.active{
+  background:rgba(140,96,48,0.2);
+  border-color:rgba(140,96,48,0.45);
+  color:var(--cream);
+}
+
+/* ── MISIONES PRESET ── */
+.mision-preset-grid{display:flex;flex-direction:column;gap:8px}
+.mision-preset-btn{
+  background:rgba(74,128,64,0.07);
+  border:1px solid rgba(74,128,64,0.18);
+  color:var(--cream);
+  font-family:'Caveat',cursive;
+  font-size:clamp(14px,4vw,17px);
+  padding:12px 14px;
+  cursor:pointer;
+  text-align:left;
+  transition:background 0.12s;
+  line-height:1.4;
+}
+.mision-preset-btn:active{background:rgba(74,128,64,0.2)}
+.mision-preset-btn span{
+  font-family:'Special Elite',serif;
+  font-size:11px;letter-spacing:2px;
+  color:rgba(74,200,100,0.5);
+  display:block;margin-top:4px;
+}
+
+.mision-pts-row{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;
+}
+.mision-pts-input{
+  display:flex;flex-direction:column;gap:4px;
+}
+.mision-pts-label{
+  font-family:'Caveat',cursive;
+  font-size:clamp(10px,2.8vw,12px);
+  color:var(--fade);letter-spacing:1px;
+}
+.pts-input{
+  background:rgba(223,208,174,0.05);
+  border:1px solid rgba(140,96,48,0.2);
+  border-bottom:2px solid rgba(140,96,48,0.28);
+  color:var(--cream);
+  font-family:'Special Elite',serif;
+  font-size:clamp(14px,4vw,18px);
+  padding:8px 10px;outline:none;
+  text-align:center;
+  width:100%;
+}
+.mision-activa-strip{
+  background:rgba(74,128,64,0.1);
+  border:1px solid rgba(74,128,64,0.3);
+  padding:10px 14px;
+  font-family:'Caveat',cursive;
+  font-size:clamp(12px,3.5vw,15px);
+  color:rgba(100,200,80,0.8);
+  display:none;
+  align-items:center;gap:8px;
+}
+.mision-activa-strip.visible{display:flex}
+.mision-limpiar-btn{
+  margin-left:auto;
+  background:rgba(122,40,16,0.2);border:1px solid rgba(122,40,16,0.3);
+  color:var(--cream);
+  font-family:'Special Elite',serif;font-size:11px;letter-spacing:1px;
+  padding:5px 10px;cursor:pointer;
+  transition:background 0.12s;
+}
+.mision-limpiar-btn:active{background:rgba(122,40,16,0.4)}
+
+/* ── QR ── */
+.qr-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  padding:20px;
+  background:rgba(223,208,174,0.04);
+  border:1px solid rgba(140,96,48,0.18);
+  position:relative;
+}
+#qr-canvas{background:#f5f0e8;padding:10px;box-shadow:2px 3px 12px rgba(0,0,0,0.5)}
+.qr-label{
+  font-family:'Caveat',cursive;
+  font-size:clamp(14px,4vw,18px);
+  color:var(--sepia);letter-spacing:2px;text-align:center;
+}
+.qr-url{
+  font-family:'Special Elite',serif;
+  font-size:clamp(10px,2.5vw,12px);
+  color:var(--fade);letter-spacing:1px;
+  word-break:break-all;text-align:center;opacity:0.7;
+}
+
+/* ── JUGADORES ── */
+.jugadores-wrap{display:flex;flex-direction:column;gap:6px}
+.jug-item{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(223,208,174,0.04);
+  border:1px solid rgba(140,96,48,0.11);
+  padding:10px 12px;
+}
+.jug-nombre{font-family:'Caveat',cursive;font-size:clamp(15px,4.5vw,19px);color:var(--cream);flex:1}
+.jug-pts{font-family:'Special Elite',serif;font-size:clamp(12px,3.5vw,15px);color:var(--fade);min-width:52px;text-align:right}
+.jug-plus,.jug-minus{
+  border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;
+  font-size:18px;display:flex;align-items:center;justify-content:center;
+  transition:background 0.12s;flex-shrink:0;color:var(--cream);
+}
+.jug-plus{background:rgba(140,96,48,0.15)}
+.jug-plus:active{background:rgba(140,96,48,0.4)}
+.jug-minus{background:rgba(122,40,16,0.15)}
+.jug-minus:active{background:rgba(122,40,16,0.4)}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:rgba(140,96,48,0.92);color:var(--cream);
+  font-family:'Caveat',cursive;font-size:clamp(14px,4vw,18px);
+  padding:12px 24px;z-index:990;
+  transition:transform 0.3s ease;white-space:nowrap;
+  max-width:90vw;text-align:center;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.error{background:rgba(122,40,16,0.92)}
+.toast.ok{background:rgba(74,128,64,0.92)}
+
+.offline-banner{
+  position:fixed;top:0;left:0;right:0;
+  background:rgba(122,40,16,0.9);
+  color:var(--cream);font-family:'Special Elite',serif;
+  font-size:13px;text-align:center;padding:8px;letter-spacing:2px;
+  transform:translateY(-100%);transition:transform 0.4s;z-index:998;
+}
+.offline-banner.visible{transform:translateY(0)}
+
+.timer-presets{display:flex;gap:6px;flex-wrap:wrap}
+.timer-preset{
+  flex:1;min-width:60px;
+  background:rgba(140,96,48,0.08);
+  border:1px solid rgba(140,96,48,0.18);
+  color:var(--cream);
+  font-family:'Special Elite',serif;
+  font-size:clamp(12px,3.5vw,15px);
+  padding:10px 4px;
+  cursor:pointer;text-align:center;letter-spacing:1px;
+  transition:background 0.12s;
+}
+.timer-preset:active{background:rgba(140,96,48,0.3)}
+</style>
+</head>
+<body>
+
+<!-- PIN -->
+<div id="pin-lock">
+  <div class="pin-titulo">La Última Tarde</div>
+  <div class="pin-sub">Panel Admin</div>
+  <div class="pin-display">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2</button>
+    <button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button>
+    <button class="pin-btn" onclick="pinPress('5')">5</button>
+    <button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button>
+    <button class="pin-btn" onclick="pinPress('8')">8</button>
+    <button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn" onclick="pinPress('')" style="opacity:0.2;cursor:default"></button>
+    <button class="pin-btn" onclick="pinPress('0')">0</button>
+    <button class="pin-btn" onclick="pinDel()" style="font-size:22px">⌫</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+</div>
+
+<!-- MAIN -->
+<div id="admin-main">
+  <div class="offline-banner" id="offlineBanner">📡 Sin conexión</div>
+
+  <div class="admin-header">
+    <div class="admin-logo">Admin · La Última Tarde</div>
+    <div class="admin-status">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Conectando…</span>
+    </div>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- RESET TOTAL -->
+    <div class="section" style="border-color:rgba(122,40,16,0.3)">
+      <div class="section-title" style="color:var(--rust)">⚠️ Reset total</div>
+      <button class="cmd-btn danger" onclick="resetTotal()" style="border-color:rgba(122,40,16,0.5)">
+        <span class="btn-icon">🔄</span>
+        <span class="btn-text">Reset completo de la noche
+          <span class="btn-sub">Borra jugadores, fotos, misión activa</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- FLUJO -->
+    <div class="section">
+      <div class="section-title">✦ Flujo de la noche</div>
+      <button class="cmd-btn primary" onclick="send({type:'bienvenida'})">
+        <span class="btn-icon">🎬</span>
+        <span class="btn-text">Bienvenida
+          <span class="btn-sub">Intro cinématica (~110s) + DTMF</span>
+        </span>
+      </button>
+      <button class="cmd-btn" onclick="send({type:'standby'})">
+        <span class="btn-icon">💤</span>
+        <span class="btn-text">Standby
+          <span class="btn-sub">Pantalla de espera</span>
+        </span>
+      </button>
+      <button class="cmd-btn" onclick="send({type:'continuar'})">
+        <span class="btn-icon">▶️</span>
+        <span class="btn-text">Continuar
+          <span class="btn-sub">Mensaje de transición</span>
+        </span>
+      </button>
+      <button class="cmd-btn" onclick="send({type:'reuniendo'})">
+        <span class="btn-icon">🕐</span>
+        <span class="btn-text">Esperando que se reúnan
+          <span class="btn-sub">Pantalla de pausa en ambas TVs</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- ALARMA -->
+    <div class="section">
+      <div class="section-title">🔔 Alarma / Movimiento</div>
+      <div class="destino-wrap">
+        <button class="destino-btn active" id="dest-interior" onclick="selectDest('interior')">🏠 Interior</button>
+        <button class="destino-btn" id="dest-exterior" onclick="selectDest('exterior')">🌿 Exterior</button>
+      </div>
+      <button class="cmd-btn danger" onclick="sendAlarma()">
+        <span class="btn-icon">🔔</span>
+        <span class="btn-text">Activar Alarma
+          <span class="btn-sub" id="alarma-dest-label">Mover al interior</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- MISIONES DE FOTO -->
+    <div class="section">
+      <div class="section-title">📌 Misiones de foto</div>
+
+      <!-- Misión activa strip -->
+      <div class="mision-activa-strip" id="mision-activa-strip">
+        <span>📌</span>
+        <span id="mision-activa-texto">—</span>
+        <button class="mision-limpiar-btn" onclick="limpiarMision()">✕ Cerrar</button>
+      </div>
+
+      <!-- Puntos configurables -->
+      <div class="mision-pts-row">
+        <div class="mision-pts-input">
+          <div class="mision-pts-label">En plazo</div>
+          <input class="pts-input" id="mpts-plazo" type="number" value="10" min="0" max="50"/>
+        </div>
+        <div class="mision-pts-input">
+          <div class="mision-pts-label">Tarde</div>
+          <input class="pts-input" id="mpts-tarde" type="number" value="5" min="0" max="50"/>
+        </div>
+        <div class="mision-pts-input">
+          <div class="mision-pts-label">Sin foto</div>
+          <input class="pts-input" id="mpts-fallo" type="number" value="-2" min="-20" max="0"/>
+        </div>
+      </div>
+
+      <!-- Duración -->
+      <div class="input-row">
+        <select class="admin-input" id="mision-duracion">
+          <option value="300">5 minutos (normal)</option>
+          <option value="180">3 minutos (rápido)</option>
+          <option value="600">10 minutos (largo)</option>
+          <option value="120">2 minutos (urgente)</option>
+        </select>
+      </div>
+
+      <!-- Reset misiones -->
+      <button class="cmd-btn danger" onclick="resetMisiones()" style="margin-bottom:4px">
+        <span class="btn-icon">🗑️</span>
+        <span class="btn-text">Reset misiones
+          <span class="btn-sub">Cierra misión activa y borra entregas</span>
+        </span>
+      </button>
+
+      <!-- Misiones preset -->
+      <div style="font-family:'Caveat',cursive;font-size:13px;color:var(--fade);letter-spacing:2px;opacity:0.7;margin-top:4px">
+        MISIONES RÁPIDAS
+      </div>
+      <div class="mision-preset-grid">
+        <button class="mision-preset-btn" onclick="lanzarMisionPreset('Haz una foto sin que alguien se dé cuenta')">
+          🤫 Sin que se den cuenta
+          <span>+10 pts en plazo · +5 tarde</span>
+        </button>
+        <button class="mision-preset-btn" onclick="lanzarMisionPreset('Haz una foto con esa persona que siempre ha estado ahí')">
+          💙 La persona que siempre ha estado ahí
+          <span>+10 pts en plazo · +5 tarde</span>
+        </button>
+        <button class="mision-preset-btn" onclick="lanzarMisionPreset('Intentad salir todos en una sola foto')">
+          👥 Todos en una foto
+          <span>+10 pts en plazo · +5 tarde</span>
+        </button>
+        <button class="mision-preset-btn" onclick="lanzarMisionPreset('Foto de algo que te guste del campo, lo que sea')">
+          🌿 Algo del campo que te guste
+          <span>+10 pts en plazo · +5 tarde</span>
+        </button>
+        <button class="mision-preset-btn" onclick="lanzarMisionPreset('Foto con alguien que te caiga muy bien')">
+          😊 Con alguien que te cae muy bien
+          <span>+10 pts en plazo · +5 tarde</span>
+        </button>
+        <button class="mision-preset-btn" onclick="lanzarMisionPreset('Foto con tus amigos')">
+          🫂 Con tus amigos
+          <span>+10 pts en plazo · +5 tarde</span>
+        </button>
+        <button class="mision-preset-btn" onclick="lanzarMisionPreset('Foto con alguien que no conozcas')">
+          🤝 Con alguien que no conozcas
+          <span>+10 pts en plazo · +5 tarde</span>
+        </button>
+        <button class="mision-preset-btn" onclick="lanzarMisionDibujo()">
+          ✏️ Dibuja algo — canvas libre
+          <span>Misión especial · sin foto de cámara</span>
+        </button>
+      </div>
+
+      <!-- Misión personalizada -->
+      <div style="font-family:'Caveat',cursive;font-size:13px;color:var(--fade);letter-spacing:2px;opacity:0.7;margin-top:6px">
+        MISIÓN PERSONALIZADA
+      </div>
+      <div class="input-row">
+        <input class="admin-input" id="mision-custom" placeholder="Escribe la misión…" type="text"/>
+        <button class="send-btn" onclick="lanzarMisionCustom()">📌</button>
+      </div>
+
+      <!-- Mostrar misión en TV interior -->
+      <button class="cmd-btn" onclick="send({type:'mision',texto:getMisionActiva()})">
+        <span class="btn-icon">📺</span>
+        <span class="btn-text">Mostrar misión en TV
+          <span class="btn-sub">Proyecta en pantalla interior</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- JUEGOS -->
+    <div class="section">
+      <div class="section-title">🎮 Juegos</div>
+      <button class="cmd-btn" onclick="send({type:'ruleta'})">
+        <span class="btn-icon">🎡</span>
+        <span class="btn-text">Ruleta
+          <span class="btn-sub">Girar ruleta en TV exterior</span>
+        </span>
+      </button>
+      <div class="input-row">
+        <input class="admin-input" id="juego-nombre" placeholder="Nombre del juego…" type="text"/>
+        <button class="send-btn" onclick="sendJuego()">Lanzar</button>
+      </div>
+    </div>
+
+    <!-- TIMER -->
+    <div class="section">
+      <div class="section-title">⏱ Temporizador</div>
+      <div class="input-row">
+        <input class="admin-input" id="timer-label" placeholder="Etiqueta…" type="text" style="flex:2"/>
+        <input class="admin-input" id="timer-secs" placeholder="Segs" type="number" min="5" max="3600" style="max-width:84px"/>
+        <button class="send-btn" onclick="sendTimer()">▶</button>
+      </div>
+      <div class="timer-presets">
+        <button class="timer-preset" onclick="quickTimer(30,'30s')">30s</button>
+        <button class="timer-preset" onclick="quickTimer(60,'1 min')">1m</button>
+        <button class="timer-preset" onclick="quickTimer(120,'2 min')">2m</button>
+        <button class="timer-preset" onclick="quickTimer(180,'3 min')">3m</button>
+        <button class="timer-preset" onclick="quickTimer(300,'5 min')">5m</button>
+      </div>
+    </div>
+
+    <!-- CIERRE -->
+    <div class="section">
+      <div class="section-title">🏆 Cierre</div>
+      <button class="cmd-btn primary" onclick="send({type:'ranking'})">
+        <span class="btn-icon">📊</span>
+        <span class="btn-text">Mostrar Ranking
+          <span class="btn-sub">Clasificación en TVs</span>
+        </span>
+      </button>
+      <button class="cmd-btn primary" onclick="send({type:'premios'})">
+        <span class="btn-icon">🏆</span>
+        <span class="btn-text">Premios
+          <span class="btn-sub">Pantalla de premios finales</span>
+        </span>
+      </button>
+      <button class="cmd-btn primary" onclick="send({type:'muro'})">
+        <span class="btn-icon">📸</span>
+        <span class="btn-text">Muro de fotos
+          <span class="btn-sub">Álbum colectivo</span>
+        </span>
+      </button>
+      <button class="cmd-btn primary" onclick="send({type:'showcase'})">
+        <span class="btn-icon">🎞️</span>
+        <span class="btn-text">Showcase final
+          <span class="btn-sub">Slideshow de polaroids</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- QR JUGADORES -->
+    <div class="section">
+      <div class="section-title">📱 Jugadores — QR de acceso</div>
+      <div class="qr-wrap">
+        <canvas id="qr-canvas" width="200" height="200"></canvas>
+        <div class="qr-label">Escanea para unirte</div>
+        <div class="qr-url" id="qr-url-text"></div>
+      </div>
+      <button class="cmd-btn primary" onclick="mostrarQRenTV('interior')">
+        <span class="btn-icon">📺</span>
+        <span class="btn-text">Mostrar QR en TV Interior
+          <span class="btn-sub">Proyecta el QR en la pantalla interior</span>
+        </span>
+      </button>
+      <button class="cmd-btn primary" onclick="mostrarQRenTV('exterior')">
+        <span class="btn-icon">🌿</span>
+        <span class="btn-text">Mostrar QR en TV Exterior
+          <span class="btn-sub">Proyecta el QR en la pantalla exterior</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- GRADUADOS -->
+    <div class="section">
+      <div class="section-title">🎓 Lista de graduados</div>
+      <div style="font-family:'Caveat',cursive;font-size:13px;color:var(--fade);opacity:0.7;line-height:1.6;margin-bottom:6px">
+        Estos nombres aparecerán en la bienvenida de la TV.<br/>
+        <span style="color:rgba(160,132,72,0.5)">Incluye también a los de 3º si van a participar.</span>
+      </div>
+      <div class="jugadores-wrap" id="graduados-wrap" style="max-height:280px;overflow-y:auto"></div>
+      <div class="input-row" style="margin-top:6px">
+        <input class="admin-input" id="nuevo-graduado" placeholder="Añadir nombre…" type="text"/>
+        <button class="send-btn" onclick="addGraduado()">+</button>
+      </div>
+      <button class="cmd-btn" onclick="syncGraduados()" style="margin-top:4px">
+        <span class="btn-icon">📺</span>
+        <span class="btn-text">Sincronizar con TVs
+          <span class="btn-sub">Actualiza la lista en pantalla</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- PUNTUACIONES -->
+    <div class="section">
+      <div class="section-title">✏️ Puntuaciones</div>
+      <div class="jugadores-wrap" id="jugadores-wrap">
+        <div style="font-family:'Caveat',cursive;font-size:16px;color:var(--fade);opacity:0.4;text-align:center;padding:20px">
+          Sin jugadores aún…
+        </div>
+      </div>
+      <div class="input-row" style="margin-top:4px">
+        <input class="admin-input" id="nuevo-jug" placeholder="Añadir jugador manualmente…" type="text"/>
+        <button class="send-btn" onclick="addJugador()">+</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="core.js"></script>
+<script>
+/* ════════════════════════════════════
+   SOUND — haptic click feedback
+════════════════════════════════════ */
+let _audioCtx = null;
+let _clickBuffer = null;
+let _successBuffer = null;
+
+async function preloadAdminSounds() {
+  if(!_audioCtx) _audioCtx = new(window.AudioContext||window.webkitAudioContext)();
+  try {
+    const res1 = await fetch('click.mp3');
+    if(res1.ok) {
+      const data = await res1.arrayBuffer();
+      _clickBuffer = await _audioCtx.decodeAudioData(data);
+    }
+    const res2 = await fetch('success.mp3');
+    if(res2.ok) {
+      const data = await res2.arrayBuffer();
+      _successBuffer = await _audioCtx.decodeAudioData(data);
+    }
+  } catch(e) {}
+}
+
+function playClick(type='normal'){
+  try{
+    if(!_audioCtx) _audioCtx = new(window.AudioContext||window.webkitAudioContext)();
+    const c = _audioCtx;
+    if(c.state==='suspended') c.resume();
+
+    if(type==='ok' && _successBuffer) {
+      const s = c.createBufferSource(); s.buffer = _successBuffer;
+      s.connect(c.destination); s.start(); return;
+    }
+    if(type==='normal' && _clickBuffer) {
+      const s = c.createBufferSource(); s.buffer = _clickBuffer;
+      s.connect(c.destination); s.start(); return;
+    }
+
+    // Sonido orgánico de éxito (carillón real, no pixelado)
+    if(type==='ok'){
+      const freqs = [523.25, 659.25, 783.99, 1046.50]; // Acorde C Major
+      freqs.forEach((f, i) => {
+        const o = c.createOscillator();
+        const oH = c.createOscillator(); // Armónico
+        const g = c.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(f, c.currentTime + i*0.03);
+        oH.type = 'sine'; oH.frequency.setValueAtTime(f * 2.001, c.currentTime + i*0.03);
+        g.gain.setValueAtTime(0, c.currentTime + i*0.03);
+        g.gain.linearRampToValueAtTime(0.05, c.currentTime + i*0.03 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + i*0.03 + 1.5);
+        o.connect(g); oH.connect(g); g.connect(c.destination);
+        o.start(c.currentTime + i*0.03); oH.start(c.currentTime + i*0.03);
+        o.stop(c.currentTime + i*0.03 + 1.5); oH.stop(c.currentTime + i*0.03 + 1.5);
+      });
+    } else if(type==='error'){
+      const o = c.createOscillator(); const g = c.createGain();
+      o.type = 'triangle'; o.frequency.setValueAtTime(110, c.currentTime);
+      o.frequency.exponentialRampToValueAtTime(55, c.currentTime + 0.3);
+      g.gain.setValueAtTime(0.12, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.3);
+      o.connect(g); g.connect(c.destination);
+      o.start(); o.stop(c.currentTime + 0.3);
+    } else if(type==='normal'){
+      const noise = c.createBufferSource();
+      const bSize = c.sampleRate * 0.03;
+      const b = c.createBuffer(1, bSize, c.sampleRate);
+      const d = b.getChannelData(0);
+      for(let i=0; i<bSize; i++) d[i] = Math.random() * 2 - 1;
+      const f = c.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 2200;
+      const g = c.createGain(); g.gain.setValueAtTime(0.04, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.02);
+      noise.buffer = b; noise.connect(f); f.connect(g); g.connect(c.destination);
+      noise.start();
+    }
+  }catch(e){}
+}
+// Eliminado el listener global de click en botones para que solo suene el éxito de envío.
+
+/* ════════════════════════════════════
+   PIN
+════════════════════════════════════ */
+const PIN_CORRECTO = '2026';
+let pinActual = '';
+
+function updatePinDisplay(){
+  for(let i=0;i<4;i++){
+    document.getElementById('pd'+i).classList.toggle('filled', i<pinActual.length);
+  }
+}
+function pinPress(d){
+  if(d===''||pinActual.length>=4) return;
+  pinActual+=d; updatePinDisplay();
+  if(pinActual.length===4) setTimeout(checkPin,100);
+}
+function pinDel(){
+  pinActual=pinActual.slice(0,-1); updatePinDisplay();
+}
+function checkPin(){
+  if(pinActual===PIN_CORRECTO){
+    document.getElementById('pin-lock').style.display='none';
+    document.getElementById('admin-main').style.display='block';
+    Core.init();
+    generateQR();
+    preloadAdminSounds();
+  } else {
+    const err=document.getElementById('pin-error');
+    err.textContent='PIN incorrecto';
+    pinActual=''; updatePinDisplay();
+    setTimeout(()=>err.textContent='',1800);
+  }
+}
+
+/* ════════════════════════════════════
+   QR
+════════════════════════════════════ */
+function mostrarQRenTV(target){
+  const playerUrl = window.location.origin + '/player.html';
+  send({type:'qr', target, url: playerUrl});
+}
+
+function generateQR(){
+  const playerUrl = window.location.origin+'/player.html';
+  document.getElementById('qr-url-text').textContent = playerUrl;
+  const canvas = document.getElementById('qr-canvas');
+  const ctx = canvas.getContext('2d');
+  const size = 200;
+  canvas.width=size; canvas.height=size;
+  const img = new Image();
+  img.crossOrigin='anonymous';
+  img.onload=()=>{
+    ctx.fillStyle='#f5f0e8'; ctx.fillRect(0,0,size,size);
+    ctx.drawImage(img,0,0,size,size);
+  };
+  img.onerror=()=>{
+    ctx.fillStyle='#f5f0e8'; ctx.fillRect(0,0,size,size);
+    ctx.fillStyle='#1a1006'; ctx.font='11px monospace'; ctx.textAlign='center';
+    ctx.fillText('VER URL ABAJO',size/2,24);
+    const parts=playerUrl.split('/').filter(Boolean);
+    parts.forEach((p,i)=>ctx.fillText(p,size/2,50+i*20));
+  };
+  img.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(playerUrl)}&bgcolor=f5f0e8&color=1a1006&margin=8`;
+}
+
+/* ════════════════════════════════════
+   SEND
+════════════════════════════════════ */
+function send(cmd){
+  Core.sendCmd(cmd)
+    .then(()=>showToast('✓ '+cmd.type,'ok'))
+    .catch(()=>showToast('Sin conexión','error'));
+}
+
+/* ════════════════════════════════════
+   ALARMA
+════════════════════════════════════ */
+let destinoActual='interior';
+function selectDest(d){
+  destinoActual=d;
+  document.getElementById('dest-interior').classList.toggle('active',d==='interior');
+  document.getElementById('dest-exterior').classList.toggle('active',d==='exterior');
+  document.getElementById('alarma-dest-label').textContent=d==='interior'?'Mover al interior':'Mover al exterior';
+}
+function sendAlarma(){ send({type:'alarma',destino:destinoActual}); }
+
+/* ════════════════════════════════════
+   JUEGO
+════════════════════════════════════ */
+function sendJuego(){
+  const nombre=document.getElementById('juego-nombre').value.trim()||'Juego';
+  send({type:'juego',nombre});
+}
+
+/* ════════════════════════════════════
+   TIMER
+════════════════════════════════════ */
+function sendTimer(){
+  const label=document.getElementById('timer-label').value.trim()||'Tiempo';
+  const secs=parseInt(document.getElementById('timer-secs').value)||60;
+  send({type:'timer',secs,label});
+}
+function quickTimer(secs,label){ send({type:'timer',secs,label}); }
+
+/* ════════════════════════════════════
+   MISIONES
+════════════════════════════════════ */
+let misionActivaTexto = '';
+
+function getPtsConfig(){
+  return {
+    pts_plazo:  parseInt(document.getElementById('mpts-plazo').value)||10,
+    pts_tarde:  parseInt(document.getElementById('mpts-tarde').value)||5,
+    pts_fallo:  parseInt(document.getElementById('mpts-fallo').value)||-2,
+    duracion:   parseInt(document.getElementById('mision-duracion').value)||300,
+  };
+}
+
+function getMisionActiva(){ return misionActivaTexto; }
+
+function lanzarMision(texto){
+  if(!texto){ showToast('Escribe el texto de la misión','error'); return; }
+  if(!Core.db){ showToast('Sin conexión','error'); return; }
+
+  const cfg = getPtsConfig();
+  const id = 'mision_'+Date.now();
+  const mision = {
+    id,
+    texto,
+    inicio: Date.now(),
+    duracion: cfg.duracion,
+    pts_plazo: cfg.pts_plazo,
+    pts_tarde: cfg.pts_tarde,
+    pts_fallo: cfg.pts_fallo,
+    activa: true,
+    ts: Date.now()
+  };
+
+  Core.db.ref('misiones/activa').set(mision)
+    .then(()=>{
+      misionActivaTexto = texto;
+      document.getElementById('mision-activa-texto').textContent = texto;
+      document.getElementById('mision-activa-strip').classList.add('visible');
+
+      // También enviar como cmd para notificación inmediata
+      return Core.sendCmd({type:'mision', ...mision});
+    })
+    .then(()=>showToast('📌 Misión lanzada','ok'))
+    .catch(()=>showToast('Error al lanzar misión','error'));
+}
+
+function lanzarMisionPreset(texto){
+  lanzarMision(texto);
+}
+
+function lanzarMisionCustom(){
+  const texto = document.getElementById('mision-custom').value.trim();
+  if(!texto){ showToast('Escribe la misión primero','error'); return; }
+  lanzarMision(texto);
+  document.getElementById('mision-custom').value='';
+}
+
+function limpiarMision(){
+  if(!Core.db){ showToast('Sin conexión','error'); return; }
+  Core.db.ref('misiones/activa').remove()
+    .then(()=>{
+      misionActivaTexto='';
+      document.getElementById('mision-activa-strip').classList.remove('visible');
+      showToast('Misión cerrada');
+    })
+    .catch(()=>showToast('Error','error'));
+}
+
+function resetMisiones(){
+  if(!Core.db){ showToast('Sin conexión','error'); return; }
+  if(!confirm('¿Borrar misión activa y todas las entregas?')) return;
+  Promise.all([
+    Core.db.ref('misiones').remove(),
+  ]).then(()=>{
+    misionActivaTexto='';
+    document.getElementById('mision-activa-strip').classList.remove('visible');
+    showToast('✓ Misiones reseteadas','ok');
+  }).catch(()=>showToast('Error','error'));
+}
+
+function lanzarMisionDibujo(){
+  lanzarMision('Dibuja algo — usa el canvas en tu móvil y envíalo como foto');
+}
+
+/* ════════════════════════════════════
+   TOAST
+════════════════════════════════════ */
+let toastTimer=null;
+function showToast(msg,tipo='normal'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.className='toast';
+  if(tipo==='error'){ el.classList.add('error'); playClick('error'); }
+  if(tipo==='ok'){ el.classList.add('ok'); playClick('ok'); }
+  el.classList.add('show');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2400);
+}
+
+/* ════════════════════════════════════
+   JUGADORES
+════════════════════════════════════ */
+let jugadores={};
+function loadJugadores(){
+  if(!Core.db) return;
+  Core.db.ref('hub/jugadores').on('value',snap=>{
+    jugadores=snap.val()||{};
+    renderJugadores();
+  });
+}
+function renderJugadores(){
+  const wrap=document.getElementById('jugadores-wrap');
+  const entries=Object.entries(jugadores)
+    .map(([k,v])=>({nombre:k,pts:v.puntos||0}))
+    .sort((a,b)=>b.pts-a.pts);
+  if(!entries.length){
+    wrap.innerHTML='<div style="font-family:\'Caveat\',cursive;font-size:15px;color:var(--fade);opacity:0.4;text-align:center;padding:16px">Sin jugadores aún</div>';
+    return;
+  }
+  wrap.innerHTML=entries.map(e=>`
+    <div class="jug-item">
+      <div class="jug-nombre">${e.nombre}</div>
+      <div class="jug-pts">${e.pts} pts</div>
+      <button class="jug-minus" onclick="changePts('${e.nombre}',-1)">−</button>
+      <button class="jug-plus" onclick="changePts('${e.nombre}',1)">+</button>
+    </div>
+  `).join('');
+}
+function changePts(nombre,delta){
+  if(!Core.db) return;
+  const current=jugadores[nombre]?.puntos||0;
+  const next=Math.max(0,current+delta);
+  Core.db.ref('hub/jugadores/'+nombre).set({puntos:next})
+    .then(()=>showToast(nombre+' → '+next+' pts', 'ok'))
+    .catch(()=>showToast('Error','error'));
+}
+function addJugador(){
+  const nombre=document.getElementById('nuevo-jug').value.trim();
+  if(!nombre) return;
+  if(!Core.db){showToast('Sin conexión','error');return;}
+  Core.db.ref('hub/jugadores/'+nombre).set({puntos:0})
+    .then(()=>{
+      document.getElementById('nuevo-jug').value='';
+      showToast('✓ '+nombre+' añadido','ok');
+    })
+    .catch(()=>showToast('Error','error'));
+}
+
+/* ════════════════════════════════════
+   RESET TOTAL
+════════════════════════════════════ */
+function resetTotal(){
+  if(!Core.db){ showToast('Sin conexión','error'); return; }
+  const ok = confirm('¿Reset completo? Se borrarán jugadores, fotos y misión activa.\n\nLos graduados y config se mantienen.');
+  if(!ok) return;
+  Promise.all([
+    Core.db.ref('hub/jugadores').remove(),
+    Core.db.ref('fotos').remove(),
+    Core.db.ref('album').remove(),
+    Core.db.ref('misiones').remove(),
+    Core.sendCmd({type:'standby'})
+  ])
+  .then(()=>{
+    jugadores={};
+    renderJugadores();
+    misionActivaTexto='';
+    document.getElementById('mision-activa-strip').classList.remove('visible');
+    showToast('✓ Reset completado','ok');
+  })
+  .catch(()=>showToast('Error en reset','error'));
+}
+
+/* ════════════════════════════════════
+   GRADUADOS
+════════════════════════════════════ */
+let graduadosList = [
+  "Alba","Alejandro","Ana","Beatriz","Carlos","Carmen",
+  "Daniel","Elena","Fernando","Inés","Javier","Laura",
+  "Luis","María","Marta","Miguel","Natalia","Pablo",
+  "Patricia","Rafael","Rocío","Samuel","Sara","Sofía","Valentina"
+];
+
+function loadGraduados(){
+  if(!Core.db) return;
+  Core.db.ref('config/graduados').once('value', snap=>{
+    const data = snap.val();
+    if(data && Array.isArray(data) && data.length>0) graduadosList = data;
+    renderGraduados();
+  });
+}
+
+function renderGraduados(){
+  const wrap = document.getElementById('graduados-wrap');
+  if(!wrap) return;
+  if(!graduadosList.length){
+    wrap.innerHTML='<div style="font-family:\'Caveat\',cursive;font-size:15px;color:var(--fade);opacity:0.4;text-align:center;padding:12px">Sin nombres</div>';
+    return;
+  }
+  wrap.innerHTML = graduadosList.map((nombre,i)=>`
+    <div class="jug-item" style="padding:8px 12px">
+      <div class="jug-nombre" style="font-size:clamp(14px,4vw,17px)">${nombre}</div>
+      <button class="jug-minus" style="width:28px;height:28px;font-size:15px" onclick="removeGraduado(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addGraduado(){
+  const input = document.getElementById('nuevo-graduado');
+  const nombre = input.value.trim();
+  if(!nombre){ showToast('Escribe un nombre','error'); return; }
+  if(graduadosList.includes(nombre)){ showToast('Ya existe','error'); return; }
+  graduadosList.push(nombre);
+  input.value='';
+  renderGraduados();
+  showToast('✓ '+nombre+' añadido','ok');
+}
+
+function removeGraduado(i){
+  const nombre = graduadosList[i];
+  if(!nombre) return;
+  graduadosList.splice(i,1);
+  renderGraduados();
+  showToast(nombre+' eliminado');
+}
+
+function syncGraduados(){
+  if(!Core.db){ showToast('Sin conexión','error'); return; }
+  Core.db.ref('config/graduados').set(graduadosList)
+    .then(()=>showToast('✓ Graduados sincronizados','ok'))
+    .catch(()=>showToast('Error','error'));
+}
+
+/* ════════════════════════════════════
+   STATUS
+════════════════════════════════════ */
+Core.onOnline(()=>{
+  document.getElementById('offlineBanner').classList.remove('visible');
+  document.getElementById('statusDot').classList.add('online');
+  document.getElementById('statusText').textContent='Online';
+  loadJugadores();
+  loadGraduados();
+  // Cargar misión activa
+  if(Core.db){
+    Core.db.ref('misiones/activa').once('value',snap=>{
+      const m=snap.val();
+      if(m&&m.texto){
+        misionActivaTexto=m.texto;
+        document.getElementById('mision-activa-texto').textContent=m.texto;
+        document.getElementById('mision-activa-strip').classList.add('visible');
+      }
+    });
+  }
+});
+Core.onOffline(()=>{
+  document.getElementById('offlineBanner').classList.add('visible');
+  document.getElementById('statusDot').classList.remove('online');
+  document.getElementById('statusText').textContent='Sin conexión';
+});
+</script>
+</body>
+</html>

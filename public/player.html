@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>La Última Tarde — Jugador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Special+Elite&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0b06;
+  --page:#dfd0ae;
+  --ink:#1a1006;
+  --sepia:#8c6030;
+  --rust:#7a2810;
+  --fade:#a08448;
+  --cream:#e8dcc4;
+  --gold:#d4a820;
+  --green:#4a8040;
+}
+html,body{
+  width:100%;min-height:100vh;
+  background:var(--bg);
+  font-family:'Special Elite',serif;
+  color:var(--cream);
+  overflow-x:hidden;
+}
+
+/* ════════════════
+   REGISTRO
+════════════════ */
+#registro{
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 24px;gap:20px;
+  background:var(--bg);
+}
+.reg-logo{
+  font-family:'UnifrakturMaguntia',serif;
+  font-size:clamp(34px,10vw,54px);
+  color:var(--cream);text-align:center;
+  text-shadow:0 0 40px rgba(232,220,196,0.12);
+  line-height:1.1;
+}
+.reg-sub{
+  font-family:'Caveat',cursive;
+  font-size:clamp(14px,4vw,20px);
+  color:var(--sepia);letter-spacing:3px;text-align:center;
+}
+.reg-nota{
+  background:rgba(223,208,174,0.06);
+  border:1px solid rgba(140,96,48,0.18);
+  padding:26px 22px;width:100%;max-width:380px;
+  transform:rotate(-0.7deg);
+  position:relative;
+}
+.reg-label{
+  font-family:'Caveat',cursive;
+  font-size:clamp(14px,4vw,18px);
+  color:var(--sepia);margin-bottom:10px;display:block;
+}
+.reg-input{
+  width:100%;
+  background:rgba(223,208,174,0.05);
+  border:1px solid rgba(140,96,48,0.22);
+  border-bottom:2px solid rgba(140,96,48,0.35);
+  color:var(--cream);
+  font-family:'Caveat',cursive;
+  font-size:clamp(22px,7vw,30px);
+  padding:12px 14px;outline:none;
+  text-align:center;
+  border-radius:0;
+}
+.reg-input::placeholder{color:rgba(160,132,72,0.28)}
+.reg-input:focus{border-bottom-color:rgba(140,96,48,0.65)}
+.reg-btn{
+  width:100%;max-width:380px;
+  background:rgba(140,96,48,0.14);
+  border:1px solid rgba(140,96,48,0.3);
+  color:var(--cream);
+  font-family:'Special Elite',serif;
+  font-size:clamp(15px,4.5vw,19px);
+  padding:18px;cursor:pointer;
+  transition:background 0.15s,transform 0.1s;
+  letter-spacing:2px;
+}
+.reg-btn:active{background:rgba(140,96,48,0.28);transform:scale(0.98)}
+.reg-error{
+  font-family:'Caveat',cursive;
+  font-size:clamp(13px,3.5vw,16px);
+  color:var(--rust);text-align:center;min-height:1.4em;
+}
+
+/* ════════════════
+   MAIN
+════════════════ */
+#player-main{display:none;min-height:100vh;flex-direction:column}
+
+.player-header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(13,11,6,0.97);
+  border-bottom:1px solid rgba(140,96,48,0.14);
+  padding:12px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;
+}
+.player-nombre{
+  font-family:'Caveat',cursive;
+  font-size:clamp(16px,5vw,22px);
+  color:var(--cream);
+}
+.player-pts{
+  font-family:'Special Elite',serif;
+  font-size:clamp(13px,4vw,17px);
+  color:var(--gold);letter-spacing:1px;
+  white-space:nowrap;
+}
+
+.player-body{
+  flex:1;padding:20px 18px 40px;
+  display:flex;flex-direction:column;gap:16px;
+  max-width:520px;margin:0 auto;width:100%;
+}
+
+/* ════════════════
+   EVENTO LIVE
+════════════════ */
+.evento-card{
+  display:none;
+  background:rgba(122,40,16,0.14);
+  border:1px solid rgba(122,40,16,0.38);
+  padding:18px;
+  animation:eventPulse 2s ease-in-out infinite;
+}
+.evento-card.visible{display:block}
+@keyframes eventPulse{
+  0%,100%{border-color:rgba(122,40,16,0.38)}
+  50%{border-color:rgba(122,40,16,0.65)}
+}
+.evento-titulo{
+  font-family:'UnifrakturMaguntia',serif;
+  font-size:clamp(20px,6vw,30px);color:var(--cream);
+}
+.evento-desc{
+  font-family:'Caveat',cursive;
+  font-size:clamp(13px,4vw,17px);color:var(--fade);margin-top:5px;
+}
+
+/* ════════════════
+   MISIÓN CARD — con timer y estados
+════════════════ */
+.mision-card{
+  background:rgba(223,208,174,0.05);
+  border:1px solid rgba(140,96,48,0.18);
+  padding:22px 18px 18px;
+  transform:rotate(-0.4deg);
+  position:relative;
+  transition:border-color 0.3s;
+}
+.mision-card.activa{
+  border-color:rgba(140,96,48,0.45);
+  background:rgba(140,96,48,0.06);
+}
+.mision-card.urgente{
+  border-color:rgba(122,40,16,0.6);
+  background:rgba(122,40,16,0.08);
+  animation:eventPulse 1.2s ease-in-out infinite;
+}
+.mision-card.completada{
+  border-color:rgba(74,128,64,0.5);
+  background:rgba(74,128,64,0.06);
+}
+.mision-card.expirada{
+  border-color:rgba(122,40,16,0.3);
+  opacity:0.7;
+}
+.mision-pin{
+  position:absolute;top:-10px;right:14px;font-size:20px;
+}
+.mision-titulo{
+  font-family:'Special Elite',serif;
+  font-size:clamp(10px,2.8vw,13px);
+  color:var(--sepia);letter-spacing:4px;text-transform:uppercase;
+  margin-bottom:8px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:4px;
+}
+.mision-badge{
+  font-size:clamp(9px,2.5vw,11px);
+  letter-spacing:1px;padding:2px 8px;
+  border-radius:20px;
+}
+.mision-badge.plazo{background:rgba(140,96,48,0.15);color:var(--gold);border:1px solid rgba(212,168,32,0.3)}
+.mision-badge.tarde{background:rgba(122,40,16,0.15);color:#e08050;border:1px solid rgba(122,40,16,0.3)}
+.mision-badge.ok{background:rgba(74,128,64,0.15);color:#80c070;border:1px solid rgba(74,128,64,0.3)}
+.mision-badge.expirada{background:rgba(80,60,40,0.15);color:var(--fade);border:1px solid rgba(80,60,40,0.3)}
+
+.mision-texto{
+  font-family:'Caveat',cursive;
+  font-size:clamp(18px,5.5vw,26px);
+  color:var(--cream);line-height:1.5;
+  margin-bottom:12px;
+}
+
+.mision-puntos-wrap{
+  display:flex;gap:8px;flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.mision-pts-item{
+  font-family:'Special Elite',serif;
+  font-size:clamp(9px,2.5vw,11px);
+  letter-spacing:1px;padding:4px 10px;
+  border:1px solid;
+}
+.mision-pts-item.en-plazo{color:var(--gold);border-color:rgba(212,168,32,0.25)}
+.mision-pts-item.fuera-plazo{color:#e08050;border-color:rgba(200,100,50,0.25)}
+.mision-pts-item.sin-foto{color:var(--rust);border-color:rgba(122,40,16,0.25)}
+
+/* Timer visual */
+.mision-timer-wrap{
+  display:flex;align-items:center;gap:10px;margin-bottom:14px;
+}
+.mision-timer-barra{
+  flex:1;height:4px;
+  background:rgba(140,96,48,0.15);
+  border-radius:2px;overflow:hidden;
+}
+.mision-timer-fill{
+  height:100%;
+  background:rgba(140,96,48,0.5);
+  border-radius:2px;
+  transition:width 1s linear, background 0.5s;
+}
+.mision-timer-fill.urgente{background:rgba(200,60,30,0.7)}
+.mision-timer-txt{
+  font-family:'Special Elite',serif;
+  font-size:clamp(13px,3.5vw,16px);
+  color:var(--fade);letter-spacing:2px;
+  white-space:nowrap;min-width:48px;text-align:right;
+}
+.mision-timer-txt.urgente{color:var(--rust)}
+
+/* ════════════════
+   FOTO SUBMISSION para misión
+════════════════ */
+.foto-section{display:flex;flex-direction:column;gap:12px}
+.foto-titulo{
+  font-family:'Caveat',cursive;
+  font-size:clamp(15px,4.5vw,20px);
+  color:var(--sepia);letter-spacing:2px;
+}
+
+/* Tabs foto/canvas */
+.foto-tabs{display:flex;gap:0;border:1px solid rgba(140,96,48,0.2)}
+.foto-tab{
+  flex:1;padding:10px 6px;text-align:center;
+  font-family:'Caveat',cursive;font-size:clamp(14px,4vw,18px);
+  color:var(--fade);cursor:pointer;
+  background:transparent;border:none;
+  transition:background 0.15s,color 0.15s;
+  letter-spacing:1px;
+}
+.foto-tab.active{background:rgba(140,96,48,0.14);color:var(--cream)}
+
+.foto-upload-area{
+  border:2px dashed rgba(140,96,48,0.28);
+  padding:28px 16px;text-align:center;
+  cursor:pointer;
+  transition:border-color 0.2s,background 0.2s;
+  position:relative;
+}
+.foto-upload-area:active{border-color:rgba(140,96,48,0.5);background:rgba(140,96,48,0.05)}
+.foto-upload-area input[type=file]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
+}
+.foto-upload-icon{font-size:36px;margin-bottom:6px}
+.foto-upload-text{
+  font-family:'Caveat',cursive;
+  font-size:clamp(14px,4vw,17px);
+  color:var(--fade);
+}
+.foto-preview{
+  display:grid;grid-template-columns:1fr;gap:8px;
+}
+.preview-polaroid{
+  background:#f5f0e8;
+  padding:8px 8px 24px 8px;
+  box-shadow:3px 4px 16px rgba(0,0,0,0.55);
+  transform:rotate(-0.5deg);
+}
+.preview-img{width:100%;max-height:260px;object-fit:cover;display:block}
+.preview-nota{
+  font-family:'Caveat',cursive;
+  font-size:clamp(12px,3.5vw,15px);
+  color:#3a2a10;text-align:center;margin-top:6px;
+  font-style:italic;
+}
+
+/* Nota input */
+.nota-input{
+  width:100%;
+  background:rgba(223,208,174,0.06);
+  border:none;
+  border-bottom:1px solid rgba(140,96,48,0.25);
+  color:var(--cream);
+  font-family:'Caveat',cursive;
+  font-size:clamp(15px,4.5vw,20px);
+  padding:10px 4px;outline:none;
+  letter-spacing:0.5px;
+}
+.nota-input::placeholder{color:rgba(160,132,72,0.35)}
+.nota-label{
+  font-family:'Special Elite',serif;
+  font-size:clamp(9px,2.5vw,11px);letter-spacing:3px;
+  color:rgba(140,96,48,0.5);text-transform:uppercase;
+  margin-bottom:4px;display:block;
+}
+
+/* Canvas dibujo */
+.canvas-wrap{
+  display:flex;flex-direction:column;gap:8px;
+}
+.canvas-tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.canvas-color{
+  width:28px;height:28px;border-radius:50%;cursor:pointer;
+  border:2px solid transparent;transition:border-color 0.15s,transform 0.15s;
+  flex-shrink:0;
+}
+.canvas-color.active{border-color:var(--cream);transform:scale(1.2)}
+.canvas-size{
+  font-family:'Special Elite',serif;font-size:11px;letter-spacing:2px;
+  color:var(--fade);padding:6px 10px;
+  background:rgba(140,96,48,0.08);border:1px solid rgba(140,96,48,0.18);
+  cursor:pointer;
+}
+.canvas-size.active{background:rgba(140,96,48,0.22);color:var(--cream)}
+.canvas-clear{
+  margin-left:auto;
+  font-family:'Special Elite',serif;font-size:11px;letter-spacing:2px;
+  color:var(--rust);padding:6px 12px;
+  background:rgba(122,40,16,0.08);border:1px solid rgba(122,40,16,0.2);
+  cursor:pointer;
+}
+#drawing-canvas{
+  width:100%;
+  background:#f5f0e8;
+  touch-action:none;
+  cursor:crosshair;
+  display:block;
+  box-shadow:2px 3px 12px rgba(0,0,0,0.4);
+}
+.preview-label{
+  font-family:'Caveat',cursive;
+  font-size:12px;color:#3a2a10;text-align:center;margin-top:4px;
+}
+.foto-btn{
+  background:rgba(140,96,48,0.1);
+  border:1px solid rgba(140,96,48,0.28);
+  color:var(--cream);
+  font-family:'Special Elite',serif;
+  font-size:clamp(14px,4vw,17px);
+  padding:16px;cursor:pointer;
+  transition:background 0.15s;letter-spacing:2px;
+  text-align:center;width:100%;
+}
+.foto-btn:active{background:rgba(140,96,48,0.25)}
+.foto-btn:disabled{opacity:0.35;cursor:not-allowed}
+.foto-btn.ok-btn{
+  background:rgba(74,128,64,0.12);
+  border-color:rgba(74,128,64,0.3);
+}
+
+/* Sin misión activa */
+.sin-mision{
+  font-family:'Caveat',cursive;
+  font-size:clamp(16px,4.5vw,20px);
+  color:rgba(160,132,72,0.45);
+  text-align:center;
+  padding:32px 16px;
+  line-height:1.7;
+}
+
+/* ════════════════
+   RESULTADO envío
+════════════════ */
+.resultado-card{
+  display:none;
+  padding:20px 18px;
+  text-align:center;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+}
+.resultado-card.visible{display:flex}
+.resultado-emoji{font-size:40px}
+.resultado-titulo{
+  font-family:'UnifrakturMaguntia',serif;
+  font-size:clamp(22px,6vw,32px);
+  color:var(--cream);
+}
+.resultado-pts{
+  font-family:'Special Elite',serif;
+  font-size:clamp(14px,4vw,18px);
+  color:var(--gold);letter-spacing:2px;
+}
+.resultado-desc{
+  font-family:'Caveat',cursive;
+  font-size:clamp(13px,3.5vw,16px);
+  color:var(--fade);
+}
+
+/* ════════════════
+   HISTORIAL MISIONES
+════════════════ */
+.historial-titulo{
+  font-family:'Caveat',cursive;
+  font-size:clamp(14px,4vw,18px);
+  color:var(--sepia);
+  letter-spacing:3px;
+  border-bottom:1px solid rgba(140,96,48,0.15);
+  padding-bottom:6px;
+  margin-top:4px;
+}
+.historial-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 0;
+  border-bottom:1px solid rgba(140,96,48,0.08);
+}
+.hist-emoji{font-size:16px;flex-shrink:0}
+.hist-texto{
+  font-family:'Caveat',cursive;
+  font-size:clamp(12px,3.5vw,15px);
+  color:rgba(232,220,196,0.65);
+  flex:1;
+}
+.hist-pts{
+  font-family:'Special Elite',serif;
+  font-size:clamp(11px,3vw,13px);
+  letter-spacing:1px;
+  white-space:nowrap;
+}
+.hist-pts.positivo{color:var(--gold)}
+.hist-pts.negativo{color:var(--rust)}
+
+/* ════════════════
+   TOAST / OFFLINE
+════════════════ */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:rgba(140,96,48,0.92);color:var(--cream);
+  font-family:'Caveat',cursive;font-size:clamp(14px,4vw,18px);
+  padding:12px 24px;z-index:990;
+  transition:transform 0.3s ease;white-space:nowrap;
+  max-width:90vw;text-align:center;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.error{background:rgba(122,40,16,0.92)}
+.toast.ok{background:rgba(74,128,64,0.92)}
+
+.offline-banner{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(122,40,16,0.85);
+  color:var(--cream);font-family:'Special Elite',serif;
+  font-size:11px;text-align:center;padding:6px;letter-spacing:2px;
+  transform:translateY(100%);transition:transform 0.4s;z-index:999;
+}
+.offline-banner.visible{transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- REGISTRO -->
+<div id="registro">
+  <div class="reg-logo">La Última<br/>Tarde</div>
+  <div class="reg-sub">IES Chaves Nogales · Carmona · 2022–2026</div>
+  <div class="reg-nota">
+    <span class="reg-label">¿Cómo te llaman?</span>
+    <input class="reg-input" id="reg-nombre" placeholder="Tu nombre…" type="text" autocomplete="off" maxlength="24" autocapitalize="words"/>
+  </div>
+  <button class="reg-btn" onclick="registrar()">Entrar a la fiesta →</button>
+  <div class="reg-error" id="reg-error"></div>
+</div>
+
+<!-- PLAYER MAIN -->
+<div id="player-main">
+  <div class="offline-banner" id="offlineBanner">📡 Sin conexión</div>
+
+  <div class="player-header">
+    <div class="player-nombre" id="player-nombre-display">—</div>
+    <div class="player-pts" id="player-pts-display">0 pts</div>
+  </div>
+
+  <div class="player-body">
+
+    <!-- EVENTO LIVE -->
+    <div class="evento-card" id="evento-card">
+      <div class="evento-titulo" id="evento-titulo">¡Atención!</div>
+      <div class="evento-desc" id="evento-desc">Sigue las instrucciones en la pantalla</div>
+    </div>
+
+    <!-- MISIÓN ACTIVA -->
+    <div id="mision-wrap">
+      <div class="sin-mision" id="sin-mision">
+        Disfruta de la noche…<br/>
+        <span style="font-size:0.85em;opacity:0.6">Las misiones llegarán pronto</span>
+      </div>
+
+      <!-- Misión card (oculta hasta que llegue misión) -->
+      <div class="mision-card" id="mision-card" style="display:none">
+        <div class="mision-pin">📌</div>
+        <div class="mision-titulo">
+          <span>✦ Tu misión</span>
+          <span class="mision-badge plazo" id="mision-estado-badge">En plazo</span>
+        </div>
+        <div class="mision-texto" id="mision-texto">…</div>
+
+        <!-- Puntos informativos -->
+        <div class="mision-puntos-wrap">
+          <span class="mision-pts-item en-plazo" id="mpts-plazo">+10 pts en plazo</span>
+          <span class="mision-pts-item fuera-plazo" id="mpts-tarde">+5 pts tarde</span>
+          <span class="mision-pts-item sin-foto" id="mpts-fallo">−2 pts sin foto</span>
+        </div>
+
+        <!-- Timer visual -->
+        <div class="mision-timer-wrap" id="mision-timer-wrap">
+          <div class="mision-timer-barra">
+            <div class="mision-timer-fill" id="mision-timer-fill" style="width:100%"></div>
+          </div>
+          <div class="mision-timer-txt" id="mision-timer-txt">5:00</div>
+        </div>
+
+        <!-- Subir foto para la misión -->
+        <div class="foto-section" id="foto-section-mision">
+          <div class="foto-titulo">📷 Cumple la misión</div>
+
+          <!-- Tabs: Foto de cámara vs Canvas dibujo -->
+          <div class="foto-tabs" id="foto-tabs">
+            <button class="foto-tab active" onclick="switchFotoTab('camara')">📸 Foto</button>
+            <button class="foto-tab" onclick="switchFotoTab('canvas')">✏️ Dibujar</button>
+          </div>
+
+          <!-- Panel cámara -->
+          <div id="panel-camara">
+            <div class="foto-upload-area" id="upload-area-mision">
+              <input type="file" accept="image/*" capture="environment" id="foto-input-mision" onchange="previewFotoMision(event)"/>
+              <div class="foto-upload-icon">📸</div>
+              <div class="foto-upload-text">Toca para hacer la foto</div>
+            </div>
+            <div class="foto-preview" id="foto-preview-mision"></div>
+          </div>
+
+          <!-- Panel canvas dibujo -->
+          <div id="panel-canvas" style="display:none">
+            <div class="canvas-wrap">
+              <div class="canvas-tools">
+                <div class="canvas-color active" style="background:#1a1006" onclick="setColor('#1a1006',this)"></div>
+                <div class="canvas-color" style="background:#7a2810" onclick="setColor('#7a2810',this)"></div>
+                <div class="canvas-color" style="background:#8c6030" onclick="setColor('#8c6030',this)"></div>
+                <div class="canvas-color" style="background:#4a8040" onclick="setColor('#4a8040',this)"></div>
+                <div class="canvas-color" style="background:#d4a820" onclick="setColor('#d4a820',this)"></div>
+                <div class="canvas-color" style="background:#f5f0e8" onclick="setColor('#f5f0e8',this)"></div>
+                <button class="canvas-size active" id="sz-s" onclick="setSize(4,this)">S</button>
+                <button class="canvas-size" id="sz-m" onclick="setSize(9,this)">M</button>
+                <button class="canvas-size" id="sz-l" onclick="setSize(18,this)">L</button>
+                <button class="canvas-clear" onclick="clearCanvas()">borrar</button>
+              </div>
+              <canvas id="drawing-canvas" height="320"></canvas>
+            </div>
+            <div style="font-family:'Caveat',cursive;font-size:13px;color:rgba(160,132,72,0.5);text-align:center;margin-top:6px">
+              Dibuja libremente — se enviará como imagen
+            </div>
+          </div>
+
+          <!-- Nota -->
+          <div style="margin-top:4px">
+            <span class="nota-label">Una notita (opcional)</span>
+            <input class="nota-input" id="nota-mision" placeholder="Escribe algo sobre esta foto…" type="text" maxlength="80"/>
+          </div>
+
+          <button class="foto-btn" id="foto-submit-mision" onclick="subirFotoMision()" disabled>
+            Enviar misión →
+          </button>
+        </div>
+      </div>
+
+      <!-- Resultado tras envío -->
+      <div class="resultado-card" id="resultado-card">
+        <div class="resultado-emoji" id="resultado-emoji">✅</div>
+        <div class="resultado-titulo" id="resultado-titulo">¡Completada!</div>
+        <div class="resultado-pts" id="resultado-pts">+10 pts</div>
+        <div class="resultado-desc" id="resultado-desc">Foto enviada al álbum</div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div id="historial-wrap" style="display:none">
+      <div class="historial-titulo">Historial de misiones</div>
+      <div id="historial-lista"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="core.js"></script>
+<script>
+/* ════════════════════════════════════
+   SOUND — Player immersion
+════════════════════════════════════ */
+let _pAudioCtx = null;
+function pSound(type){
+  try{
+    if(!_pAudioCtx) _pAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const c=_pAudioCtx;
+    if(c.state==='suspended')c.resume();
+    const plays = {
+      click: ()=>{ const o=c.createOscillator(),g=c.createGain();o.frequency.value=700;g.gain.setValueAtTime(0.08,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.07);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.08); },
+      mision: ()=>{ [523,659,784].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=f;g.gain.setValueAtTime(0.12,c.currentTime+i*0.1);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+i*0.1+0.4);o.connect(g);g.connect(c.destination);o.start(c.currentTime+i*0.1);o.stop(c.currentTime+i*0.1+0.5);}); },
+      ok: ()=>{ [784,1047].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=f;g.gain.setValueAtTime(0.12,c.currentTime+i*0.12);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+i*0.12+0.35);o.connect(g);g.connect(c.destination);o.start(c.currentTime+i*0.12);o.stop(c.currentTime+i*0.12+0.4);}); },
+      error: ()=>{ const o=c.createOscillator(),g=c.createGain();o.type='sawtooth';o.frequency.value=180;g.gain.setValueAtTime(0.1,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.3);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.35); },
+      alarm: ()=>{ [880,660,880,660].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(0.08,c.currentTime+i*0.15);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+i*0.15+0.12);o.connect(g);g.connect(c.destination);o.start(c.currentTime+i*0.15);o.stop(c.currentTime+i*0.15+0.14);}); },
+    };
+    if(plays[type]) plays[type]();
+  }catch(e){}
+}
+document.addEventListener('click',e=>{ if(e.target.tagName==='BUTTON')pSound('click'); },true);
+
+/* ════════════════════════════════════
+   ESTADO
+════════════════════════════════════ */
+let nombreJugador = '';
+let misionActiva = null;
+let misionEstado = 'none';
+let misionTimerInterval = null;
+let misionFotoFile = null;
+let misionFotoBase64 = null;
+let misionInicio = 0;
+let misionDuracion = 300;
+let historialLocal = [];
+let fotoTabActivo = 'camara'; // 'camara' | 'canvas'
+
+/* ════════════════════════════════════
+   CANVAS DE DIBUJO
+════════════════════════════════════ */
+let _canvas, _ctx, _drawing=false, _color='#1a1006', _size=4;
+
+function initCanvas(){
+  _canvas = document.getElementById('drawing-canvas');
+  if(!_canvas) return;
+  // Alta resolución: escalar por devicePixelRatio
+  const dpr = window.devicePixelRatio || 1;
+  const rect = _canvas.getBoundingClientRect();
+  const w = (rect.width || _canvas.offsetWidth || 320);
+  const h = 320;
+  _canvas.width = w * dpr;
+  _canvas.height = h * dpr;
+  _canvas.style.width = w + 'px';
+  _canvas.style.height = h + 'px';
+  _ctx = _canvas.getContext('2d');
+  _ctx.scale(dpr, dpr);
+  _ctx.fillStyle='#f5f0e8';
+  _ctx.fillRect(0,0,w,h);
+  _ctx.lineCap='round';_ctx.lineJoin='round';
+  _ctx.strokeStyle=_color;_ctx.lineWidth=_size;
+
+  // getPos returns CSS coords (not device pixels) — ctx.scale(dpr,dpr) handles scaling
+  function getPos(e){
+    const r=_canvas.getBoundingClientRect();
+    if(e.touches){ return {x:(e.touches[0].clientX-r.left), y:(e.touches[0].clientY-r.top)}; }
+    return {x:(e.clientX-r.left), y:(e.clientY-r.top)};
+  }
+  function start(e){ e.preventDefault(); _drawing=true; const p=getPos(e); _ctx.beginPath();_ctx.moveTo(p.x,p.y); }
+  function move(e){ e.preventDefault(); if(!_drawing)return; const p=getPos(e); _ctx.lineTo(p.x,p.y);_ctx.stroke(); updateCanvasPreview(); }
+  function end(){ _drawing=false; updateCanvasPreview(); }
+
+  _canvas.addEventListener('mousedown',start);
+  _canvas.addEventListener('mousemove',move);
+  _canvas.addEventListener('mouseup',end);
+  _canvas.addEventListener('touchstart',start,{passive:false});
+  _canvas.addEventListener('touchmove',move,{passive:false});
+  _canvas.addEventListener('touchend',end);
+}
+
+function setColor(c,el){
+  _color=c;
+  if(_ctx){ _ctx.strokeStyle=c; }
+  document.querySelectorAll('.canvas-color').forEach(e=>e.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+function setSize(s,el){
+  _size=s;
+  if(_ctx){ _ctx.lineWidth=s; }
+  document.querySelectorAll('.canvas-size').forEach(e=>e.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+function clearCanvas(){
+  if(!_ctx||!_canvas) return;
+  _ctx.fillStyle='#f5f0e8';
+  _ctx.fillRect(0,0,_canvas.width,_canvas.height);
+  _ctx.strokeStyle=_color;_ctx.lineWidth=_size;
+  misionFotoBase64=null;
+  document.getElementById('foto-submit-mision').disabled=true;
+}
+function updateCanvasPreview(){
+  if(!_canvas) return;
+  // Export at full device resolution (canvas.width × canvas.height already scaled by dpr)
+  misionFotoBase64 = _canvas.toDataURL('image/jpeg', 0.95);
+  document.getElementById('foto-submit-mision').disabled=false;
+}
+
+function switchFotoTab(tab){
+  fotoTabActivo=tab;
+  document.querySelectorAll('.foto-tab').forEach((t,i)=>{
+    t.classList.toggle('active',(i===0&&tab==='camara')||(i===1&&tab==='canvas'));
+  });
+  document.getElementById('panel-camara').style.display=tab==='camara'?'block':'none';
+  document.getElementById('panel-canvas').style.display=tab==='canvas'?'block':'none';
+  if(tab==='canvas'){ setTimeout(initCanvas,50); }
+  // Reset submission state when switching
+  misionFotoBase64=null;
+  misionFotoFile=null;
+  document.getElementById('foto-submit-mision').disabled=true;
+  document.getElementById('foto-preview-mision').innerHTML='';
+}
+
+/* ════════════════════════════════════
+   TOAST
+════════════════════════════════════ */
+let toastTimer = null;
+function showToast(msg, tipo='normal'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast';
+  if(tipo==='error'){ t.classList.add('error'); pSound('error'); }
+  if(tipo==='ok'){ t.classList.add('ok'); pSound('ok'); }
+  t.classList.add('show');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+/* ════════════════════════════════════
+   REGISTRO
+════════════════════════════════════ */
+function registrar(){
+  const nombre = document.getElementById('reg-nombre').value.trim();
+  const err = document.getElementById('reg-error');
+  if(!nombre){ err.textContent='Escribe tu nombre para entrar'; return; }
+  if(nombre.length < 2){ err.textContent='Nombre demasiado corto'; return; }
+  err.textContent='';
+  nombreJugador = nombre;
+  localStorage.setItem('lut_nombre', nombre);
+  document.getElementById('registro').style.display='none';
+  document.getElementById('player-main').style.display='flex';
+  document.getElementById('player-nombre-display').textContent = nombre;
+  Core.init();
+  initPlayer();
+}
+
+window.addEventListener('load',()=>{
+  const saved = localStorage.getItem('lut_nombre');
+  if(saved) document.getElementById('reg-nombre').value = saved;
+});
+
+/* ════════════════════════════════════
+   INIT tras registro
+════════════════════════════════════ */
+function initPlayer(){
+  watchPuntos();
+  watchMision();
+  cargarHistorial();
+  registerHandlers();
+}
+
+/* ════════════════════════════════════
+   PUNTOS en tiempo real
+════════════════════════════════════ */
+function watchPuntos(){
+  if(!Core.db){ setTimeout(watchPuntos,1000); return; }
+  Core.db.ref('hub/jugadores/'+nombreJugador+'/puntos')
+    .on('value', snap=>{
+      const pts = snap.val()||0;
+      document.getElementById('player-pts-display').textContent = pts+' pts';
+    });
+}
+
+/* ════════════════════════════════════
+   SISTEMA DE MISIONES
+════════════════════════════════════ */
+function watchMision(){
+  if(!Core.db){ setTimeout(watchMision,1000); return; }
+  Core.db.ref('misiones/activa').on('value', snap=>{
+    const m = snap.val();
+    if(!m || !m.id){
+      // No hay misión activa
+      misionActiva = null;
+      hideMisionCard();
+      return;
+    }
+
+    // Si es la misma misión que ya tenemos y ya la completamos, no hacer nada
+    const yaCompletada = historialLocal.find(h=>h.id===m.id);
+    if(yaCompletada){ return; }
+
+    // Nueva misión o misma con actualización
+    if(!misionActiva || misionActiva.id !== m.id){
+      misionActiva = m;
+      misionInicio = m.inicio || Date.now();
+      misionDuracion = m.duracion || 300;
+      activarMision(m);
+    }
+  });
+}
+
+function activarMision(m){
+  misionEstado = 'activa';
+  misionFotoFile = null;
+  misionFotoBase64 = null;
+
+  // Mostrar card
+  document.getElementById('sin-mision').style.display='none';
+  document.getElementById('resultado-card').classList.remove('visible');
+  const card = document.getElementById('mision-card');
+  card.style.display='block';
+  card.className='mision-card activa';
+
+  // Rellenar datos
+  document.getElementById('mision-texto').textContent = m.texto || 'Misión especial';
+  const ptsPlazo = m.pts_plazo != null ? m.pts_plazo : 10;
+  const ptsTarde = m.pts_tarde != null ? m.pts_tarde : 5;
+  const ptsFallo = m.pts_fallo != null ? m.pts_fallo : -2;
+  document.getElementById('mpts-plazo').textContent = '+'+ptsPlazo+' pts en plazo';
+  document.getElementById('mpts-tarde').textContent = '+'+ptsTarde+' pts fuera de plazo';
+  document.getElementById('mpts-fallo').textContent = (ptsFallo<0?'':'+')+(ptsFallo)+' pts sin foto';
+
+  // Reset foto + canvas + nota + tabs
+  misionFotoBase64=null; misionFotoFile=null;
+  fotoTabActivo='camara';
+  document.getElementById('foto-preview-mision').innerHTML='';
+  document.getElementById('foto-submit-mision').disabled=true;
+  document.getElementById('foto-submit-mision').textContent='Enviar misión →';
+  document.getElementById('foto-section-mision').style.opacity='1';
+  document.getElementById('foto-section-mision').style.pointerEvents='auto';
+  document.getElementById('nota-mision').value='';
+  // Reset tabs to camara
+  document.querySelectorAll('.foto-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.getElementById('panel-camara').style.display='block';
+  document.getElementById('panel-canvas').style.display='none';
+  // Show/hide canvas tab based on mission type
+  const esCanvas = misionActiva?.texto?.toLowerCase().includes('dibuja');
+  if(esCanvas){ switchFotoTab('canvas'); }
+
+  // Check if "dibuja" mission → auto-switch to canvas tab
+  const tabs = document.getElementById('foto-tabs');
+  if(tabs) tabs.style.display = 'flex';
+
+  // Iniciar timer
+  iniciarTimerMision();
+
+  // Notificación
+  showToast('📌 ¡Nueva misión!', 'ok');
+  // Vibrar si disponible
+  if(navigator.vibrate) navigator.vibrate([200,100,200]);
+}
+
+function iniciarTimerMision(){
+  if(misionTimerInterval) clearInterval(misionTimerInterval);
+
+  const badge = document.getElementById('mision-estado-badge');
+  const fill = document.getElementById('mision-timer-fill');
+  const txt = document.getElementById('mision-timer-txt');
+  const card = document.getElementById('mision-card');
+
+  function fmt(s){
+    const m=Math.floor(s/60), sec=s%60;
+    return m+':'+(String(sec).padStart(2,'0'));
+  }
+
+  function tick(){
+    if(misionEstado==='completada') return;
+    const ahora = Date.now();
+    const elapsed = Math.floor((ahora - misionInicio)/1000);
+    const restante = Math.max(0, misionDuracion - elapsed);
+    const pct = Math.max(0, restante/misionDuracion)*100;
+
+    txt.textContent = fmt(restante);
+    fill.style.width = pct+'%';
+
+    if(restante <= 0){
+      // Tiempo expirado: ya no puntúa en plazo, pero puede enviar tarde
+      if(misionEstado==='activa'){
+        misionEstado='tardio';
+        badge.textContent='Fuera de plazo';
+        badge.className='mision-badge tarde';
+        card.className='mision-card urgente';
+        fill.classList.add('urgente');
+        txt.classList.add('urgente');
+        showToast('⏰ ¡Tiempo! Puedes enviar tarde por menos puntos', 'error');
+        if(navigator.vibrate) navigator.vibrate([400,200,400]);
+      }
+    } else if(restante <= 60){
+      // Último minuto: urgente
+      fill.classList.add('urgente');
+      txt.classList.add('urgente');
+      card.className='mision-card urgente';
+    }
+
+    // Calcular si ha pasado mucho del tiempo
+    // A los 10 min del tiempo límite, considerar expirada completamente
+    const tiempoTotal = Date.now()-misionInicio;
+    if(tiempoTotal > (misionDuracion+600)*1000 && misionEstado==='tardio'){
+      misionEstado='expirada';
+      badge.textContent='Expirada';
+      badge.className='mision-badge expirada';
+      card.className='mision-card expirada';
+      clearInterval(misionTimerInterval);
+      // Aplicar penalización automática (el admin la aplica, pero notificamos)
+      txt.textContent='—';
+      document.getElementById('foto-section-mision').style.opacity='0.4';
+      document.getElementById('foto-section-mision').style.pointerEvents='none';
+    }
+  }
+
+  tick();
+  misionTimerInterval = setInterval(tick, 1000);
+}
+
+function hideMisionCard(){
+  const card = document.getElementById('mision-card');
+  card.style.display='none';
+  if(misionTimerInterval) clearInterval(misionTimerInterval);
+  if(!historialLocal.length){
+    document.getElementById('sin-mision').style.display='block';
+  }
+}
+
+/* ════════════════════════════════════
+   FOTO MISIÓN
+════════════════════════════════════ */
+function previewFotoMision(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  misionFotoFile = file;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    // Redimensionar para mejorar calidad/tamaño antes de guardar
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1200;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h*(MAX/w)); w = MAX; }
+        else { w = Math.round(w*(MAX/h)); h = MAX; }
+      }
+      const cnv = document.createElement('canvas');
+      cnv.width = w; cnv.height = h;
+      const c = cnv.getContext('2d');
+      c.drawImage(img, 0, 0, w, h);
+      misionFotoBase64 = cnv.toDataURL('image/jpeg', 0.92);
+      const prev = document.getElementById('foto-preview-mision');
+      prev.innerHTML = '<div class="preview-polaroid">' +
+        '<img class="preview-img" src="' + misionFotoBase64 + '" alt="preview"/>' +
+        '<div class="preview-nota">' + nombreJugador + '</div></div>';
+      document.getElementById('foto-submit-mision').disabled = false;
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function subirFotoMision(){
+  if(!misionActiva){ showToast('No hay misión activa','error'); return; }
+  if(!misionFotoBase64){ showToast('Selecciona una foto primero','error'); return; }
+  if(!Core.db){ showToast('Sin conexión','error'); return; }
+  if(misionEstado==='completada'){ showToast('Ya enviaste esta misión','error'); return; }
+  if(misionEstado==='expirada'){ showToast('Esta misión ya expiró','error'); return; }
+
+  const btn = document.getElementById('foto-submit-mision');
+  btn.disabled=true; btn.textContent='Enviando…';
+
+  const ahora = Date.now();
+  const elapsed = Math.floor((ahora - misionInicio)/1000);
+  const enPlazo = elapsed <= misionDuracion;
+  const ptsPlazo = misionActiva.pts_plazo != null ? misionActiva.pts_plazo : 10;
+  const ptsTarde = misionActiva.pts_tarde != null ? misionActiva.pts_tarde : 5;
+  const ptsGanados = enPlazo ? ptsPlazo : ptsTarde;
+  const tipoEnvio = enPlazo ? 'plazo' : 'tarde';
+
+  const ts = ahora;
+  const entryKey = `${misionActiva.id}_${nombreJugador}`;
+
+  const notaValor = (document.getElementById('nota-mision')?.value||'').trim();
+
+  // 1) Subir foto al nodo fotos
+  const fotoRef = Core.db.ref('fotos/'+ts);
+  fotoRef.set({
+    autor: nombreJugador,
+    url: misionFotoBase64,
+    mision: misionActiva.id,
+    mision_texto: misionActiva.texto,
+    tipo: tipoEnvio,
+    nota: notaValor||null,
+    origen: fotoTabActivo,
+    ts
+  }).then(()=>{
+    // 2) Registrar envío de misión
+    return Core.db.ref('misiones/entregas/'+entryKey).set({
+      jugador: nombreJugador,
+      mision_id: misionActiva.id,
+      mision_texto: misionActiva.texto,
+      tipo: tipoEnvio,
+      pts: ptsGanados,
+      ts
+    });
+  }).then(()=>{
+    // 3) Sumar puntos al jugador
+    return Core.db.ref('hub/jugadores/'+nombreJugador).once('value');
+  }).then(snap=>{
+    const actual = snap.val()?.puntos || 0;
+    return Core.db.ref('hub/jugadores/'+nombreJugador).set({ puntos: actual+ptsGanados });
+  }).then(()=>{
+    // Éxito
+    misionEstado='completada';
+    if(misionTimerInterval) clearInterval(misionTimerInterval);
+
+    // Añadir al historial local
+    const histEntry = {
+      id: misionActiva.id,
+      texto: misionActiva.texto,
+      tipo: tipoEnvio,
+      pts: ptsGanados
+    };
+    historialLocal.push(histEntry);
+    localStorage.setItem('lut_historial', JSON.stringify(historialLocal));
+
+    // Mostrar resultado
+    document.getElementById('mision-card').style.display='none';
+    const rc = document.getElementById('resultado-card');
+    rc.classList.add('visible');
+    rc.style.background = enPlazo ? 'rgba(74,128,64,0.08)' : 'rgba(200,100,50,0.08)';
+    rc.style.border = enPlazo ? '1px solid rgba(74,128,64,0.3)' : '1px solid rgba(200,100,50,0.3)';
+    document.getElementById('resultado-emoji').textContent = enPlazo?'🎯':'⏰';
+    document.getElementById('resultado-titulo').textContent = enPlazo?'¡Completada en plazo!':'Completada fuera de plazo';
+    document.getElementById('resultado-pts').textContent = '+'+ptsGanados+' pts';
+    document.getElementById('resultado-desc').textContent = enPlazo
+      ? 'Foto enviada al álbum ✓'
+      : 'Foto enviada, pero era tarde. ¡La próxima más rápido!';
+
+    // Actualizar historial UI
+    renderHistorial();
+
+    showToast(enPlazo?'🎯 +'+ptsGanados+' pts':'⏰ +'+ptsGanados+' pts (fuera de plazo)', enPlazo?'ok':'normal');
+    if(navigator.vibrate) navigator.vibrate(enPlazo?[100,50,100,50,300]:[200]);
+
+  }).catch(err=>{
+    console.error(err);
+    showToast('Error al enviar. Intenta de nuevo.','error');
+    btn.disabled=false;
+    btn.textContent='Enviar misión →';
+  });
+}
+
+/* ════════════════════════════════════
+   HISTORIAL LOCAL
+════════════════════════════════════ */
+function cargarHistorial(){
+  try{
+    historialLocal = JSON.parse(localStorage.getItem('lut_historial')||'[]');
+  }catch(e){ historialLocal=[]; }
+  if(historialLocal.length) renderHistorial();
+}
+
+function renderHistorial(){
+  const wrap = document.getElementById('historial-wrap');
+  const lista = document.getElementById('historial-lista');
+  if(!historialLocal.length){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  lista.innerHTML = historialLocal.map(h=>{
+    const emoji = h.tipo==='plazo'?'🎯': h.tipo==='tarde'?'⏰':'❌';
+    const ptsClass = h.pts>=0?'positivo':'negativo';
+    const ptsStr = h.pts>=0?'+'+h.pts:String(h.pts);
+    return `
+      <div class="historial-item">
+        <span class="hist-emoji">${emoji}</span>
+        <span class="hist-texto">${h.texto}</span>
+        <span class="hist-pts ${ptsClass}">${ptsStr} pts</span>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ════════════════════════════════════
+   EVENTO CARD (notificaciones live)
+════════════════════════════════════ */
+function mostrarEvento(titulo, desc, ms=12000){
+  const ec = document.getElementById('evento-card');
+  document.getElementById('evento-titulo').textContent = titulo;
+  document.getElementById('evento-desc').textContent = desc;
+  ec.classList.add('visible');
+  setTimeout(()=>ec.classList.remove('visible'), ms);
+}
+
+/* ════════════════════════════════════
+   CORE HANDLERS
+════════════════════════════════════ */
+function registerHandlers(){
+  Core.on('mision', (cmd)=>{
+    pSound('mision');
+    if(navigator.vibrate) navigator.vibrate([100,80,100,80,300]);
+    mostrarEvento('📌 Nueva misión', cmd.texto||'Atentos a la pantalla', 8000);
+  });
+
+  Core.on('juego', (cmd)=>{
+    mostrarEvento('🎮 '+(cmd.nombre||'Nuevo juego'), 'Sigue las instrucciones en la pantalla');
+  });
+
+  Core.on('timer', (cmd)=>{
+    mostrarEvento('⏱ Temporizador', (cmd.label||'Tiempo')+' · '+(cmd.secs||60)+'s', 10000);
+  });
+
+  Core.on('alarma', (cmd)=>{
+    pSound('alarm');
+    const dest = cmd.destino==='interior'?'¡Al interior!':'¡Salid fuera!';
+    mostrarEvento('🔔 '+dest, 'Moved al lugar indicado', 15000);
+    if(navigator.vibrate) navigator.vibrate([300,150,300,150,300]);
+  });
+
+  Core.on('ranking', ()=>{
+    mostrarEvento('🏆 Clasificación', 'Mira la pantalla principal', 8000);
+  });
+}
+
+/* ════════════════════════════════════
+   ONLINE / OFFLINE
+════════════════════════════════════ */
+Core.onOnline(()=>{
+  document.getElementById('offlineBanner').classList.remove('visible');
+  watchPuntos();
+  watchMision();
+});
+Core.onOffline(()=>{
+  document.getElementById('offlineBanner').classList.add('visible');
+});
+</script>
+</body>
+</html>
